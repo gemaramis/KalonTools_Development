@@ -2,20 +2,72 @@ import React, { useState, useMemo } from 'react';
 import { kolMockData } from '../../data/mockData';
 import { useAuth } from '../../context/AuthContext';
 import { Search } from 'lucide-react';
+import ColumnHeader from '../../components/Table/ColumnHeader';
+import EditableNote from '../../components/Table/EditableNote';
 
 const Dealing = () => {
   const { permissions } = useAuth();
   const [data, setData] = useState(kolMockData);
   const [searchTerm, setSearchTerm] = useState('');
   const [periodFilter, setPeriodFilter] = useState('All');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [filters, setFilters] = useState({});
+
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const getUniqueOptions = (key) => {
+    const values = data.map(item => item[key]).filter(val => val !== undefined && val !== null && val !== '');
+    return [...new Set(values)].sort();
+  };
 
   const filteredData = useMemo(() => {
-    return data.filter(item => {
+    let result = [...data];
+
+    // Global Search & Period
+    result = result.filter(item => {
       const matchSearch = item.username.toLowerCase().includes(searchTerm.toLowerCase());
       const matchPeriod = periodFilter === 'All' || item.postingPeriod === periodFilter;
       return matchSearch && matchPeriod;
     });
-  }, [data, searchTerm, periodFilter]);
+
+    // Column Filters
+    Object.keys(filters).forEach(key => {
+      const filterValue = filters[key];
+      if (filterValue) {
+        result = result.filter(item => {
+          const itemValue = item[key]?.toString().toLowerCase() || '';
+          return itemValue.includes(filterValue.toLowerCase());
+        });
+      }
+    });
+
+    // Sorting
+    if (sortConfig.key) {
+      result.sort((a, b) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+        
+        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+
+        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [data, searchTerm, periodFilter, filters, sortConfig]);
 
   const stats = useMemo(() => {
     const totalDeal = filteredData.filter(d => d.dealingStatus === 'Deal').length;
@@ -66,17 +118,17 @@ const Dealing = () => {
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
               <th style={{ padding: '12px 16px', fontWeight: '600' }}>No</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600' }}>Username</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600' }}>Period</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600' }}>PIC</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600' }}>Tier</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600' }}>Rate Card</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600' }}>Final Price</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>Approval (Mgt)</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600' }}>SOW</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', backgroundColor: 'rgba(139, 92, 246, 0.1)' }}>Additional Notes (Mgt)</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>Dealing Status</th>
-              <th style={{ padding: '12px 16px', fontWeight: '600', backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>Follow Up Notes</th>
+              <ColumnHeader label="Username" sortKey="username" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.username} onFilterChange={handleFilterChange} options={getUniqueOptions('username')} />
+              <ColumnHeader label="Period" sortKey="postingPeriod" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingPeriod} onFilterChange={handleFilterChange} options={getUniqueOptions('postingPeriod')} />
+              <ColumnHeader label="PIC" sortKey="pic" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.pic} onFilterChange={handleFilterChange} options={getUniqueOptions('pic')} />
+              <ColumnHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.tier} onFilterChange={handleFilterChange} options={getUniqueOptions('tier')} />
+              <ColumnHeader label="Rate Card" sortKey="rateCard" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.rateCard} onFilterChange={handleFilterChange} options={getUniqueOptions('rateCard')} />
+              <ColumnHeader label="Final Price" sortKey="finalPrice" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.finalPrice} onFilterChange={handleFilterChange} options={getUniqueOptions('finalPrice')} />
+              <ColumnHeader label="Approval (Mgt)" sortKey="approval" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.approval} onFilterChange={handleFilterChange} options={getUniqueOptions('approval')} />
+              <ColumnHeader label="SOW" sortKey="sow" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.sow} onFilterChange={handleFilterChange} options={getUniqueOptions('sow')} />
+              <ColumnHeader label="Additional Notes (Mgt)" sortKey="additionalNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.additionalNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('additionalNotes')} />
+              <ColumnHeader label="Dealing Status" sortKey="dealingStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingStatus')} />
+              <ColumnHeader label="Follow Up Notes" sortKey="followUpNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.followUpNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('followUpNotes')} />
             </tr>
           </thead>
           <tbody>
@@ -113,16 +165,10 @@ const Dealing = () => {
                 
                 {/* Protected Field: Additional Notes */}
                 <td style={{ padding: '8px' }}>
-                  <input 
-                    type="text" 
-                    value={item.additionalNotes} 
-                    onChange={(e) => handleEdit(item.id, 'additionalNotes', e.target.value)}
+                  <EditableNote 
+                    value={item.additionalNotes}
+                    onSave={(val) => handleEdit(item.id, 'additionalNotes', val)}
                     disabled={!permissions.canEditApproval}
-                    style={{ 
-                      padding: '6px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', 
-                      backgroundColor: permissions.canEditApproval ? 'var(--surface-color)' : 'var(--bg-color)',
-                      width: '100%', opacity: permissions.canEditApproval ? 1 : 0.7
-                    }}
                   />
                 </td>
                 
@@ -147,16 +193,10 @@ const Dealing = () => {
                 
                 {/* Semi-Protected Field: Follow Up Notes */}
                 <td style={{ padding: '8px' }}>
-                  <input 
-                    type="text" 
-                    value={item.followUpNotes} 
-                    onChange={(e) => handleEdit(item.id, 'followUpNotes', e.target.value)}
+                  <EditableNote 
+                    value={item.followUpNotes}
+                    onSave={(val) => handleEdit(item.id, 'followUpNotes', val)}
                     disabled={!permissions.canEditDealingStatus}
-                    style={{ 
-                      padding: '6px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', 
-                      backgroundColor: permissions.canEditDealingStatus ? 'var(--surface-color)' : 'var(--bg-color)',
-                      width: '100%', opacity: permissions.canEditDealingStatus ? 1 : 0.7
-                    }}
                   />
                 </td>
                 

@@ -48,7 +48,7 @@ const Sidebar = () => {
               <div className="sidebar-submenus animate-fade-in" style={{ paddingLeft: '32px', display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
                 <NavLink to="/kol/overview" className={({isActive}) => `sidebar-sublink ${isActive ? 'active' : ''}`}>Overview</NavLink>
                 <NavLink to="/kol/dealing" className={({isActive}) => `sidebar-sublink ${isActive ? 'active' : ''}`}>Dealing</NavLink>
-                <div className="sidebar-sublink disabled">Scheduling (Soon)</div>
+                <NavLink to="/kol/scheduling" className={({isActive}) => `sidebar-sublink ${isActive ? 'active' : ''}`}>Scheduling</NavLink>
               </div>
             )}
           </div>

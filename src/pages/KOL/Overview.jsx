@@ -1,21 +1,22 @@
 import React, { useState, useMemo } from 'react';
-import { kolMockData } from '../../data/mockData';
-import { Users, CheckCircle, XCircle, DollarSign, TrendingUp, Eye } from 'lucide-react';
+import { useGoogleSheetData } from '../../hooks/useGoogleSheetData';
+import { Users, CheckCircle, XCircle, DollarSign, TrendingUp, Eye, Loader2 } from 'lucide-react';
 
 const Overview = () => {
   const [selectedMonth, setSelectedMonth] = useState('All');
+  const { data: kolData, loading, error } = useGoogleSheetData();
 
   const filteredData = useMemo(() => {
-    if (selectedMonth === 'All') return kolMockData;
-    return kolMockData.filter(item => item.postingPeriod === selectedMonth);
-  }, [selectedMonth]);
+    if (selectedMonth === 'All') return kolData;
+    return kolData.filter(item => item.postingPeriod === selectedMonth);
+  }, [selectedMonth, kolData]);
 
   const stats = useMemo(() => {
     const totalMega = filteredData.filter(d => d.tier === 'Mega').length;
     const totalMakro = filteredData.filter(d => d.tier === 'Makro').length;
     const totalMikro = filteredData.filter(d => d.tier === 'Mikro').length;
 
-    const totalDeal = filteredData.filter(d => d.dealingStatus === 'Deal').length;
+    const totalDeal = filteredData.filter(d => d.dealingStatus === 'Dealed').length;
     const totalReject = filteredData.filter(d => d.dealingStatus === 'Cancel' || d.approval === 'Rejected').length;
 
     const totalBudget = filteredData.reduce((sum, item) => sum + (item.finalPrice || 0), 0);
@@ -25,13 +26,30 @@ const Overview = () => {
     const roi = totalBudget > 0 ? (totalGMV / totalBudget).toFixed(2) : 0;
 
     // Targets (Mock values for MVP)
-    const amelDeals = filteredData.filter(d => d.pic === 'Amel' && d.dealingStatus === 'Deal').length;
-    const kenDeals = filteredData.filter(d => d.pic === 'Ken' && d.dealingStatus === 'Deal').length;
+    const amelDeals = filteredData.filter(d => d.pic === 'Amel' && d.dealingStatus === 'Dealed').length;
+    const kenDeals = filteredData.filter(d => d.pic === 'Ken' && d.dealingStatus === 'Dealed').length;
 
     return { totalMega, totalMakro, totalMikro, totalDeal, totalReject, totalBudget, totalGMV, totalViews, roi, amelDeals, kenDeals };
   }, [filteredData]);
 
   const formatCurrency = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
+
+  if (loading) {
+    return (
+      <div className="flex-center" style={{ height: '100%', flexDirection: 'column', gap: '16px' }}>
+        <Loader2 className="animate-spin" size={32} color="var(--primary-color)" />
+        <p>Loading spreadsheet data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex-center" style={{ height: '100%', color: 'var(--danger-color)' }}>
+        <p>Error loading data: {error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -40,8 +58,11 @@ const Overview = () => {
         <div>
           <select className="input-field" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} style={{ width: '200px' }}>
             <option value="All">All Months</option>
-            <option value="2023-10">October 2023</option>
-            <option value="2023-11">November 2023</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="Maret">Maret</option>
+            <option value="April">April</option>
+            <option value="Mei">Mei</option>
           </select>
         </div>
       </div>

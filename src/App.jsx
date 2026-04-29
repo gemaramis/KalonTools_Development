@@ -8,6 +8,7 @@ import Ads from './pages/Ads';
 import Ecomm from './pages/Ecomm';
 import KOLOverview from './pages/KOL/Overview';
 import KOLDealing from './pages/KOL/Dealing';
+import KOLScheduling from './pages/KOL/Scheduling';
 
 const ProtectedRoute = ({ children, checkPermission }) => {
   const { currentUser, permissions } = useAuth();
@@ -39,6 +40,11 @@ const AppRoutes = () => {
             <KOLDealing />
           </ProtectedRoute>
         } />
+        <Route path="kol/scheduling" element={
+          <ProtectedRoute checkPermission={(p) => p.canViewKOL}>
+            <KOLScheduling />
+          </ProtectedRoute>
+        } />
         
         {/* Ads Route */}
         <Route path="ads" element={
@@ -53,6 +59,9 @@ const AppRoutes = () => {
             <Ecomm />
           </ProtectedRoute>
         } />
+        
+        {/* Catch-all route to prevent blank screens */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );
