@@ -1,0 +1,131 @@
+import React, { useState, useMemo } from 'react';
+import { kolMockData } from '../../data/mockData';
+import { Users, CheckCircle, XCircle, DollarSign, TrendingUp, Eye } from 'lucide-react';
+
+const Overview = () => {
+  const [selectedMonth, setSelectedMonth] = useState('All');
+
+  const filteredData = useMemo(() => {
+    if (selectedMonth === 'All') return kolMockData;
+    return kolMockData.filter(item => item.postingPeriod === selectedMonth);
+  }, [selectedMonth]);
+
+  const stats = useMemo(() => {
+    const totalMega = filteredData.filter(d => d.tier === 'Mega').length;
+    const totalMakro = filteredData.filter(d => d.tier === 'Makro').length;
+    const totalMikro = filteredData.filter(d => d.tier === 'Mikro').length;
+
+    const totalDeal = filteredData.filter(d => d.dealingStatus === 'Deal').length;
+    const totalReject = filteredData.filter(d => d.dealingStatus === 'Cancel' || d.approval === 'Rejected').length;
+
+    const totalBudget = filteredData.reduce((sum, item) => sum + (item.finalPrice || 0), 0);
+    const totalGMV = filteredData.reduce((sum, item) => sum + (item.gmv || 0), 0);
+    const totalViews = filteredData.reduce((sum, item) => sum + (item.views || 0), 0);
+
+    const roi = totalBudget > 0 ? (totalGMV / totalBudget).toFixed(2) : 0;
+
+    // Targets (Mock values for MVP)
+    const amelDeals = filteredData.filter(d => d.pic === 'Amel' && d.dealingStatus === 'Deal').length;
+    const kenDeals = filteredData.filter(d => d.pic === 'Ken' && d.dealingStatus === 'Deal').length;
+
+    return { totalMega, totalMakro, totalMikro, totalDeal, totalReject, totalBudget, totalGMV, totalViews, roi, amelDeals, kenDeals };
+  }, [filteredData]);
+
+  const formatCurrency = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
+
+  return (
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div className="flex-between">
+        <h1 style={{ fontSize: '1.5rem', fontWeight: '700' }}>KOL Analytics Overview</h1>
+        <div>
+          <select className="input-field" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} style={{ width: '200px' }}>
+            <option value="All">All Months</option>
+            <option value="2023-10">October 2023</option>
+            <option value="2023-11">November 2023</option>
+          </select>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+        {/* Distribution Card */}
+        <div className="glass-panel" style={{ padding: '20px' }}>
+          <div className="flex-center" style={{ gap: '12px', justifyContent: 'flex-start', marginBottom: '16px', color: 'var(--text-secondary)' }}>
+            <Users size={20} /> <h3 style={{ fontWeight: '600' }}>Distribution</h3>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span>Mega</span> <span style={{ fontWeight: '600' }}>{stats.totalMega}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span>Makro</span> <span style={{ fontWeight: '600' }}>{stats.totalMakro}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span>Mikro</span> <span style={{ fontWeight: '600' }}>{stats.totalMikro}</span>
+          </div>
+        </div>
+
+        {/* Status Card */}
+        <div className="glass-panel" style={{ padding: '20px' }}>
+          <div className="flex-center" style={{ gap: '12px', justifyContent: 'flex-start', marginBottom: '16px', color: 'var(--text-secondary)' }}>
+            <CheckCircle size={20} /> <h3 style={{ fontWeight: '600' }}>Status</h3>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span style={{ color: 'var(--success-color)' }}>Total Dealing</span> <span style={{ fontWeight: '600' }}>{stats.totalDeal}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ color: 'var(--danger-color)' }}>Total Rejected</span> <span style={{ fontWeight: '600' }}>{stats.totalReject}</span>
+          </div>
+        </div>
+
+        {/* Financials Card */}
+        <div className="glass-panel" style={{ padding: '20px' }}>
+          <div className="flex-center" style={{ gap: '12px', justifyContent: 'flex-start', marginBottom: '16px', color: 'var(--text-secondary)' }}>
+            <DollarSign size={20} /> <h3 style={{ fontWeight: '600' }}>Financials</h3>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span>Total Budget</span> <span style={{ fontWeight: '600', color: 'var(--warning-color)' }}>{formatCurrency(stats.totalBudget)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span>Total GMV</span> <span style={{ fontWeight: '600', color: 'var(--success-color)' }}>{formatCurrency(stats.totalGMV)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Eye size={16} /> Total Views</span> <span style={{ fontWeight: '600' }}>{stats.totalViews.toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+
+        {/* ROI Card */}
+        <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', backgroundColor: 'var(--primary-color)', color: 'white' }}>
+          <TrendingUp size={32} style={{ marginBottom: '12px' }} />
+          <h3 style={{ fontSize: '1rem', opacity: 0.9 }}>Return on Investment (ROI)</h3>
+          <h2 style={{ fontSize: '2.5rem', fontWeight: '700', marginTop: '8px' }}>{stats.roi}x</h2>
+        </div>
+      </div>
+
+      {/* Target Trackers */}
+      <div className="glass-panel" style={{ padding: '20px' }}>
+        <h3 style={{ fontWeight: '600', marginBottom: '20px' }}>PIC Target Tracker (Monthly Deal Target: 5)</h3>
+        
+        <div style={{ marginBottom: '20px' }}>
+          <div className="flex-between" style={{ marginBottom: '8px' }}>
+            <span style={{ fontWeight: '500' }}>Amel's Progress</span>
+            <span>{stats.amelDeals} / 5</span>
+          </div>
+          <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-color)', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: `${Math.min((stats.amelDeals / 5) * 100, 100)}%`, height: '100%', backgroundColor: 'var(--primary-color)', transition: 'width 0.5s ease' }}></div>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex-between" style={{ marginBottom: '8px' }}>
+            <span style={{ fontWeight: '500' }}>Ken's Progress</span>
+            <span>{stats.kenDeals} / 5</span>
+          </div>
+          <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-color)', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: `${Math.min((stats.kenDeals / 5) * 100, 100)}%`, height: '100%', backgroundColor: 'var(--accent-color)', transition: 'width 0.5s ease' }}></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Overview;
