@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { ArrowUp, ArrowDown, ArrowUpDown, Filter } from 'lucide-react';
 
 const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilterChange, options = [], style = {} }) => {
@@ -47,6 +48,101 @@ const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilte
 
   const displayOptions = options.filter(opt => opt !== undefined && opt !== null && opt !== '');
 
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+
+  useEffect(() => {
+    if (showFilter && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownPos({
+        top: rect.bottom + window.scrollY,
+        left: rect.left + window.scrollX,
+        width: rect.width
+      });
+    }
+  }, [showFilter]);
+
+  const filterDropdown = showFilter ? ReactDOM.createPortal(
+    <div style={{ 
+      position: 'absolute', 
+      top: `${dropdownPos.top + 4}px`, 
+      left: `${dropdownPos.left}px`, 
+      zIndex: 9999, 
+      background: 'var(--surface-color)', 
+      border: '1px solid var(--border-color)', 
+      borderRadius: '4px', 
+      padding: '8px', 
+      boxShadow: '0 4px 15px rgba(0,0,0,0.1)', 
+      minWidth: '200px',
+      maxHeight: '300px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px'
+    }}>
+      <input 
+        type="text" 
+        placeholder={`Search ${label}...`}
+        className="input-field"
+        style={{ width: '100%', padding: '6px 8px', fontSize: '0.75rem' }}
+        value={filterValue || ''}
+        onChange={(e) => onFilterChange(sortKey, e.target.value)}
+        autoFocus
+      />
+      
+      {displayOptions.length > 0 && (
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          overflowY: 'auto', 
+          borderTop: '1px solid var(--border-color)',
+          paddingTop: '4px'
+        }}>
+          <div 
+            onClick={() => {
+              onFilterChange(sortKey, '');
+              setShowFilter(false);
+            }}
+            style={{ 
+              padding: '6px 8px', 
+              fontSize: '0.75rem', 
+              cursor: 'pointer', 
+              borderRadius: '4px',
+              color: !filterValue ? 'var(--primary-color)' : 'var(--text-primary)',
+              backgroundColor: !filterValue ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+              fontWeight: !filterValue ? '600' : 'normal'
+            }}
+          >
+            Clear Filter
+          </div>
+          {displayOptions.map((opt, idx) => {
+            const optString = opt.toString();
+            const isSelected = filterValue && optString.toLowerCase() === filterValue.toLowerCase();
+            
+            return (
+              <div 
+                key={idx}
+                onClick={() => {
+                  onFilterChange(sortKey, optString);
+                  setShowFilter(false);
+                }}
+                style={{ 
+                  padding: '6px 8px', 
+                  fontSize: '0.75rem', 
+                  cursor: 'pointer', 
+                  borderRadius: '4px',
+                  color: 'var(--text-primary)',
+                  backgroundColor: isSelected ? 'rgba(0,0,0,0.05)' : 'transparent'
+                }}
+              >
+                {optString}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>,
+    document.body
+  ) : null;
+
   return (
     <th style={{ 
       padding: 0, 
@@ -82,88 +178,7 @@ const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilte
           </div>
         </div>
       </div>
-      
-      {showFilter && (
-        <div style={{ 
-          position: 'absolute', 
-          top: '100%', 
-          left: 0, 
-          zIndex: 50, 
-          background: 'var(--surface-color)', 
-          border: '1px solid var(--border-color)', 
-          borderRadius: '4px', 
-          padding: '8px', 
-          boxShadow: '0 4px 15px rgba(0,0,0,0.1)', 
-          marginTop: '4px', 
-          minWidth: '200px',
-          maxHeight: '300px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px'
-        }}>
-          <input 
-            type="text" 
-            placeholder={`Search ${label}...`}
-            className="input-field"
-            style={{ width: '100%', padding: '6px 8px', fontSize: '0.75rem' }}
-            value={filterValue || ''}
-            onChange={(e) => onFilterChange(sortKey, e.target.value)}
-            autoFocus
-          />
-          
-          {displayOptions.length > 0 && (
-            <div style={{ 
-              display: 'flex', 
-              flexDirection: 'column', 
-              overflowY: 'auto', 
-              borderTop: '1px solid var(--border-color)',
-              paddingTop: '4px'
-            }}>
-              <div 
-                onClick={() => {
-                  onFilterChange(sortKey, '');
-                  setShowFilter(false);
-                }}
-                style={{ 
-                  padding: '6px 8px', 
-                  fontSize: '0.75rem', 
-                  cursor: 'pointer', 
-                  borderRadius: '4px',
-                  color: !filterValue ? 'var(--primary-color)' : 'var(--text-primary)',
-                  backgroundColor: !filterValue ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
-                  fontWeight: !filterValue ? '600' : 'normal'
-                }}
-              >
-                Clear Filter
-              </div>
-              {displayOptions.map((opt, idx) => {
-                const optString = opt.toString();
-                const isSelected = filterValue && optString.toLowerCase() === filterValue.toLowerCase();
-                
-                return (
-                  <div 
-                    key={idx}
-                    onClick={() => {
-                      onFilterChange(sortKey, optString);
-                      setShowFilter(false);
-                    }}
-                    style={{ 
-                      padding: '6px 8px', 
-                      fontSize: '0.75rem', 
-                      cursor: 'pointer', 
-                      borderRadius: '4px',
-                      color: 'var(--text-primary)',
-                      backgroundColor: isSelected ? 'rgba(0,0,0,0.05)' : 'transparent'
-                    }}
-                  >
-                    {optString}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+      {filterDropdown}
     </th>
   );
 };
