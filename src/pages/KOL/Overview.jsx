@@ -56,7 +56,17 @@ const Overview = () => {
       rejected: totalReject
     };
 
-    return { totalMega, totalMakro, totalMikro, totalDeal, totalReject, totalBudget, totalGMV, totalViews, roi, picStats, successRate, statusCounts, totalListed: filteredData.length };
+    const approvalCounts = filteredData.reduce((acc, curr) => {
+      if (curr.approval) acc[curr.approval] = (acc[curr.approval] || 0) + 1;
+      return acc;
+    }, {});
+
+    const dealingCounts = filteredData.reduce((acc, curr) => {
+      if (curr.dealingStatus) acc[curr.dealingStatus] = (acc[curr.dealingStatus] || 0) + 1;
+      return acc;
+    }, {});
+
+    return { totalMega, totalMakro, totalMikro, totalDeal, totalReject, totalBudget, totalGMV, totalViews, roi, picStats, successRate, statusCounts, approvalCounts, dealingCounts, totalListed: filteredData.length };
   }, [filteredData, monthSettings]);
 
   const formatCurrency = (value) => {
@@ -104,9 +114,22 @@ const Overview = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {stats.picStats.length > 0 ? stats.picStats.map((pic, idx) => (
               <div key={pic.id || pic.name || idx} style={{ padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px', background: 'var(--bg-color)' }}>
-                <div className="flex-between" style={{ marginBottom: '8px' }}>
-                  <span style={{ fontWeight: '600' }}>{pic.name}</span>
-                  <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Target: {pic.target}</span>
+                <div className="flex-between" style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: '600' }}>{pic.name}</span>
+                    <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Target: {pic.target}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ position: 'relative', width: '32px', height: '32px' }}>
+                      <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%' }}>
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--bg-color)" strokeWidth="4" />
+                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--success-color)" strokeWidth="4" strokeDasharray={`${pic.listed > 0 ? (pic.deals / pic.listed) * 100 : 0}, 100`} />
+                      </svg>
+                    </div>
+                    <span style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--success-color)' }}>
+                      {pic.listed > 0 ? Math.round((pic.deals / pic.listed) * 100) : 0}%
+                    </span>
+                  </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', fontSize: '0.875rem', marginBottom: '8px' }}>
                   <div style={{ background: 'var(--surface-color)', padding: '8px', borderRadius: '4px', textAlign: 'center' }}>
@@ -193,6 +216,37 @@ const Overview = () => {
                 backgroundColor: 'var(--primary-color)', 
                 transition: 'width 0.5s ease' 
               }}></div>
+            </div>
+          </div>
+
+          {/* Status Breakdowns */}
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <h3 style={{ fontWeight: '600', marginBottom: '16px' }}>Status Breakdown</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div>
+                <h4 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Approval</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {Object.entries(stats.approvalCounts).sort((a,b) => b[1] - a[1]).map(([status, count]) => (
+                    <div key={status} className="flex-between" style={{ fontSize: '0.875rem' }}>
+                      <span>{status}</span>
+                      <span style={{ fontWeight: '600' }}>{count}</span>
+                    </div>
+                  ))}
+                  {Object.keys(stats.approvalCounts).length === 0 && <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No data</span>}
+                </div>
+              </div>
+              <div>
+                <h4 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Dealing Status</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {Object.entries(stats.dealingCounts).sort((a,b) => b[1] - a[1]).map(([status, count]) => (
+                    <div key={status} className="flex-between" style={{ fontSize: '0.875rem' }}>
+                      <span>{status}</span>
+                      <span style={{ fontWeight: '600' }}>{count}</span>
+                    </div>
+                  ))}
+                  {Object.keys(stats.dealingCounts).length === 0 && <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No data</span>}
+                </div>
+              </div>
             </div>
           </div>
         </div>

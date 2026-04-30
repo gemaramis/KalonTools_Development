@@ -190,9 +190,6 @@ const Scheduling = () => {
             <option value="April">April</option>
             <option value="Mei">Mei</option>
           </select>
-          <button onClick={refresh} className="btn btn-secondary" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Refresh Data">
-            <RefreshCw size={18} />
-          </button>
         </div>
       </div>
 
@@ -226,19 +223,25 @@ const Scheduling = () => {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ overflowX: 'auto', paddingBottom: '10px', maxHeight: '550px', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <button onClick={refresh} className="btn btn-secondary" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px' }} title="Refresh Data">
+          <RefreshCw size={16} /> <span>Refresh Data</span>
+        </button>
+      </div>
+
+      <div className="glass-panel" style={{ overflowX: 'auto', paddingBottom: '10px', maxHeight: '590px', overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem', tableLayout: 'auto' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
-              <th style={{ padding: '12px 16px', fontWeight: '600', resize: 'horizontal', overflow: 'hidden', whiteSpace: 'normal', minWidth: '50px', wordBreak: 'break-word' }}>No</th>
-              <ColumnHeader label="Coop. Month" sortKey="postingPeriod" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingPeriod} onFilterChange={handleFilterChange} options={getUniqueOptions('postingPeriod')} />
-              <ColumnHeader label="Username" sortKey="username" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.username} onFilterChange={handleFilterChange} options={getUniqueOptions('username')} />
-              <ColumnHeader label="PIC" sortKey="pic" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.pic} onFilterChange={handleFilterChange} options={getUniqueOptions('pic')} />
-              <ColumnHeader label="Products" sortKey="products" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.products} onFilterChange={handleFilterChange} options={getUniqueOptions('products')} />
-              <ColumnHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.tier} onFilterChange={handleFilterChange} options={getUniqueOptions('tier')} />
-              <ColumnHeader label="Posting Date" sortKey="postingDate" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingDate} onFilterChange={handleFilterChange} options={getUniqueOptions('postingDate')} />
-              <ColumnHeader label="Post Link" sortKey="postLink" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postLink} onFilterChange={handleFilterChange} options={getUniqueOptions('postLink')} />
-              <ColumnHeader label="Performance" sortKey="performance" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.performance} onFilterChange={handleFilterChange} options={getUniqueOptions('performance')} />
+              <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 11, padding: '12px 16px', fontWeight: '600', resize: 'horizontal', overflow: 'hidden', whiteSpace: 'normal', minWidth: '50px', wordBreak: 'break-word', backgroundColor: 'var(--bg-color)' }}>No</th>
+              <ColumnHeader label="Coop. Month" sortKey="postingPeriod" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingPeriod} onFilterChange={handleFilterChange} options={getUniqueOptions('postingPeriod')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Username" sortKey="username" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.username} onFilterChange={handleFilterChange} options={getUniqueOptions('username')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="PIC" sortKey="pic" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.pic} onFilterChange={handleFilterChange} options={getUniqueOptions('pic')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Products" sortKey="products" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.products} onFilterChange={handleFilterChange} options={getUniqueOptions('products')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.tier} onFilterChange={handleFilterChange} options={getUniqueOptions('tier')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Posting Date" sortKey="postingDate" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingDate} onFilterChange={handleFilterChange} options={getUniqueOptions('postingDate')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Post Link" sortKey="postLink" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postLink} onFilterChange={handleFilterChange} options={getUniqueOptions('postLink')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Performance" sortKey="performance" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.performance} onFilterChange={handleFilterChange} options={getUniqueOptions('performance')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
             </tr>
           </thead>
           <tbody>
@@ -270,12 +273,16 @@ const Scheduling = () => {
                 const cellStyle = { padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' };
                 return (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
-                  <td style={cellStyle}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                  <td style={{ ...cellStyle, position: 'sticky', left: 0, zIndex: 1, backgroundColor: 'var(--bg-color)', borderRight: '1px solid var(--border-color)' }}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td style={cellStyle}>{item.postingPeriod}</td>
                   <td style={{ ...cellStyle, fontWeight: '500' }}>{item.username}</td>
-                  <td style={cellStyle}>{item.pic}</td>
+                  <td style={{ ...cellStyle, fontWeight: '600', color: 'var(--primary-color)' }}>{item.pic}</td>
                   <td style={cellStyle}>{item.products}</td>
-                  <td style={cellStyle}>{item.tier}</td>
+                  <td style={cellStyle}>
+                    <span className={`badge ${item.tier === 'Mega' ? 'danger' : item.tier === 'Makro' ? 'warning' : 'success'}`} style={{ padding: '2px 6px', fontSize: '0.75rem' }}>
+                      {item.tier}
+                    </span>
+                  </td>
                   <td style={cellStyle}>{item.postingDate}</td>
                   <td style={cellStyle}>
                     {item.postLink && item.postLink !== '-' ? (

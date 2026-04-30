@@ -135,6 +135,15 @@ const Dealing = () => {
     return formatted.replace(/,00$/, '');
   };
 
+  const getDropdownOptions = (field, defaults) => {
+    const uniqueFromData = Array.from(new Set(data.map(item => item[field]).filter(Boolean)));
+    return Array.from(new Set([...defaults, ...uniqueFromData]));
+  };
+
+  const approvalOptions = getDropdownOptions('approval', ['Pending', 'Approved', 'Rejected', 'YES', 'NO', 'HOLD']);
+  const dealingOptions = getDropdownOptions('dealingStatus', ['On Progress', 'Deal', 'Dealed', 'Cancel', 'Rejected by KOL']);
+  const paymentOptions = getDropdownOptions('paymentStatus', ['Unpaid', 'Paid', 'DP']);
+
   const currentMonthTarget = monthSettings.totalTarget; 
   const targetProgress = stats.totalDeal;
 
@@ -163,9 +172,6 @@ const Dealing = () => {
             <option value="April">April</option>
             <option value="Mei">Mei</option>
           </select>
-          <button onClick={refresh} className="btn btn-secondary" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Refresh Data">
-            <RefreshCw size={18} />
-          </button>
         </div>
       </div>
 
@@ -199,23 +205,29 @@ const Dealing = () => {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ overflowX: 'auto', paddingBottom: '10px', maxHeight: '550px', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <button onClick={refresh} className="btn btn-secondary" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px' }} title="Refresh Data">
+          <RefreshCw size={16} /> <span>Refresh Data</span>
+        </button>
+      </div>
+
+      <div className="glass-panel" style={{ overflowX: 'auto', paddingBottom: '10px', maxHeight: '590px', overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem', tableLayout: 'auto' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
-              <th style={{ padding: '12px 16px', fontWeight: '600', resize: 'horizontal', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', minWidth: '50px' }}>No</th>
-              <ColumnHeader label="Username" sortKey="username" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.username} onFilterChange={handleFilterChange} options={getUniqueOptions('username')} />
-              <ColumnHeader label="Coop. Month" sortKey="postingPeriod" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingPeriod} onFilterChange={handleFilterChange} options={getUniqueOptions('postingPeriod')} />
-              <ColumnHeader label="PIC" sortKey="pic" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.pic} onFilterChange={handleFilterChange} options={getUniqueOptions('pic')} />
-              <ColumnHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.tier} onFilterChange={handleFilterChange} options={getUniqueOptions('tier')} />
-              <ColumnHeader label="Rate Card" sortKey="rateCard" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.rateCard} onFilterChange={handleFilterChange} options={getUniqueOptions('rateCard')} />
-              <ColumnHeader label="Final Price" sortKey="finalPrice" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.finalPrice} onFilterChange={handleFilterChange} options={getUniqueOptions('finalPrice')} />
-              <ColumnHeader label="Approval (Mgt)" sortKey="approval" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.approval} onFilterChange={handleFilterChange} options={getUniqueOptions('approval')} />
-              <ColumnHeader label="SOW" sortKey="sow" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.sow} onFilterChange={handleFilterChange} options={getUniqueOptions('sow')} />
-              <ColumnHeader label="Additional Notes (Mgt)" sortKey="additionalNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.additionalNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('additionalNotes')} />
-              <ColumnHeader label="Dealing Status" sortKey="dealingStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingStatus')} />
-              <ColumnHeader label="Payment Status" sortKey="paymentStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.paymentStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('paymentStatus')} />
-              <ColumnHeader label="Follow Up Notes" sortKey="followUpNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.followUpNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('followUpNotes')} />
+              <th style={{ position: 'sticky', top: 0, left: 0, zIndex: 11, padding: '12px 16px', fontWeight: '600', resize: 'horizontal', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', minWidth: '50px', backgroundColor: 'var(--bg-color)' }}>No</th>
+              <ColumnHeader label="Username" sortKey="username" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.username} onFilterChange={handleFilterChange} options={getUniqueOptions('username')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Coop. Month" sortKey="postingPeriod" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingPeriod} onFilterChange={handleFilterChange} options={getUniqueOptions('postingPeriod')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="PIC" sortKey="pic" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.pic} onFilterChange={handleFilterChange} options={getUniqueOptions('pic')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.tier} onFilterChange={handleFilterChange} options={getUniqueOptions('tier')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Rate Card" sortKey="rateCard" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.rateCard} onFilterChange={handleFilterChange} options={getUniqueOptions('rateCard')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Final Price" sortKey="finalPrice" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.finalPrice} onFilterChange={handleFilterChange} options={getUniqueOptions('finalPrice')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Approval (Mgt)" sortKey="approval" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.approval} onFilterChange={handleFilterChange} options={getUniqueOptions('approval')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="SOW" sortKey="sow" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.sow} onFilterChange={handleFilterChange} options={getUniqueOptions('sow')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Additional Notes (Mgt)" sortKey="additionalNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.additionalNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('additionalNotes')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Dealing Status" sortKey="dealingStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingStatus')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Payment Status" sortKey="paymentStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.paymentStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('paymentStatus')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Follow Up Notes" sortKey="followUpNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.followUpNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('followUpNotes')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
             </tr>
           </thead>
           <tbody>
@@ -260,11 +272,15 @@ const Dealing = () => {
 
                 return (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
-                  <td style={cellStyle}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                  <td style={{ ...cellStyle, position: 'sticky', left: 0, zIndex: 1, backgroundColor: 'var(--bg-color)', borderRight: '1px solid var(--border-color)' }}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
                   <td style={{ ...cellStyle, fontWeight: '500' }}>{item.username}</td>
                   <td style={cellStyle}>{item.postingPeriod}</td>
-                  <td style={cellStyle}>{item.pic}</td>
-                  <td style={cellStyle}>{item.tier}</td>
+                  <td style={{ ...cellStyle, fontWeight: '600', color: 'var(--primary-color)' }}>{item.pic}</td>
+                  <td style={cellStyle}>
+                    <span className={`badge ${item.tier === 'Mega' ? 'danger' : item.tier === 'Makro' ? 'warning' : 'success'}`} style={{ padding: '2px 6px', fontSize: '0.75rem' }}>
+                      {item.tier}
+                    </span>
+                  </td>
                   <td style={cellStyle}>{formatCurrency(item.rateCard)}</td>
                   <td style={cellStyle}>{formatCurrency(item.finalPrice)}</td>
                   
@@ -282,12 +298,9 @@ const Dealing = () => {
                         textOverflow: 'ellipsis'
                       }}
                     >
-                      <option value="Pending" style={{ color: 'var(--warning-color)' }}>Pending</option>
-                      <option value="Approved" style={{ color: 'var(--success-color)' }}>Approved</option>
-                      <option value="Rejected" style={{ color: 'var(--danger-color)' }}>Rejected</option>
-                      <option value="YES" style={{ color: 'var(--success-color)' }}>YES</option>
-                      <option value="NO" style={{ color: 'var(--danger-color)' }}>NO</option>
-                      <option value="HOLD" style={{ color: 'var(--danger-color)' }}>HOLD</option>
+                      {approvalOptions.map((opt, idx) => (
+                        <option key={idx} value={opt} style={{ color: getApprovalColor(opt) }}>{opt}</option>
+                      ))}
                     </select>
                   </td>
                   
@@ -316,11 +329,9 @@ const Dealing = () => {
                         textOverflow: 'ellipsis'
                       }}
                     >
-                      <option value="On Progress" style={{ color: 'var(--warning-color)' }}>On Progress</option>
-                      <option value="Deal" style={{ color: 'var(--success-color)' }}>Deal</option>
-                      <option value="Dealed" style={{ color: 'var(--success-color)' }}>Dealed</option>
-                      <option value="Cancel" style={{ color: 'var(--danger-color)' }}>Cancel</option>
-                      <option value="Rejected by KOL" style={{ color: 'var(--danger-color)' }}>Rejected by KOL</option>
+                      {dealingOptions.map((opt, idx) => (
+                        <option key={idx} value={opt} style={{ color: getDealingColor(opt) }}>{opt}</option>
+                      ))}
                     </select>
                   </td>
                   
@@ -338,9 +349,9 @@ const Dealing = () => {
                         textOverflow: 'ellipsis'
                       }}
                     >
-                      <option value="Unpaid">Unpaid</option>
-                      <option value="Paid">Paid</option>
-                      <option value="DP">DP</option>
+                      {paymentOptions.map((opt, idx) => (
+                        <option key={idx} value={opt}>{opt}</option>
+                      ))}
                     </select>
                   </td>
 

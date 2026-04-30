@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowUp, ArrowDown, ArrowUpDown, Filter } from 'lucide-react';
 
-const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilterChange, options = [] }) => {
+const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilterChange, options = [], style = {} }) => {
   const [showFilter, setShowFilter] = useState(false);
   const containerRef = useRef(null);
 
@@ -53,7 +53,8 @@ const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilte
       fontWeight: '600', 
       position: 'relative',
       borderRight: '1px solid var(--border-color)',
-      minWidth: '100px'
+      minWidth: '100px',
+      ...style
     }} ref={containerRef}>
       <div style={{
         resize: 'horizontal',
