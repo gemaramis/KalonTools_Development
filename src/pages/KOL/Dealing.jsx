@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Search, Target, Loader2 } from 'lucide-react';
+import { Search, Target, Loader2, RefreshCw } from 'lucide-react';
 import ColumnHeader from '../../components/Table/ColumnHeader';
 import EditableNote from '../../components/Table/EditableNote';
 import { useSettings } from '../../context/SettingsContext';
@@ -16,7 +16,7 @@ const Dealing = () => {
     return getSettingsForMonth(periodFilter === 'All' ? 'January' : periodFilter);
   }, [periodFilter, getSettingsForMonth]);
 
-  const { data: kolData, loading, error } = useGoogleSheetData(monthSettings.dealingSpreadsheetLink);
+  const { data: kolData, loading, error, refresh } = useGoogleSheetData(monthSettings.dealingSpreadsheetLink);
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -25,7 +25,7 @@ const Dealing = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [filters, setFilters] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
+  const itemsPerPage = 25;
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -85,9 +85,9 @@ const Dealing = () => {
   }, [searchTerm, periodFilter, filters]);
 
   const stats = useMemo(() => {
-    const totalDeal = filteredData.filter(d => d.dealingStatus === 'Deal').length;
-    const totalReject = filteredData.filter(d => d.dealingStatus === 'Cancel' || d.approval === 'Rejected').length;
-    const totalPaid = filteredData.filter(d => (d.followUpNotes || '').toLowerCase().includes('paid')).length;
+    const totalDeal = filteredData.filter(d => d.dealingStatus === 'Dealed' || d.dealingStatus === 'Deal').length;
+    const totalReject = filteredData.filter(d => d.dealingStatus === 'Cancel' || d.dealingStatus === 'Rejected by KOL' || d.approval === 'Rejected').length;
+    const totalPaid = filteredData.filter(d => (d.paymentStatus || '').toLowerCase().includes('paid')).length;
     return { totalDeal, totalReject, totalPaid };
   }, [filteredData]);
 
@@ -104,7 +104,8 @@ const Dealing = () => {
         approval: 'Approval (Koko/Cici)',
         additionalNotes: 'Additional Notes (Koko/Cici)',
         dealingStatus: 'Dealing Status (Amel/Ken)',
-        followUpNotes: 'Follow Up Notes (Amel/Ken)'
+        followUpNotes: 'Follow Up Notes (Amel/Ken)',
+        paymentStatus: 'Payment Status'
       };
       
       const payload = {
@@ -162,6 +163,9 @@ const Dealing = () => {
             <option value="April">April</option>
             <option value="Mei">Mei</option>
           </select>
+          <button onClick={refresh} className="btn btn-secondary" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Refresh Data">
+            <RefreshCw size={18} />
+          </button>
         </div>
       </div>
 
@@ -195,13 +199,13 @@ const Dealing = () => {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ overflowX: 'auto', paddingBottom: '100px' }}>
+      <div className="glass-panel" style={{ overflowX: 'auto', paddingBottom: '10px', maxHeight: '550px', overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem', tableLayout: 'auto' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
-              <th style={{ padding: '12px 16px', fontWeight: '600', resize: 'horizontal', overflow: 'hidden', whiteSpace: 'normal', minWidth: '50px', wordBreak: 'break-word' }}>No</th>
+              <th style={{ padding: '12px 16px', fontWeight: '600', resize: 'horizontal', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', minWidth: '50px' }}>No</th>
               <ColumnHeader label="Username" sortKey="username" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.username} onFilterChange={handleFilterChange} options={getUniqueOptions('username')} />
-              <ColumnHeader label="Period" sortKey="postingPeriod" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingPeriod} onFilterChange={handleFilterChange} options={getUniqueOptions('postingPeriod')} />
+              <ColumnHeader label="Coop. Month" sortKey="postingPeriod" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingPeriod} onFilterChange={handleFilterChange} options={getUniqueOptions('postingPeriod')} />
               <ColumnHeader label="PIC" sortKey="pic" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.pic} onFilterChange={handleFilterChange} options={getUniqueOptions('pic')} />
               <ColumnHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.tier} onFilterChange={handleFilterChange} options={getUniqueOptions('tier')} />
               <ColumnHeader label="Rate Card" sortKey="rateCard" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.rateCard} onFilterChange={handleFilterChange} options={getUniqueOptions('rateCard')} />
@@ -210,6 +214,7 @@ const Dealing = () => {
               <ColumnHeader label="SOW" sortKey="sow" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.sow} onFilterChange={handleFilterChange} options={getUniqueOptions('sow')} />
               <ColumnHeader label="Additional Notes (Mgt)" sortKey="additionalNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.additionalNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('additionalNotes')} />
               <ColumnHeader label="Dealing Status" sortKey="dealingStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingStatus')} />
+              <ColumnHeader label="Payment Status" sortKey="paymentStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.paymentStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('paymentStatus')} />
               <ColumnHeader label="Follow Up Notes" sortKey="followUpNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.followUpNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('followUpNotes')} />
             </tr>
           </thead>
@@ -238,18 +243,33 @@ const Dealing = () => {
                 </td>
               </tr>
             ) : (
-              paginatedData.map((item, index) => (
+              paginatedData.map((item, index) => {
+                const cellStyle = { padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' };
+                
+                const getApprovalColor = (val) => {
+                  if (val === 'Approved' || val === 'YES') return 'var(--success-color)';
+                  if (val === 'Rejected' || val === 'NO' || val === 'HOLD') return 'var(--danger-color)';
+                  return 'var(--warning-color)';
+                };
+
+                const getDealingColor = (val) => {
+                  if (val === 'Deal' || val === 'Dealed') return 'var(--success-color)';
+                  if (val === 'Cancel' || val === 'Rejected by KOL') return 'var(--danger-color)';
+                  return 'var(--warning-color)';
+                };
+
+                return (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.username}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.postingPeriod}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.pic}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.tier}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{formatCurrency(item.rateCard)}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{formatCurrency(item.finalPrice)}</td>
+                  <td style={cellStyle}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                  <td style={{ ...cellStyle, fontWeight: '500' }}>{item.username}</td>
+                  <td style={cellStyle}>{item.postingPeriod}</td>
+                  <td style={cellStyle}>{item.pic}</td>
+                  <td style={cellStyle}>{item.tier}</td>
+                  <td style={cellStyle}>{formatCurrency(item.rateCard)}</td>
+                  <td style={cellStyle}>{formatCurrency(item.finalPrice)}</td>
                   
                   {/* Protected Field: Approval */}
-                  <td style={{ padding: '8px' }}>
+                  <td style={{ padding: '8px', maxWidth: '150px' }}>
                     <select 
                       value={item.approval} 
                       onChange={(e) => handleEdit(item.id, 'approval', e.target.value)}
@@ -257,23 +277,24 @@ const Dealing = () => {
                       style={{ 
                         padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', 
                         backgroundColor: permissions.canEditApproval ? 'var(--surface-color)' : 'var(--bg-color)',
-                        color: item.approval === 'Approved' ? 'var(--success-color)' : item.approval === 'Rejected' ? 'var(--danger-color)' : 'var(--warning-color)',
-                        fontWeight: '600', opacity: permissions.canEditApproval ? 1 : 0.7, width: '100%'
+                        color: getApprovalColor(item.approval),
+                        fontWeight: '600', opacity: permissions.canEditApproval ? 1 : 0.7, width: '100%',
+                        textOverflow: 'ellipsis'
                       }}
                     >
-                      <option value="Pending">Pending</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Rejected">Rejected</option>
-                      <option value="YES">YES</option>
-                      <option value="NO">NO</option>
-                      <option value="HOLD">HOLD</option>
+                      <option value="Pending" style={{ color: 'var(--warning-color)' }}>Pending</option>
+                      <option value="Approved" style={{ color: 'var(--success-color)' }}>Approved</option>
+                      <option value="Rejected" style={{ color: 'var(--danger-color)' }}>Rejected</option>
+                      <option value="YES" style={{ color: 'var(--success-color)' }}>YES</option>
+                      <option value="NO" style={{ color: 'var(--danger-color)' }}>NO</option>
+                      <option value="HOLD" style={{ color: 'var(--danger-color)' }}>HOLD</option>
                     </select>
                   </td>
                   
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.sow}</td>
+                  <td style={cellStyle}>{item.sow}</td>
                   
                   {/* Protected Field: Additional Notes */}
-                  <td style={{ padding: '8px' }}>
+                  <td style={{ padding: '8px', maxWidth: '150px' }}>
                     <EditableNote 
                       value={item.additionalNotes}
                       onSave={(val) => handleEdit(item.id, 'additionalNotes', val)}
@@ -282,7 +303,7 @@ const Dealing = () => {
                   </td>
                   
                   {/* Semi-Protected Field: Dealing Status */}
-                  <td style={{ padding: '8px' }}>
+                  <td style={{ padding: '8px', maxWidth: '150px' }}>
                     <select 
                       value={item.dealingStatus} 
                       onChange={(e) => handleEdit(item.id, 'dealingStatus', e.target.value)}
@@ -290,20 +311,41 @@ const Dealing = () => {
                       style={{ 
                         padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', 
                         backgroundColor: permissions.canEditDealingStatus ? 'var(--surface-color)' : 'var(--bg-color)',
-                        color: item.dealingStatus === 'Deal' ? 'var(--success-color)' : item.dealingStatus === 'Cancel' ? 'var(--danger-color)' : 'var(--warning-color)',
-                        fontWeight: '600', opacity: permissions.canEditDealingStatus ? 1 : 0.7, width: '100%'
+                        color: getDealingColor(item.dealingStatus),
+                        fontWeight: '600', opacity: permissions.canEditDealingStatus ? 1 : 0.7, width: '100%',
+                        textOverflow: 'ellipsis'
                       }}
                     >
-                      <option value="On Progress">On Progress</option>
-                      <option value="Deal">Deal</option>
-                      <option value="Dealed">Dealed</option>
-                      <option value="Cancel">Cancel</option>
-                      <option value="Rejected by KOL">Rejected by KOL</option>
+                      <option value="On Progress" style={{ color: 'var(--warning-color)' }}>On Progress</option>
+                      <option value="Deal" style={{ color: 'var(--success-color)' }}>Deal</option>
+                      <option value="Dealed" style={{ color: 'var(--success-color)' }}>Dealed</option>
+                      <option value="Cancel" style={{ color: 'var(--danger-color)' }}>Cancel</option>
+                      <option value="Rejected by KOL" style={{ color: 'var(--danger-color)' }}>Rejected by KOL</option>
                     </select>
                   </td>
                   
+                  {/* Payment Status Field */}
+                  <td style={{ padding: '8px', maxWidth: '150px' }}>
+                    <select 
+                      value={item.paymentStatus} 
+                      onChange={(e) => handleEdit(item.id, 'paymentStatus', e.target.value)}
+                      disabled={!permissions.canEditDealingStatus}
+                      style={{ 
+                        padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)', 
+                        backgroundColor: permissions.canEditDealingStatus ? 'var(--surface-color)' : 'var(--bg-color)',
+                        color: (item.paymentStatus || '').toLowerCase().includes('paid') ? 'var(--success-color)' : 'var(--warning-color)',
+                        fontWeight: '600', opacity: permissions.canEditDealingStatus ? 1 : 0.7, width: '100%',
+                        textOverflow: 'ellipsis'
+                      }}
+                    >
+                      <option value="Unpaid">Unpaid</option>
+                      <option value="Paid">Paid</option>
+                      <option value="DP">DP</option>
+                    </select>
+                  </td>
+
                   {/* Semi-Protected Field: Follow Up Notes */}
-                  <td style={{ padding: '8px' }}>
+                  <td style={{ padding: '8px', maxWidth: '150px' }}>
                     <EditableNote 
                       value={item.followUpNotes}
                       onSave={(val) => handleEdit(item.id, 'followUpNotes', val)}
@@ -312,7 +354,7 @@ const Dealing = () => {
                   </td>
                   
                 </tr>
-              ))
+              )})
             )}
           </tbody>
         </table>
@@ -320,7 +362,7 @@ const Dealing = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginTop: '16px' }}>
           <button 
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}

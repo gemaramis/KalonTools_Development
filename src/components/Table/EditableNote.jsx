@@ -5,6 +5,7 @@ const EditableNote = ({ value, onSave, disabled }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value || '');
   const [showTooltip, setShowTooltip] = useState(false);
+  const [editPos, setEditPos] = useState({ top: 0, left: 0 });
   const containerRef = useRef(null);
   
   useEffect(() => {
@@ -85,15 +86,14 @@ const EditableNote = ({ value, onSave, disabled }) => {
       <div ref={containerRef} style={{ position: 'relative' }}>
         <div style={{ 
           position: 'fixed', 
-          top: '50%', 
-          left: '50%', 
-          transform: 'translate(-50%, -50%)',
+          top: `${editPos.top}px`, 
+          left: `${editPos.left}px`, 
           background: 'var(--surface-color)', 
           border: '1px solid var(--primary-color)', 
           borderRadius: '8px', 
           padding: '16px', 
-          boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-          width: '400px',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.2)',
+          width: '300px',
           maxWidth: '90vw',
           display: 'flex',
           flexDirection: 'column',
@@ -150,7 +150,14 @@ const EditableNote = ({ value, onSave, disabled }) => {
       }}
     >
       <div 
-        onClick={() => setIsEditing(true)}
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          // Ensure it stays on screen (rough boundary check)
+          const left = Math.min(rect.left, window.innerWidth - 320);
+          const top = Math.min(rect.bottom + 5, window.innerHeight - 200);
+          setEditPos({ top, left });
+          setIsEditing(true);
+        }}
         style={{ 
           maxWidth: '150px', 
           whiteSpace: 'nowrap', 

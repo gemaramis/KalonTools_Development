@@ -33,7 +33,7 @@ const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilte
           resize: 'horizontal',
           overflow: 'hidden',
           whiteSpace: 'nowrap',
-          textOverflow: 'clip',
+          textOverflow: 'ellipsis',
           minWidth: '50px'
         }}>
           {label}
@@ -65,7 +65,7 @@ const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilte
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
           <div 
             onClick={() => onSort(sortKey)} 
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', flex: 1, userSelect: 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', flex: 1, userSelect: 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
           >
             {label}
             <span style={{ color: isSorted ? 'var(--primary-color)' : 'var(--text-secondary)', opacity: isSorted ? 1 : 0.5 }}>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Target, Loader2 } from 'lucide-react';
+import { Search, Target, Loader2, RefreshCw } from 'lucide-react';
 import ColumnHeader from '../../components/Table/ColumnHeader';
 import { useSettings } from '../../context/SettingsContext';
 import { useGoogleSheetData } from '../../hooks/useGoogleSheetData';
@@ -7,39 +7,36 @@ import { useGoogleSheetData } from '../../hooks/useGoogleSheetData';
 const schedulingDummyData = [
   {
     id: 1,
-    mo: 'MO-1001',
+    postingPeriod: 'January',
     username: '@fashionsista',
-    postingDate: '2023-11-05',
-    videoQuantity: 2,
-    performance: 'Good',
-    uniqueCode: 'FASHION50',
-    gmv: 15000000,
-    roi: '2.5x',
-    adResult: 'Positive'
+    pic: 'Amel',
+    products: 'Dress A, Bag B',
+    tier: 'Macro',
+    postingDate: '2024-01-05',
+    postLink: 'https://instagram.com/p/123',
+    performance: 'Good'
   },
   {
     id: 2,
-    mo: 'MO-1002',
+    postingPeriod: 'January',
     username: '@techguru',
-    postingDate: '2023-11-10',
-    videoQuantity: 1,
-    performance: 'Average',
-    uniqueCode: 'TECHPRO',
-    gmv: 5000000,
-    roi: '1.2x',
-    adResult: 'Neutral'
+    pic: 'Ken',
+    products: 'Phone Case X',
+    tier: 'Micro',
+    postingDate: '2024-01-10',
+    postLink: 'https://tiktok.com/v/456',
+    performance: 'Average'
   },
   {
     id: 3,
-    mo: 'MO-1003',
+    postingPeriod: 'February',
     username: '@beautyqueen',
-    postingDate: '2023-11-15',
-    videoQuantity: 3,
-    performance: 'Excellent',
-    uniqueCode: 'BEAUTY99',
-    gmv: 30000000,
-    roi: '4.0x',
-    adResult: 'Highly Positive'
+    pic: 'Amel',
+    products: 'Lipstick Y',
+    tier: 'Mega',
+    postingDate: '2024-02-15',
+    postLink: 'https://instagram.com/p/789',
+    performance: 'Excellent'
   }
 ];
 
@@ -52,7 +49,7 @@ const Scheduling = () => {
     return getSettingsForMonth(periodFilter === 'All' ? 'January' : periodFilter);
   }, [periodFilter, getSettingsForMonth]);
 
-  const { data: kolData, loading, error } = useGoogleSheetData(monthSettings.schedulingSpreadsheetLink);
+  const { data: kolData, loading, error, refresh } = useGoogleSheetData(monthSettings.schedulingSpreadsheetLink);
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -61,7 +58,7 @@ const Scheduling = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [filters, setFilters] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
+  const itemsPerPage = 25;
 
   const handleSort = (key) => {
     let direction = 'asc';
@@ -193,6 +190,9 @@ const Scheduling = () => {
             <option value="April">April</option>
             <option value="Mei">Mei</option>
           </select>
+          <button onClick={refresh} className="btn btn-secondary" style={{ padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Refresh Data">
+            <RefreshCw size={18} />
+          </button>
         </div>
       </div>
 
@@ -226,19 +226,19 @@ const Scheduling = () => {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ overflowX: 'auto', paddingBottom: '50px' }}>
+      <div className="glass-panel" style={{ overflowX: 'auto', paddingBottom: '10px', maxHeight: '550px', overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem', tableLayout: 'auto' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
               <th style={{ padding: '12px 16px', fontWeight: '600', resize: 'horizontal', overflow: 'hidden', whiteSpace: 'normal', minWidth: '50px', wordBreak: 'break-word' }}>No</th>
+              <ColumnHeader label="Coop. Month" sortKey="postingPeriod" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingPeriod} onFilterChange={handleFilterChange} options={getUniqueOptions('postingPeriod')} />
               <ColumnHeader label="Username" sortKey="username" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.username} onFilterChange={handleFilterChange} options={getUniqueOptions('username')} />
+              <ColumnHeader label="PIC" sortKey="pic" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.pic} onFilterChange={handleFilterChange} options={getUniqueOptions('pic')} />
+              <ColumnHeader label="Products" sortKey="products" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.products} onFilterChange={handleFilterChange} options={getUniqueOptions('products')} />
+              <ColumnHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.tier} onFilterChange={handleFilterChange} options={getUniqueOptions('tier')} />
               <ColumnHeader label="Posting Date" sortKey="postingDate" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postingDate} onFilterChange={handleFilterChange} options={getUniqueOptions('postingDate')} />
-              <ColumnHeader label="Video Quantity" sortKey="videoQuantity" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.videoQuantity} onFilterChange={handleFilterChange} options={getUniqueOptions('videoQuantity')} />
+              <ColumnHeader label="Post Link" sortKey="postLink" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.postLink} onFilterChange={handleFilterChange} options={getUniqueOptions('postLink')} />
               <ColumnHeader label="Performance" sortKey="performance" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.performance} onFilterChange={handleFilterChange} options={getUniqueOptions('performance')} />
-              <ColumnHeader label="Unique Code" sortKey="uniqueCode" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.uniqueCode} onFilterChange={handleFilterChange} options={getUniqueOptions('uniqueCode')} />
-              <ColumnHeader label="GMV" sortKey="gmv" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.gmv} onFilterChange={handleFilterChange} options={getUniqueOptions('gmv')} />
-              <ColumnHeader label="ROI" sortKey="roi" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.roi} onFilterChange={handleFilterChange} options={getUniqueOptions('roi')} />
-              <ColumnHeader label="Ad Result" sortKey="adResult" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.adResult} onFilterChange={handleFilterChange} options={getUniqueOptions('adResult')} />
             </tr>
           </thead>
           <tbody>
@@ -266,23 +266,31 @@ const Scheduling = () => {
                 </td>
               </tr>
             ) : (
-              paginatedData.map((item, index) => (
+              paginatedData.map((item, index) => {
+                const cellStyle = { padding: '12px 16px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '150px' };
+                return (
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background-color 0.2s' }}>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: '500', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.username}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.postingDate}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.videoQuantity}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                  <td style={cellStyle}>{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                  <td style={cellStyle}>{item.postingPeriod}</td>
+                  <td style={{ ...cellStyle, fontWeight: '500' }}>{item.username}</td>
+                  <td style={cellStyle}>{item.pic}</td>
+                  <td style={cellStyle}>{item.products}</td>
+                  <td style={cellStyle}>{item.tier}</td>
+                  <td style={cellStyle}>{item.postingDate}</td>
+                  <td style={cellStyle}>
+                    {item.postLink && item.postLink !== '-' ? (
+                      <a href={item.postLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'underline' }}>
+                        Link
+                      </a>
+                    ) : '-'}
+                  </td>
+                  <td style={cellStyle}>
                     <span className={`badge ${item.performance === 'Excellent' ? 'success' : item.performance === 'Good' ? 'warning' : 'danger'}`} style={{ padding: '4px 8px' }}>
                       {item.performance}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}><code>{item.uniqueCode}</code></td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{formatCurrency(item.gmv)}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.roi}</td>
-                  <td style={{ padding: '12px 16px', whiteSpace: 'normal', wordBreak: 'break-word' }}>{item.adResult}</td>
                 </tr>
-              ))
+              )})
             )}
           </tbody>
         </table>
@@ -290,7 +298,7 @@ const Scheduling = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '8px', marginTop: '16px' }}>
           <button 
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
