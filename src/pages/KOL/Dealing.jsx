@@ -88,7 +88,15 @@ const Dealing = () => {
     const totalDeal = filteredData.filter(d => d.dealingStatus === 'Dealed' || d.dealingStatus === 'Deal').length;
     const totalReject = filteredData.filter(d => d.dealingStatus === 'Cancel' || d.dealingStatus === 'Rejected by KOL' || d.approval === 'Rejected').length;
     const totalPaid = filteredData.filter(d => (d.paymentStatus || '').toLowerCase().includes('paid')).length;
-    return { totalDeal, totalReject, totalPaid };
+    
+    // Approval status counts
+    const approvalCounts = filteredData.reduce((acc, curr) => {
+      const status = curr.approval || 'Pending';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
+
+    return { totalDeal, totalReject, totalPaid, totalList: filteredData.length, approvalCounts };
   }, [filteredData]);
 
   const handleEdit = async (id, field, value) => {
@@ -104,6 +112,7 @@ const Dealing = () => {
         approval: 'Approval (Koko/Cici)',
         additionalNotes: 'Additional Notes (Koko/Cici)',
         dealingStatus: 'Dealing Status (Amel/Ken)',
+        dealingVideo: 'Dealing Video (Amel/Ken)',
         followUpNotes: 'Follow Up Notes (Amel/Ken)',
         paymentStatus: 'Payment Status'
       };
@@ -176,13 +185,20 @@ const Dealing = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
-        {/* Statistics Card */}
-        <div className="glass-panel" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '12px' }}>Overview</h3>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+        <div className="glass-panel" style={{ padding: '16px', gridColumn: 'span 2' }}>
+          <div className="flex-between" style={{ marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '600' }}>Overview</h3>
+            <div className="badge primary" style={{ padding: '4px 12px' }}>Total List: {stats.totalList}</div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             <div className="badge success" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Total Deal: {stats.totalDeal}</div>
             <div className="badge danger" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Total Rejected: {stats.totalReject}</div>
             <div className="badge warning" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Total PAID: {stats.totalPaid}</div>
+            {Object.entries(stats.approvalCounts).map(([status, count]) => (
+              <div key={status} className="badge secondary" style={{ padding: '8px 16px', fontSize: '0.875rem', opacity: 0.8 }}>
+                {status}: {count}
+              </div>
+            ))}
           </div>
         </div>
 
@@ -222,12 +238,13 @@ const Dealing = () => {
               <ColumnHeader label="Tier" sortKey="tier" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.tier} onFilterChange={handleFilterChange} options={getUniqueOptions('tier')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
               <ColumnHeader label="Rate Card" sortKey="rateCard" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.rateCard} onFilterChange={handleFilterChange} options={getUniqueOptions('rateCard')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
               <ColumnHeader label="Final Price" sortKey="finalPrice" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.finalPrice} onFilterChange={handleFilterChange} options={getUniqueOptions('finalPrice')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
-              <ColumnHeader label="Approval (Mgt)" sortKey="approval" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.approval} onFilterChange={handleFilterChange} options={getUniqueOptions('approval')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Approval (Koko/Cici)" sortKey="approval" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.approval} onFilterChange={handleFilterChange} options={getUniqueOptions('approval')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
               <ColumnHeader label="SOW" sortKey="sow" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.sow} onFilterChange={handleFilterChange} options={getUniqueOptions('sow')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
-              <ColumnHeader label="Additional Notes (Mgt)" sortKey="additionalNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.additionalNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('additionalNotes')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
-              <ColumnHeader label="Dealing Status" sortKey="dealingStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingStatus')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Additional Notes (Koko/Cici)" sortKey="additionalNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.additionalNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('additionalNotes')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Dealing Status (Amel/Ken)" sortKey="dealingStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingStatus')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Dealing Video (Amel/Ken)" sortKey="dealingVideo" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingVideo} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingVideo')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
               <ColumnHeader label="Payment Status" sortKey="paymentStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.paymentStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('paymentStatus')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
-              <ColumnHeader label="Follow Up Notes" sortKey="followUpNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.followUpNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('followUpNotes')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
+              <ColumnHeader label="Follow Up Notes (Amel/Ken)" sortKey="followUpNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.followUpNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('followUpNotes')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
             </tr>
           </thead>
           <tbody>
@@ -333,6 +350,20 @@ const Dealing = () => {
                         <option key={idx} value={opt} style={{ color: getDealingColor(opt) }}>{opt}</option>
                       ))}
                     </select>
+                  </td>
+                  
+                  <td style={cellStyle}>
+                    {item.dealingVideo && item.dealingVideo.startsWith('http') ? (
+                      <a href={item.dealingVideo} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'underline' }}>Link</a>
+                    ) : (
+                      <div style={{ padding: '0 8px' }}>
+                        <EditableNote 
+                          value={item.dealingVideo}
+                          onSave={(val) => handleEdit(item.id, 'dealingVideo', val)}
+                          disabled={!permissions.canEditDealingStatus}
+                        />
+                      </div>
+                    )}
                   </td>
                   
                   {/* Payment Status Field */}

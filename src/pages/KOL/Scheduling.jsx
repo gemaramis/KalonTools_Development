@@ -124,7 +124,24 @@ const Scheduling = () => {
     const good = filteredData.filter(d => d.performance === 'Good').length;
     const average = filteredData.filter(d => d.performance === 'Average').length;
     const completed = filteredData.length;
-    return { excellent, good, average, completed };
+
+    // Tier counts
+    const tierCounts = filteredData.reduce((acc, curr) => {
+      const t = curr.tier || '-';
+      acc[t] = (acc[t] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Product counts (split by comma)
+    const productCounts = filteredData.reduce((acc, curr) => {
+      const productList = (curr.products || '-').split(',').map(p => p.trim()).filter(Boolean);
+      productList.forEach(p => {
+        acc[p] = (acc[p] || 0) + 1;
+      });
+      return acc;
+    }, {});
+
+    return { excellent, good, average, completed, totalList: filteredData.length, tierCounts, productCounts };
   }, [filteredData]);
 
   const handleEdit = async (id, field, value) => {
@@ -194,13 +211,45 @@ const Scheduling = () => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
-        {/* Statistics Card */}
-        <div className="glass-panel" style={{ padding: '16px' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '12px' }}>Performance Overview</h3>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <div className="badge success" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Excellent: {stats.excellent}</div>
-            <div className="badge warning" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Good: {stats.good}</div>
-            <div className="badge danger" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Average: {stats.average}</div>
+        <div className="glass-panel" style={{ padding: '16px', gridColumn: 'span 2' }}>
+          <div className="flex-between" style={{ marginBottom: '12px' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '600' }}>Performance & Distribution</h3>
+            <div className="badge primary" style={{ padding: '4px 12px' }}>Total List: {stats.totalList}</div>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="badge success" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>Excellent: {stats.excellent}</div>
+              <div className="badge warning" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>Good: {stats.good}</div>
+              <div className="badge danger" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>Average: {stats.average}</div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Tier Distribution:</h4>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {Object.entries(stats.tierCounts).map(([tier, count]) => (
+                  <div key={tier} className="badge secondary" style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
+                    {tier}: {count}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Product Distribution:</h4>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {Object.entries(stats.productCounts).sort((a,b) => b[1] - a[1]).slice(0, 10).map(([prod, count]) => (
+                  <div key={prod} className="badge info" style={{ padding: '4px 10px', fontSize: '0.75rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary-color)' }}>
+                    {prod}: {count}
+                  </div>
+                ))}
+                {Object.keys(stats.productCounts).length > 10 && (
+                  <div className="badge secondary" style={{ padding: '4px 10px', fontSize: '0.75rem', opacity: 0.6 }}>
+                    +{Object.keys(stats.productCounts).length - 10} more
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

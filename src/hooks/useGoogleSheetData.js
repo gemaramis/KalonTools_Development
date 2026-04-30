@@ -91,6 +91,7 @@ export const useGoogleSheetData = (inputUrl) => {
                   sow: row['SOW'] || row['sow'] || '-',
                   additionalNotes: row['Additional Notes (Koko/Cici)'] || row['additionalNotes'] || '',
                   dealingStatus: row['Dealing Status (Amel/Ken)'] || row['dealingStatus'] || 'Pending',
+                  dealingVideo: row['Dealing Video (Amel/Ken)'] || row['dealingVideo'] || '-',
                   followUpNotes: row['Follow Up Notes (Amel/Ken)'] || row['followUpNotes'] || '',
                   paymentStatus: row['Payment Status'] || row['paymentStatus'] || 'Unpaid',
                   gmv: Math.round(simGMV),
