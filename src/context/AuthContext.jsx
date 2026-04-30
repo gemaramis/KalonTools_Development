@@ -8,15 +8,25 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('kln_current_user');
+      return savedUser && savedUser !== 'undefined' ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      console.error("Failed to parse user from local storage", e);
+      return null;
+    }
+  });
 
   const login = (roleId) => {
     const role = roles.find(r => r.id === roleId);
     setCurrentUser(role);
+    localStorage.setItem('kln_current_user', JSON.stringify(role));
   };
 
   const logout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('kln_current_user');
   };
 
   // RBAC Helpers
@@ -26,6 +36,7 @@ export const AuthProvider = ({ children }) => {
   
   const canEditApproval = currentUser?.id === 'superadmin' || currentUser?.id === 'management';
   const canEditDealingStatus = currentUser?.id === 'superadmin' || currentUser?.id === 'kol';
+  const canViewManagement = currentUser?.id === 'superadmin' || currentUser?.id === 'management' || currentUser?.id === 'kol';
 
   const value = {
     currentUser,
@@ -36,7 +47,8 @@ export const AuthProvider = ({ children }) => {
       canViewAds,
       canViewEcomm,
       canEditApproval,
-      canEditDealingStatus
+      canEditDealingStatus,
+      canViewManagement
     }
   };
 

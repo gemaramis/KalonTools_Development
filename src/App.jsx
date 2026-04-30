@@ -9,6 +9,8 @@ import Ecomm from './pages/Ecomm';
 import KOLOverview from './pages/KOL/Overview';
 import KOLDealing from './pages/KOL/Dealing';
 import KOLScheduling from './pages/KOL/Scheduling';
+import Management from './pages/Management';
+import { SettingsProvider } from './context/SettingsContext';
 
 const ProtectedRoute = ({ children, checkPermission }) => {
   const { currentUser, permissions } = useAuth();
@@ -45,6 +47,13 @@ const AppRoutes = () => {
             <KOLScheduling />
           </ProtectedRoute>
         } />
+
+        {/* Management Route */}
+        <Route path="management" element={
+          <ProtectedRoute checkPermission={(p) => p.canViewManagement}>
+            <Management />
+          </ProtectedRoute>
+        } />
         
         {/* Ads Route */}
         <Route path="ads" element={
@@ -70,9 +79,11 @@ const AppRoutes = () => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
+      <SettingsProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

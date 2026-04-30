@@ -67,9 +67,16 @@ const Sidebar = () => {
         )}
       </nav>
 
-      <button onClick={logout} className="sidebar-link" style={{ color: 'var(--danger-color)', marginTop: 'auto' }}>
-        <LogOut size={20} /> Logout
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' }}>
+        {permissions.canViewManagement && (
+          <NavLink to="/management" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--primary-color)' }}>
+            <Users size={20} /> Manage
+          </NavLink>
+        )}
+        <button onClick={logout} className="sidebar-link" style={{ color: 'var(--danger-color)' }}>
+          <LogOut size={20} /> Logout
+        </button>
+      </div>
 
       <style>{`
         .sidebar-link {

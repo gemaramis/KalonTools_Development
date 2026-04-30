@@ -41,37 +41,16 @@ const EditableNote = ({ value, onSave, disabled }) => {
         borderRadius: '6px',
         padding: '8px 12px',
         boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-        zIndex: 50,
+        zIndex: 9999,
         whiteSpace: 'normal',
         width: 'max-content',
         maxWidth: '250px',
         color: 'var(--text-primary)',
         fontSize: '0.875rem',
         lineHeight: '1.4',
-        pointerEvents: 'none' // So it doesn't interfere with mouse events
+        pointerEvents: 'none'
       }}>
         {value}
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          borderWidth: '6px',
-          borderStyle: 'solid',
-          borderColor: 'var(--surface-color) transparent transparent transparent',
-          zIndex: 51
-        }}></div>
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          borderWidth: '7px',
-          borderStyle: 'solid',
-          borderColor: 'var(--border-color) transparent transparent transparent',
-          zIndex: 50,
-          marginTop: '1px'
-        }}></div>
       </div>
     );
   };
@@ -103,38 +82,42 @@ const EditableNote = ({ value, onSave, disabled }) => {
 
   if (isEditing) {
     return (
-      <div ref={containerRef} style={{ position: 'relative', zIndex: 100 }}>
+      <div ref={containerRef} style={{ position: 'relative' }}>
         <div style={{ 
-          position: 'absolute', 
-          top: '-20px', 
-          left: '-20px', 
+          position: 'fixed', 
+          top: '50%', 
+          left: '50%', 
+          transform: 'translate(-50%, -50%)',
           background: 'var(--surface-color)', 
           border: '1px solid var(--primary-color)', 
           borderRadius: '8px', 
-          padding: '12px', 
-          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
-          width: '300px',
+          padding: '16px', 
+          boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+          width: '400px',
+          maxWidth: '90vw',
           display: 'flex',
           flexDirection: 'column',
-          gap: '8px'
+          gap: '12px',
+          zIndex: 99999
         }}>
+          <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '600' }}>Edit Note</h4>
           <textarea 
             value={tempValue} 
             onChange={(e) => setTempValue(e.target.value)}
             className="input-field"
-            style={{ width: '100%', minHeight: '100px', resize: 'vertical' }}
+            style={{ width: '100%', minHeight: '120px', resize: 'vertical' }}
             autoFocus
           />
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px' }}>
             <button 
               onClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(false);
                 setTempValue(value || '');
               }}
-              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '4px', background: 'var(--bg-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 16px', borderRadius: '4px', background: 'var(--bg-color)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', cursor: 'pointer', fontWeight: '500' }}
             >
-              <X size={14} /> Cancel
+              <X size={16} /> Cancel
             </button>
             <button 
               onClick={(e) => {
@@ -142,12 +125,14 @@ const EditableNote = ({ value, onSave, disabled }) => {
                 onSave(tempValue);
                 setIsEditing(false);
               }}
-              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '6px 12px', borderRadius: '4px', background: 'var(--primary-color)', color: 'white', border: 'none', cursor: 'pointer' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '8px 16px', borderRadius: '4px', background: 'var(--primary-color)', color: 'white', border: 'none', cursor: 'pointer', fontWeight: '500' }}
             >
-              <Check size={14} /> OK
+              <Check size={16} /> Save
             </button>
           </div>
         </div>
+        {/* Backdrop */}
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.2)', zIndex: 99998 }} />
       </div>
     );
   }

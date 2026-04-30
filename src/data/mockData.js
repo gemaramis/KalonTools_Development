@@ -82,9 +82,9 @@ export const kolMockData = [
 ];
 
 export const roles = [
-  { id: 'superadmin', name: 'Super Admin', label: 'Super Admin (Cakas)' },
-  { id: 'management', name: 'Management', label: 'Management (Koko/Cici)' },
-  { id: 'kol', name: 'KOL Team', label: 'KOL Team (Amel/Ken)' },
+  { id: 'superadmin', name: 'Super Admin', label: 'Super Admin' },
+  { id: 'management', name: 'Management', label: 'Management' },
+  { id: 'kol', name: 'KOL Team', label: 'KOL Team' },
   { id: 'ads', name: 'Ads Team', label: 'Ads Team' },
   { id: 'ecomm', name: 'Ecomm Team', label: 'Ecomm Team' },
 ];

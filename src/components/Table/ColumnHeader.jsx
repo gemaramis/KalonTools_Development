@@ -21,7 +21,25 @@ const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilte
   }, [showFilter]);
 
   if (!sortKey) {
-    return <th style={{ padding: '12px 16px', fontWeight: '600' }}>{label}</th>;
+    return (
+      <th style={{ 
+        padding: 0, 
+        fontWeight: '600',
+        borderRight: '1px solid var(--border-color)',
+        minWidth: '50px'
+      }}>
+        <div style={{
+          padding: '12px 16px',
+          resize: 'horizontal',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          textOverflow: 'clip',
+          minWidth: '50px'
+        }}>
+          {label}
+        </div>
+      </th>
+    );
   }
 
   const isSorted = sortConfig?.key === sortKey;
@@ -30,23 +48,37 @@ const ColumnHeader = ({ label, sortKey, sortConfig, onSort, filterValue, onFilte
   const displayOptions = options.filter(opt => opt !== undefined && opt !== null && opt !== '');
 
   return (
-    <th style={{ padding: '12px 16px', fontWeight: '600', position: 'relative' }} ref={containerRef}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-        <div 
-          onClick={() => onSort(sortKey)} 
-          style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', flex: 1, userSelect: 'none' }}
-        >
-          {label}
-          <span style={{ color: isSorted ? 'var(--primary-color)' : 'var(--text-secondary)', opacity: isSorted ? 1 : 0.5 }}>
-            {direction === 'asc' ? <ArrowUp size={14} /> : direction === 'desc' ? <ArrowDown size={14} /> : <ArrowUpDown size={14} />}
-          </span>
-        </div>
-        <div 
-          onClick={() => setShowFilter(!showFilter)} 
-          style={{ cursor: 'pointer', color: filterValue || showFilter ? 'var(--primary-color)' : 'var(--text-secondary)' }}
-          title="Filter"
-        >
-          <Filter size={14} />
+    <th style={{ 
+      padding: 0, 
+      fontWeight: '600', 
+      position: 'relative',
+      borderRight: '1px solid var(--border-color)',
+      minWidth: '100px'
+    }} ref={containerRef}>
+      <div style={{
+        resize: 'horizontal',
+        overflow: 'hidden',
+        padding: '12px 16px',
+        minWidth: '100px',
+        maxWidth: '400px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+          <div 
+            onClick={() => onSort(sortKey)} 
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', flex: 1, userSelect: 'none', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'clip' }}
+          >
+            {label}
+            <span style={{ color: isSorted ? 'var(--primary-color)' : 'var(--text-secondary)', opacity: isSorted ? 1 : 0.5 }}>
+              {direction === 'asc' ? <ArrowUp size={14} /> : direction === 'desc' ? <ArrowDown size={14} /> : <ArrowUpDown size={14} />}
+            </span>
+          </div>
+          <div 
+            onClick={() => setShowFilter(!showFilter)} 
+            style={{ cursor: 'pointer', color: filterValue || showFilter ? 'var(--primary-color)' : 'var(--text-secondary)' }}
+            title="Filter"
+          >
+            <Filter size={14} />
+          </div>
         </div>
       </div>
       

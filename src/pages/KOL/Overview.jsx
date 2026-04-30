@@ -1,12 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import { useGoogleSheetData } from '../../hooks/useGoogleSheetData';
+import { useSettings } from '../../context/SettingsContext';
 import { Users, CheckCircle, XCircle, DollarSign, TrendingUp, Eye, Loader2 } from 'lucide-react';
 
 const Overview = () => {
+  const { getSettingsForMonth } = useSettings();
   const [selectedMonth, setSelectedMonth] = useState('All');
-  const { data: kolData, loading, error } = useGoogleSheetData();
+  
+  const monthSettings = useMemo(() => {
+    return getSettingsForMonth(selectedMonth === 'All' ? 'January' : selectedMonth);
+  }, [selectedMonth, getSettingsForMonth]);
+
+  const { data: kolData, loading, error } = useGoogleSheetData(monthSettings.dealingSpreadsheetLink);
 
   const filteredData = useMemo(() => {
+    if (!kolData) return [];
     if (selectedMonth === 'All') return kolData;
     return kolData.filter(item => item.postingPeriod === selectedMonth);
   }, [selectedMonth, kolData]);
@@ -16,7 +24,7 @@ const Overview = () => {
     const totalMakro = filteredData.filter(d => d.tier === 'Makro').length;
     const totalMikro = filteredData.filter(d => d.tier === 'Mikro').length;
 
-    const totalDeal = filteredData.filter(d => d.dealingStatus === 'Dealed').length;
+    const totalDeal = filteredData.filter(d => d.dealingStatus === 'Deal').length;
     const totalReject = filteredData.filter(d => d.dealingStatus === 'Cancel' || d.approval === 'Rejected').length;
 
     const totalBudget = filteredData.reduce((sum, item) => sum + (item.finalPrice || 0), 0);
@@ -25,14 +33,20 @@ const Overview = () => {
 
     const roi = totalBudget > 0 ? (totalGMV / totalBudget).toFixed(2) : 0;
 
-    // Targets (Mock values for MVP)
-    const amelDeals = filteredData.filter(d => d.pic === 'Amel' && d.dealingStatus === 'Dealed').length;
-    const kenDeals = filteredData.filter(d => d.pic === 'Ken' && d.dealingStatus === 'Dealed').length;
+    // Calculate deals per PIC based on dynamic list
+    const picStats = monthSettings.pics.map(pic => {
+      const deals = filteredData.filter(d => d.pic === pic.name && d.dealingStatus === 'Deal').length;
+      const target = Math.round((pic.percentage / 100) * monthSettings.totalTarget);
+      return { ...pic, deals, target };
+    });
 
-    return { totalMega, totalMakro, totalMikro, totalDeal, totalReject, totalBudget, totalGMV, totalViews, roi, amelDeals, kenDeals };
-  }, [filteredData]);
+    return { totalMega, totalMakro, totalMikro, totalDeal, totalReject, totalBudget, totalGMV, totalViews, roi, picStats };
+  }, [filteredData, monthSettings]);
 
-  const formatCurrency = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
+  const formatCurrency = (value) => {
+    const formatted = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
+    return formatted.replace(/,00$/, '');
+  };
 
   if (loading) {
     return (
@@ -103,7 +117,10 @@ const Overview = () => {
             <DollarSign size={20} /> <h3 style={{ fontWeight: '600' }}>Financials</h3>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-            <span>Total Budget</span> <span style={{ fontWeight: '600', color: 'var(--warning-color)' }}>{formatCurrency(stats.totalBudget)}</span>
+            <span>Spent Budget</span> <span style={{ fontWeight: '600', color: 'var(--warning-color)' }}>{formatCurrency(stats.totalBudget)}</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <span>Target Budget</span> <span style={{ fontWeight: '600' }}>{formatCurrency(monthSettings.targetBudget)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
             <span>Total GMV</span> <span style={{ fontWeight: '600', color: 'var(--success-color)' }}>{formatCurrency(stats.totalGMV)}</span>
@@ -123,27 +140,26 @@ const Overview = () => {
 
       {/* Target Trackers */}
       <div className="glass-panel" style={{ padding: '20px' }}>
-        <h3 style={{ fontWeight: '600', marginBottom: '20px' }}>PIC Target Tracker (Monthly Deal Target: 5)</h3>
+        <h3 style={{ fontWeight: '600', marginBottom: '20px' }}>PIC Target Tracker (Month: {selectedMonth})</h3>
         
-        <div style={{ marginBottom: '20px' }}>
-          <div className="flex-between" style={{ marginBottom: '8px' }}>
-            <span style={{ fontWeight: '500' }}>Amel's Progress</span>
-            <span>{stats.amelDeals} / 5</span>
+        {stats.picStats.length > 0 ? stats.picStats.map((pic, idx) => (
+          <div key={pic.id} style={{ marginBottom: idx === stats.picStats.length - 1 ? 0 : '20px' }}>
+            <div className="flex-between" style={{ marginBottom: '8px' }}>
+              <span style={{ fontWeight: '500' }}>{pic.name}'s Progress ({pic.percentage}%)</span>
+              <span>{pic.deals} / {pic.target}</span>
+            </div>
+            <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-color)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{ 
+                width: `${Math.min((pic.deals / Math.max(pic.target, 1)) * 100, 100)}%`, 
+                height: '100%', 
+                backgroundColor: idx % 2 === 0 ? 'var(--primary-color)' : 'var(--accent-color)', 
+                transition: 'width 0.5s ease' 
+              }}></div>
+            </div>
           </div>
-          <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-color)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${Math.min((stats.amelDeals / 5) * 100, 100)}%`, height: '100%', backgroundColor: 'var(--primary-color)', transition: 'width 0.5s ease' }}></div>
-          </div>
-        </div>
-
-        <div>
-          <div className="flex-between" style={{ marginBottom: '8px' }}>
-            <span style={{ fontWeight: '500' }}>Ken's Progress</span>
-            <span>{stats.kenDeals} / 5</span>
-          </div>
-          <div style={{ width: '100%', height: '8px', backgroundColor: 'var(--bg-color)', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${Math.min((stats.kenDeals / 5) * 100, 100)}%`, height: '100%', backgroundColor: 'var(--accent-color)', transition: 'width 0.5s ease' }}></div>
-          </div>
-        </div>
+        )) : (
+          <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>No PIC targets set for this month.</p>
+        )}
       </div>
     </div>
   );
