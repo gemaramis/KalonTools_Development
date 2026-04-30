@@ -96,7 +96,23 @@ const Dealing = () => {
       return acc;
     }, {});
 
-    return { totalDeal, totalReject, totalPaid, totalList: filteredData.length, approvalCounts };
+    // Tier counts
+    const tierCounts = filteredData.reduce((acc, curr) => {
+      const t = curr.tier || '-';
+      acc[t] = (acc[t] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Product counts (split by comma)
+    const productCounts = filteredData.reduce((acc, curr) => {
+      const productList = (curr.products || '-').split(',').map(p => p.trim()).filter(Boolean);
+      productList.forEach(p => {
+        acc[p] = (acc[p] || 0) + 1;
+      });
+      return acc;
+    }, {});
+
+    return { totalDeal, totalReject, totalPaid, totalList: filteredData.length, approvalCounts, tierCounts, productCounts };
   }, [filteredData]);
 
   const handleEdit = async (id, field, value) => {
@@ -112,7 +128,6 @@ const Dealing = () => {
         approval: 'Approval (Koko/Cici)',
         additionalNotes: 'Additional Notes (Koko/Cici)',
         dealingStatus: 'Dealing Status (Amel/Ken)',
-        dealingVideo: 'Dealing Video (Amel/Ken)',
         followUpNotes: 'Follow Up Notes (Amel/Ken)',
         paymentStatus: 'Payment Status'
       };
@@ -187,18 +202,50 @@ const Dealing = () => {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px' }}>
         <div className="glass-panel" style={{ padding: '16px', gridColumn: 'span 2' }}>
           <div className="flex-between" style={{ marginBottom: '12px' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: '600' }}>Overview</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: '600' }}>Dealing & Distribution</h3>
             <div className="badge primary" style={{ padding: '4px 12px' }}>Total List: {stats.totalList}</div>
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            <div className="badge success" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Total Deal: {stats.totalDeal}</div>
-            <div className="badge danger" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Total Rejected: {stats.totalReject}</div>
-            <div className="badge warning" style={{ padding: '8px 16px', fontSize: '0.875rem' }}>Total PAID: {stats.totalPaid}</div>
-            {Object.entries(stats.approvalCounts).map(([status, count]) => (
-              <div key={status} className="badge secondary" style={{ padding: '8px 16px', fontSize: '0.875rem', opacity: 0.8 }}>
-                {status}: {count}
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div className="badge success" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>Total Deal: {stats.totalDeal}</div>
+              <div className="badge danger" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>Total Rejected: {stats.totalReject}</div>
+              <div className="badge warning" style={{ padding: '6px 12px', fontSize: '0.75rem' }}>Total PAID: {stats.totalPaid}</div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Approval Status Distribution:</h4>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {Object.entries(stats.approvalCounts).map(([status, count]) => (
+                  <div key={status} className="badge secondary" style={{ padding: '4px 10px', fontSize: '0.75rem', opacity: 0.8 }}>
+                    {status}: {count}
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Tier:</h4>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {Object.entries(stats.tierCounts).map(([tier, count]) => (
+                    <div key={tier} className="badge secondary" style={{ padding: '4px 10px', fontSize: '0.75rem' }}>
+                      {tier}: {count}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ flex: 2, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-secondary)' }}>Product:</h4>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {Object.entries(stats.productCounts).sort((a,b) => b[1] - a[1]).slice(0, 5).map(([prod, count]) => (
+                    <div key={prod} className="badge info" style={{ padding: '4px 10px', fontSize: '0.75rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary-color)' }}>
+                      {prod}: {count}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -242,7 +289,6 @@ const Dealing = () => {
               <ColumnHeader label="SOW" sortKey="sow" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.sow} onFilterChange={handleFilterChange} options={getUniqueOptions('sow')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
               <ColumnHeader label="Additional Notes (Koko/Cici)" sortKey="additionalNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.additionalNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('additionalNotes')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
               <ColumnHeader label="Dealing Status (Amel/Ken)" sortKey="dealingStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingStatus')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
-              <ColumnHeader label="Dealing Video (Amel/Ken)" sortKey="dealingVideo" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.dealingVideo} onFilterChange={handleFilterChange} options={getUniqueOptions('dealingVideo')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
               <ColumnHeader label="Payment Status" sortKey="paymentStatus" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.paymentStatus} onFilterChange={handleFilterChange} options={getUniqueOptions('paymentStatus')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
               <ColumnHeader label="Follow Up Notes (Amel/Ken)" sortKey="followUpNotes" sortConfig={sortConfig} onSort={handleSort} filterValue={filters.followUpNotes} onFilterChange={handleFilterChange} options={getUniqueOptions('followUpNotes')} style={{ position: 'sticky', top: 0, zIndex: 10, backgroundColor: 'var(--bg-color)' }} />
             </tr>
@@ -350,20 +396,6 @@ const Dealing = () => {
                         <option key={idx} value={opt} style={{ color: getDealingColor(opt) }}>{opt}</option>
                       ))}
                     </select>
-                  </td>
-                  
-                  <td style={cellStyle}>
-                    {item.dealingVideo && item.dealingVideo.startsWith('http') ? (
-                      <a href={item.dealingVideo} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary-color)', textDecoration: 'underline' }}>Link</a>
-                    ) : (
-                      <div style={{ padding: '0 8px' }}>
-                        <EditableNote 
-                          value={item.dealingVideo}
-                          onSave={(val) => handleEdit(item.id, 'dealingVideo', val)}
-                          disabled={!permissions.canEditDealingStatus}
-                        />
-                      </div>
-                    )}
                   </td>
                   
                   {/* Payment Status Field */}

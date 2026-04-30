@@ -20,7 +20,10 @@ const Sidebar = () => {
       top: 0
     }}>
       <div style={{ padding: '0 12px 24px 12px', borderBottom: '1px solid var(--border-color)', marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--primary-color)' }}>KLN Superapp</h2>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--primary-color)', marginBottom: '2px' }}>KLN Superapp</h2>
+        <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', fontStyle: 'italic', marginBottom: '12px' }}>
+          Alpha Version 1.0
+        </div>
         <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
           Logged in as: <span className="badge" style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)', marginLeft: '4px' }}>{currentUser?.name}</span>
         </div>
