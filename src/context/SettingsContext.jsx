@@ -92,18 +92,21 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
     localStorage.setItem('kln_global_settings', JSON.stringify(globalSettings));
   }, [globalSettings]);
 
-  const updateMonthlySettings = (month, newSettings) => {
+  const updateMonthlySettings = React.useCallback((month, newSettings) => {
     setMonthlySettings(prev => ({
       ...prev,
       [month]: { ...prev[month], ...newSettings }
     }));
-  };
+  }, []);
 
-  const getSettingsForMonth = (month) => {
+  const getSettingsForMonth = React.useCallback((month) => {
     const settings = monthlySettings[month] || {
-      totalTarget: 0,
-      targetBudget: 0,
-      pics: []
+      totalTarget: 10,
+      targetBudget: 100000000,
+      pics: [
+        { id: 1, name: 'Amel', percentage: 50 },
+        { id: 2, name: 'Ken', percentage: 50 }
+      ]
     };
     
     return {
@@ -111,7 +114,7 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
       dealingSpreadsheetLink: settings.dealingSpreadsheetLink || DEFAULT_DEALING_LINK,
       schedulingSpreadsheetLink: settings.schedulingSpreadsheetLink || DEFAULT_SCHEDULING_LINK
     };
-  };
+  }, [monthlySettings]);
 
   return (
     <SettingsContext.Provider value={{ 

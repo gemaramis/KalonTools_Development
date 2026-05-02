@@ -1,23 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
-import { kolMockData } from '../data/mockData'; // Needed for personal report mock stats
+import { kolMockData } from '../data/mockData';
 import { Save, Settings, Plus, Minus, Target, Link2 } from 'lucide-react';
 
 const Management = () => {
-  const { currentUser, permissions } = useAuth();
+  const { currentUser } = useAuth();
   const { getSettingsForMonth, updateMonthlySettings, globalSettings, setGlobalSettings } = useSettings();
   
   const [selectedMonth, setSelectedMonth] = useState('January');
   const [saved, setSaved] = useState(false);
   const [linksSaved, setLinksSaved] = useState(false);
 
-  // Form states for settings
+  // Form states
   const [totalTarget, setTotalTarget] = useState(0);
   const [targetBudget, setTargetBudget] = useState(0);
   const [pics, setPics] = useState([]);
-
-  // Form states for links
   const [dealingLink, setDealingLink] = useState('');
   const [schedulingLink, setSchedulingLink] = useState('');
   const [appsScriptUrl, setAppsScriptUrl] = useState('');
@@ -25,6 +23,20 @@ const Management = () => {
   const isSuperAdmin = currentUser?.id === 'superadmin';
   const isManagement = currentUser?.id === 'management' || isSuperAdmin;
   const isKol = currentUser?.id === 'kol';
+
+  // Currency helpers
+  const formatIDR = (val) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(val).replace(/,00$/, '');
+  };
+
+  const parseIDR = (str) => {
+    return parseInt(str.replace(/[^0-9]/g, ''), 10) || 0;
+  };
 
   // Load settings when month changes
   useEffect(() => {
@@ -35,7 +47,7 @@ const Management = () => {
     setDealingLink(monthSettings.dealingSpreadsheetLink || '');
     setSchedulingLink(monthSettings.schedulingSpreadsheetLink || '');
     setAppsScriptUrl(globalSettings?.appsScriptUrl || '');
-  }, [selectedMonth, getSettingsForMonth, globalSettings]);
+  }, [selectedMonth, getSettingsForMonth, globalSettings?.appsScriptUrl]);
 
   const handleSaveTargets = () => {
     updateMonthlySettings(selectedMonth, {
@@ -66,26 +78,46 @@ const Management = () => {
   };
 
   const updatePic = (id, field, value) => {
-    setPics(pics.map(p => p.id === id ? { ...p, [field]: value } : p));
+    if (field === 'percentage') {
+      const otherPicsTotal = pics
+        .filter(p => p.id !== id)
+        .reduce((sum, p) => sum + p.percentage, 0);
+      
+      const maxAllowed = 100 - otherPicsTotal;
+      const val = Math.max(0, Math.min(maxAllowed, Number(value)));
+      setPics(pics.map(p => p.id === id ? { ...p, percentage: val } : p));
+    } else {
+      setPics(pics.map(p => p.id === id ? { ...p, [field]: value } : p));
+    }
   };
 
-  // --- Personal Report Logic (For KOL Role) ---
-  const personalStats = React.useMemo(() => {
+  const updatePicTarget = (id, value) => {
+    const targetVal = Number(value);
+    if (totalTarget === 0) return;
+    
+    const percentage = (targetVal / totalTarget) * 100;
+    
+    // Validate total percentage
+    const otherPicsTotal = pics
+        .filter(p => p.id !== id)
+        .reduce((sum, p) => sum + p.percentage, 0);
+    
+    const maxAllowedPercentage = 100 - otherPicsTotal;
+    const finalPercentage = Math.max(0, Math.min(maxAllowedPercentage, percentage));
+    
+    setPics(pics.map(p => p.id === id ? { ...p, percentage: Math.round(finalPercentage * 10) / 10 } : p));
+  };
+
+  // --- Personal Report Logic ---
+  const personalStats = useMemo(() => {
     if (!isKol) return null;
-    // Note: Assuming currentUser.name or similar would match the PIC name. 
-    // In our mock, KOL Team is "Amel/Ken". Let's show Amel's stats for demonstration, 
-    // or if we split them, we'd use their actual name. For mock, let's just aggregate 
-    // or assume the user is "Amel".
     const mockUserName = 'Amel'; 
     const monthSettings = getSettingsForMonth(selectedMonth);
     const picSetting = monthSettings.pics.find(p => p.name === mockUserName);
     
     const personalTarget = picSetting ? Math.round((picSetting.percentage / 100) * monthSettings.totalTarget) : 0;
-    
-    // Calculate completed from mockData
-    const completedDeals = kolMockData.filter(d => d.postingPeriod === selectedMonth && d.pic === mockUserName && d.dealingStatus === 'Deal').length;
-    // Scheduling would have similar logic. Let's just mock it based on deals.
-    const completedSchedules = kolMockData.filter(d => d.postingPeriod === selectedMonth && d.pic === mockUserName && d.dealingStatus === 'Deal').length;
+    const completedDeals = kolMockData.filter(d => d.postingPeriod === selectedMonth && d.pic === mockUserName && (d.dealingStatus === 'Deal' || d.dealingStatus === 'Dealed')).length;
+    const completedSchedules = completedDeals; // Simplified for mock
 
     return {
       name: mockUserName,
@@ -96,6 +128,8 @@ const Management = () => {
     };
   }, [isKol, selectedMonth, getSettingsForMonth]);
 
+  const totalPercentageUsed = pics.reduce((sum, p) => sum + p.percentage, 0);
+
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '900px' }}>
       <div className="flex-between">
@@ -104,11 +138,9 @@ const Management = () => {
         </h1>
         <div>
           <select className="input-field" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} style={{ width: '150px' }}>
-            <option value="January">January</option>
-            <option value="February">February</option>
-            <option value="Maret">Maret</option>
-            <option value="April">April</option>
-            <option value="Mei">Mei</option>
+            {['January', 'February', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'].map(m => (
+              <option key={m} value={m}>{m}</option>
+            ))}
           </select>
         </div>
       </div>
@@ -134,10 +166,10 @@ const Management = () => {
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Target Budget (IDR)</label>
               <input 
-                type="number" 
+                type="text" 
                 className="input-field" 
-                value={targetBudget} 
-                onChange={(e) => setTargetBudget(Number(e.target.value))} 
+                value={formatIDR(targetBudget)} 
+                onChange={(e) => setTargetBudget(parseIDR(e.target.value))} 
                 style={{ width: '100%' }}
               />
             </div>
@@ -145,15 +177,20 @@ const Management = () => {
 
           <div>
             <div className="flex-between" style={{ marginBottom: '12px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: '600' }}>PIC Target Distribution</h3>
-              <button onClick={addPic} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+                <h3 style={{ fontSize: '1rem', fontWeight: '600' }}>PIC Target Distribution</h3>
+                <span style={{ fontSize: '0.75rem', color: totalPercentageUsed > 100 ? 'var(--danger-color)' : 'var(--text-secondary)' }}>
+                  Total Percentage: {totalPercentageUsed}% / 100%
+                </span>
+              </div>
+              <button onClick={addPic} className="btn btn-primary" style={{ padding: '4px 8px', fontSize: '0.75rem' }} disabled={totalPercentageUsed >= 100}>
                 <Plus size={14} /> Add PIC
               </button>
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {pics.map((pic, index) => {
-                const targetValue = Math.round((pic.percentage / 100) * totalTarget);
+              {pics.map((pic) => {
+                const calculatedTarget = Math.round((pic.percentage / 100) * totalTarget);
                 return (
                   <div key={pic.id} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end', backgroundColor: 'var(--bg-color)', padding: '12px', borderRadius: '8px' }}>
                     <div style={{ flex: 1 }}>
@@ -173,14 +210,20 @@ const Management = () => {
                         type="number" 
                         className="input-field" 
                         value={pic.percentage} 
-                        onChange={(e) => updatePic(pic.id, 'percentage', Number(e.target.value))} 
+                        onChange={(e) => updatePic(pic.id, 'percentage', e.target.value)} 
                         style={{ width: '100%' }}
+                        max={100 - (totalPercentageUsed - pic.percentage)}
                       />
                     </div>
-                    <div style={{ width: '120px', paddingBottom: '10px' }}>
-                      <span style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--primary-color)' }}>
-                        Target: {targetValue}
-                      </span>
+                    <div style={{ width: '100px' }}>
+                      <label style={{ display: 'block', marginBottom: '4px', fontSize: '0.75rem', fontWeight: '500' }}>Target Qty</label>
+                      <input 
+                        type="number" 
+                        className="input-field" 
+                        value={calculatedTarget} 
+                        onChange={(e) => updatePicTarget(pic.id, e.target.value)} 
+                        style={{ width: '100%', fontWeight: '600', color: 'var(--primary-color)' }}
+                      />
                     </div>
                     <button onClick={() => removePic(pic.id)} className="btn" style={{ padding: '8px', color: 'var(--danger-color)', border: '1px solid var(--border-color)', backgroundColor: 'var(--surface-color)' }}>
                       <Minus size={16} />
@@ -228,7 +271,7 @@ const Management = () => {
         </div>
       )}
 
-      {(isKol || isSuperAdmin) && (
+      {(isSuperAdmin || (isKol && !isManagement)) && (
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: '600', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Link2 size={20} /> Spreadsheet Sync

@@ -272,9 +272,9 @@ const Scheduling = () => {
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <button onClick={refresh} className="btn btn-secondary" style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px' }} title="Refresh Data">
-          <RefreshCw size={16} /> <span>Refresh Data</span>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '8px' }}>
+        <button onClick={refresh} className="btn btn-secondary" style={{ padding: '8px 16px' }} title="Refresh Data">
+          <RefreshCw size={16} /> <span style={{ fontWeight: '600' }}>Refresh Data</span>
         </button>
       </div>
 
