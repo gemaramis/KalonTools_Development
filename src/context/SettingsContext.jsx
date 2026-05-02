@@ -121,7 +121,10 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
       monthlySettings, 
       updateMonthlySettings, 
       getSettingsForMonth,
-      globalSettings,
+      globalSettings: {
+        ...globalSettings,
+        appsScriptUrl: globalSettings.appsScriptUrl || DEFAULT_APPS_SCRIPT_URL
+      },
       setGlobalSettings 
     }}>
       {children}
