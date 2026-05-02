@@ -70,6 +70,10 @@ export const SettingsProvider = ({ children }) => {
     };
   });
 
+const DEFAULT_DEALING_LINK = 'https://docs.google.com/spreadsheets/d/1ZeGXZt0pAueJsPq_iqM_-PGE-LcPZ3c2AphDeIlWObA/edit?gid=0#gid=0';
+const DEFAULT_SCHEDULING_LINK = 'https://docs.google.com/spreadsheets/d/1ZeGXZt0pAueJsPq_iqM_-PGE-LcPZ3c2AphDeIlWObA/edit?gid=1978733706#gid=1978733706';
+const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bnB7QhSSoyJ9N2qLxUua2HBbpjD6FcbWNDpZta79bFZ_BmWdRUvvOQihFX6o/exec';
+
   const [globalSettings, setGlobalSettings] = useState(() => {
     try {
       const saved = localStorage.getItem('kln_global_settings');
@@ -77,7 +81,7 @@ export const SettingsProvider = ({ children }) => {
     } catch (e) {
       console.error("Failed to parse global settings", e);
     }
-    return { appsScriptUrl: '' };
+    return { appsScriptUrl: DEFAULT_APPS_SCRIPT_URL };
   });
 
   useEffect(() => {
@@ -96,12 +100,16 @@ export const SettingsProvider = ({ children }) => {
   };
 
   const getSettingsForMonth = (month) => {
-    return monthlySettings[month] || {
+    const settings = monthlySettings[month] || {
       totalTarget: 0,
       targetBudget: 0,
-      pics: [],
-      dealingSpreadsheetLink: '',
-      schedulingSpreadsheetLink: ''
+      pics: []
+    };
+    
+    return {
+      ...settings,
+      dealingSpreadsheetLink: settings.dealingSpreadsheetLink || DEFAULT_DEALING_LINK,
+      schedulingSpreadsheetLink: settings.schedulingSpreadsheetLink || DEFAULT_SCHEDULING_LINK
     };
   };
 
