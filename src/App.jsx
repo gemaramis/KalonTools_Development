@@ -10,6 +10,7 @@ import KOLOverview from './pages/KOL/Overview';
 import KOLDealing from './pages/KOL/Dealing';
 import KOLScheduling from './pages/KOL/Scheduling';
 import Management from './pages/Management';
+import Changelog from './pages/Changelog';
 import { SettingsProvider } from './context/SettingsContext';
 
 const ProtectedRoute = ({ children, checkPermission }) => {
@@ -68,6 +69,9 @@ const AppRoutes = () => {
             <Ecomm />
           </ProtectedRoute>
         } />
+
+        {/* Changelog Route */}
+        <Route path="changelog" element={<Changelog />} />
         
         {/* Catch-all route to prevent blank screens */}
         <Route path="*" element={<Navigate to="/" replace />} />

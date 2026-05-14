@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, Users, Megaphone, ShoppingCart, LogOut, ChevronDown, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Users, Megaphone, ShoppingCart, LogOut, ChevronDown, ChevronRight, History } from 'lucide-react';
+import { changelogData } from '../../data/changelog';
 
 const Sidebar = () => {
   const { permissions, logout, currentUser } = useAuth();
@@ -70,7 +71,31 @@ const Sidebar = () => {
         )}
       </nav>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+        <div style={{ marginBottom: '8px' }}>
+          <h4 style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', padding: '0 12px' }}>What's New</h4>
+          <div style={{ padding: '0 12px' }}>
+            {changelogData[0].changes.slice(0, 2).map((change, idx) => (
+              <div key={idx} style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginBottom: '4px', display: 'flex', gap: '6px' }}>
+                <span style={{ color: 'var(--primary-color)' }}>•</span> {change}
+              </div>
+            ))}
+            <NavLink 
+              to="/changelog" 
+              style={{ 
+                fontSize: '0.7rem', 
+                color: 'var(--primary-color)', 
+                textDecoration: 'none', 
+                display: 'block', 
+                marginTop: '8px',
+                fontWeight: '600'
+              }}
+            >
+              See full history →
+            </NavLink>
+          </div>
+        </div>
+
         {permissions.canViewManagement && (
           <NavLink to="/management" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`} style={{ color: 'var(--primary-color)' }}>
             <Users size={20} /> Manage

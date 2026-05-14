@@ -18,11 +18,14 @@ const Management = () => {
   const [pics, setPics] = useState([]);
   const [dealingLink, setDealingLink] = useState('');
   const [schedulingLink, setSchedulingLink] = useState('');
+  const [ecommLink, setEcommLink] = useState('');
+  const [ecommDetailLink, setEcommDetailLink] = useState('');
   const [appsScriptUrl, setAppsScriptUrl] = useState('');
 
   const isSuperAdmin = currentUser?.id === 'superadmin';
   const isManagement = currentUser?.id === 'management' || isSuperAdmin;
   const isKol = currentUser?.id === 'kol';
+  const isEcomm = currentUser?.id === 'ecomm';
 
   // Currency helpers
   const formatIDR = (val) => {
@@ -46,8 +49,10 @@ const Management = () => {
     setPics(monthSettings.pics || []);
     setDealingLink(monthSettings.dealingSpreadsheetLink || '');
     setSchedulingLink(monthSettings.schedulingSpreadsheetLink || '');
+    setEcommLink(globalSettings?.ecommLink || '');
+    setEcommDetailLink(globalSettings?.ecommDetailLink || '');
     setAppsScriptUrl(globalSettings?.appsScriptUrl || '');
-  }, [selectedMonth, getSettingsForMonth, globalSettings?.appsScriptUrl]);
+  }, [selectedMonth, getSettingsForMonth, globalSettings]);
 
   const handleSaveTargets = () => {
     updateMonthlySettings(selectedMonth, {
@@ -64,7 +69,12 @@ const Management = () => {
       dealingSpreadsheetLink: dealingLink,
       schedulingSpreadsheetLink: schedulingLink
     });
-    setGlobalSettings(prev => ({ ...prev, appsScriptUrl }));
+    setGlobalSettings(prev => ({ 
+      ...prev, 
+      appsScriptUrl,
+      ecommLink,
+      ecommDetailLink
+    }));
     setLinksSaved(true);
     setTimeout(() => setLinksSaved(false), 3000);
   };
@@ -274,7 +284,7 @@ const Management = () => {
       {(isSuperAdmin || (isKol && !isManagement)) && (
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: '600', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Link2 size={20} /> Spreadsheet Sync
+            <Link2 size={20} /> KOL Spreadsheet Sync
           </h2>
           <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>
             To sync the correct tabs from your single Google Sheet, paste the exact URL of the specific tab you are viewing. The system will automatically extract the Tab ID.
@@ -321,6 +331,47 @@ const Management = () => {
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '16px' }}>
             <button onClick={handleSaveLinks} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Save size={18} /> Save & Sync Links
+            </button>
+            {linksSaved && <span style={{ color: 'var(--success-color)', fontSize: '0.875rem', fontWeight: '500' }}>Links saved and synced!</span>}
+          </div>
+        </div>
+      )}
+
+      {(isSuperAdmin || isEcomm) && (
+        <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Link2 size={20} /> Ecommerce Spreadsheet Sync
+          </h2>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Ecommerce Main Data Link</label>
+              <input 
+                type="url" 
+                className="input-field" 
+                value={ecommLink} 
+                onChange={(e) => setEcommLink(e.target.value)} 
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=1019025468"
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Ecommerce Detail GMV Link</label>
+              <input 
+                type="url" 
+                className="input-field" 
+                value={ecommDetailLink} 
+                onChange={(e) => setEcommDetailLink(e.target.value)} 
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=1551198310"
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+
+          <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button onClick={handleSaveLinks} className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Save size={18} /> Save Ecomm Links
             </button>
             {linksSaved && <span style={{ color: 'var(--success-color)', fontSize: '0.875rem', fontWeight: '500' }}>Links saved and synced!</span>}
           </div>
