@@ -162,11 +162,13 @@ const Scheduling = () => {
       };
       
       try {
-        await fetch(globalSettings.appsScriptUrl, {
+        await fetch('/api/write-sheet', {
           method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify(payload)
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            appsScriptUrl: globalSettings.appsScriptUrl,
+            payload: payload
+          })
         });
       } catch (e) {
         console.error("Live sync failed", e);

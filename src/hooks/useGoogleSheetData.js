@@ -26,25 +26,15 @@ export const useGoogleSheetData = (inputUrl) => {
     const fetchData = async (isBackground = false) => {
       if (!isBackground) setLoading(true);
       try {
-        let fetchUrl = inputUrl;
+        const fetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(inputUrl)}`;
         
-        // Auto-convert standard edit link to CSV export link if detected
-        if (inputUrl.includes('/edit')) {
-          const sheetId = inputUrl.match(/\/d\/(.+?)\//)?.[1];
-          const gidMatch = inputUrl.match(/[#&]gid=([0-9]+)/);
-          const gid = gidMatch ? gidMatch[1] : '0';
-          if (sheetId) {
-            fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-          }
-        }
-
         const response = await fetch(fetchUrl);
         if (!response.ok) throw new Error('Failed to fetch data');
         const csvText = await response.text();
         
         // Detect if response is HTML (login page) instead of CSV
         if (csvText.trim().toLowerCase().startsWith('<!doctype') || csvText.trim().toLowerCase().startsWith('<html')) {
-          throw new Error('Spreadsheet access is restricted. Please change sharing settings to "Anyone with the link can view".');
+          throw new Error('Spreadsheet access is restricted. Please check serverless function configuration.');
         }
         
         Papa.parse(csvText, {

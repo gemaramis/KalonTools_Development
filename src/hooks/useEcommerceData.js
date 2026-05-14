@@ -40,20 +40,14 @@ export const useEcommerceData = (mainUrl, detailUrl) => {
       setError(null);
       try {
         // --- Fetch Main Data ---
-        let mainFetchUrl = mainUrl;
-        if (mainUrl.includes('/edit')) {
-          const sheetId = mainUrl.match(/\/d\/(.+?)\//)?.[1];
-          const gidMatch = mainUrl.match(/[#&]gid=([0-9]+)/);
-          const gid = gidMatch ? gidMatch[1] : '0';
-          if (sheetId) mainFetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-        }
+        const mainFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(mainUrl)}`;
 
         const mainRes = await fetch(mainFetchUrl);
         if (!mainRes.ok) throw new Error('Failed to fetch Main Ecommerce Data');
         const mainCsv = await mainRes.text();
 
         if (mainCsv.trim().toLowerCase().startsWith('<!doctype') || mainCsv.trim().toLowerCase().startsWith('<html')) {
-          throw new Error('Spreadsheet access is restricted. Please change sharing settings to "Anyone with the link can view".');
+          throw new Error('Spreadsheet access is restricted. Please check serverless function configuration.');
         }
 
         Papa.parse(mainCsv, {
@@ -81,13 +75,7 @@ export const useEcommerceData = (mainUrl, detailUrl) => {
         });
 
         // --- Fetch Detail GMV Data ---
-        let detailFetchUrl = detailUrl;
-        if (detailUrl.includes('/edit')) {
-          const sheetId = detailUrl.match(/\/d\/(.+?)\//)?.[1];
-          const gidMatch = detailUrl.match(/[#&]gid=([0-9]+)/);
-          const gid = gidMatch ? gidMatch[1] : '0';
-          if (sheetId) detailFetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
-        }
+        const detailFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(detailUrl)}`;
 
         const detailRes = await fetch(detailFetchUrl);
         if (!detailRes.ok) throw new Error('Failed to fetch Detail GMV Data');
