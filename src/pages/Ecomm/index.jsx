@@ -114,6 +114,8 @@ const Ecomm = () => {
     globalSettings?.ecommDetailLink
   );
 
+  const [activeTab, setActiveTab] = useState('Overview');
+  const [skuSelectedMetric, setSkuSelectedMetric] = useState('gmv');
   const [selectedMetrics, setSelectedMetrics] = useState(['gmv', 'productsSold']);
 
   // Base date for "Today" simulation based on data if needed
@@ -288,6 +290,33 @@ const Ecomm = () => {
   const aggregatedDetail = useMemo(() => aggregateDetailData(currentWeekNum), [detailData, currentWeekNum]);
   const compareAggregatedDetail = useMemo(() => aggregateDetailData(compareWeekNum), [detailData, compareWeekNum]);
 
+  // --- SKU Data Aggregation ---
+  const skuTableData = useMemo(() => {
+    if (activeTab !== 'SKU Data') return [];
+
+    const productMap = {};
+
+    const getMetricValue = (item) => {
+      return item[skuSelectedMetric] || 0;
+    };
+
+    currentData.forEach(item => {
+      const prod = item.product || 'Unknown';
+      if (!productMap[prod]) productMap[prod] = { name: prod, current: 0, compare: 0 };
+      productMap[prod].current += getMetricValue(item);
+    });
+
+    compareData.forEach(item => {
+      const prod = item.product || 'Unknown';
+      if (!productMap[prod]) productMap[prod] = { name: prod, current: 0, compare: 0 };
+      productMap[prod].compare += getMetricValue(item);
+    });
+
+    const result = Object.values(productMap);
+    result.sort((a, b) => b.current - a.current);
+    return result;
+  }, [activeTab, currentData, compareData, skuSelectedMetric]);
+
   const PIE_COLORS = ['#00B5A5', '#F59E0B', '#3B82F6'];
   const pieData = [
     { name: 'LIVE', value: aggregatedDetail.live.total },
@@ -306,10 +335,40 @@ const Ecomm = () => {
   return (
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       
-      {/* Top Header & Date Selection */}
-      <div className="glass-panel" style={{ padding: '16px 24px' }}>
+      {/* Header and Tabs */}
+      <div style={{ marginBottom: '8px' }}>
+        <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '8px' }}>Ecommerce Data</h1>
+        <p style={{ color: 'var(--text-secondary)' }}>Kelola dan pantau performa Ecommerce (Tiktok Shop) Anda</p>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', borderBottom: '1px solid var(--border-color)', marginBottom: '24px' }}>
+        <div 
+          onClick={() => setActiveTab('Overview')}
+          style={{ 
+            fontSize: '1.125rem', fontWeight: activeTab === 'Overview' ? '600' : '500', 
+            color: activeTab === 'Overview' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            cursor: 'pointer', paddingBottom: '12px', position: 'relative'
+          }}>
+          Overview
+          {activeTab === 'Overview' && <div style={{ position: 'absolute', bottom: '-1px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--primary-color)' }}></div>}
+        </div>
+        <div 
+          onClick={() => setActiveTab('SKU Data')}
+          style={{ 
+            fontSize: '1.125rem', fontWeight: activeTab === 'SKU Data' ? '600' : '500', 
+            color: activeTab === 'SKU Data' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            cursor: 'pointer', paddingBottom: '12px', position: 'relative'
+          }}>
+          SKU Data
+          {activeTab === 'SKU Data' && <div style={{ position: 'absolute', bottom: '-1px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--primary-color)' }}></div>}
+        </div>
+      </div>
+
+      {/* Top Bar Filters */}
+      <div className="glass-panel" style={{ padding: '16px 24px', marginBottom: '24px' }}>
         <div className="flex-between">
-          <h1 style={{ fontSize: '1.5rem', fontWeight: '600' }}>Metrik utama</h1>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: '600' }}>{activeTab === 'Overview' ? 'Metrik utama' : 'SKU Performance'}</h1>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.875rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -328,7 +387,7 @@ const Ecomm = () => {
 
       {/* Metric Cards */}
       <div 
-        style={{ display: 'flex', overflowX: 'auto', gap: '16px', paddingBottom: '8px', scrollbarWidth: 'thin' }}
+        style={{ display: activeTab === 'Overview' ? 'flex' : 'none', overflowX: 'auto', gap: '16px', paddingBottom: '8px', scrollbarWidth: 'thin' }}
         onScroll={() => setTooltipState(null)}
       >
         {metricsInfo.map(metric => {
@@ -391,7 +450,7 @@ const Ecomm = () => {
       </div>
 
       {/* Graph */}
-      <div className="glass-panel" style={{ padding: '24px' }}>
+      <div className="glass-panel" style={{ padding: '24px', display: activeTab === 'Overview' ? 'block' : 'none' }}>
         <div style={{ height: '300px', width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -465,7 +524,7 @@ const Ecomm = () => {
       </div>
 
       {/* Detail GMV */}
-      <div className="glass-panel" style={{ padding: '24px' }}>
+      <div className="glass-panel" style={{ padding: '24px', display: activeTab === 'Overview' ? 'block' : 'none' }}>
         <div className="flex-between" style={{ marginBottom: '16px' }}>
           <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Detail GMV</h2>
         </div>
@@ -645,6 +704,70 @@ const Ecomm = () => {
             </div>
 
           </div>
+        </div>
+      </div>
+
+      {/* SKU Data Tab Content */}
+      <div style={{ display: activeTab === 'SKU Data' ? 'block' : 'none' }} className="animation-fade-in">
+        {/* SKU Metric Selector */}
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
+          <span style={{ color: 'var(--text-secondary)', alignSelf: 'center', marginRight: '8px' }}>Pilih Metrik (max 1):</span>
+          {metricsInfo.map(metric => (
+            <button
+              key={metric.id}
+              onClick={() => setSkuSelectedMetric(metric.id)}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '20px',
+                border: `1px solid ${skuSelectedMetric === metric.id ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                backgroundColor: skuSelectedMetric === metric.id ? 'rgba(0, 181, 165, 0.1)' : 'transparent',
+                color: skuSelectedMetric === metric.id ? 'var(--primary-color)' : 'var(--text-primary)',
+                cursor: 'pointer',
+                fontWeight: skuSelectedMetric === metric.id ? '600' : '400',
+                transition: 'all 0.2s'
+              }}
+            >
+              {metric.label}
+            </button>
+          ))}
+        </div>
+
+        {/* SKU Table */}
+        <div className="glass-panel" style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.02)' }}>
+                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>No</th>
+                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Product Name</th>
+                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Date A ({format(currentRange.start, 'dd/MM/yy')} - {format(currentRange.end, 'dd/MM/yy')})</th>
+                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Date B ({format(compareRange.start, 'dd/MM/yy')} - {format(compareRange.end, 'dd/MM/yy')})</th>
+                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Changes %</th>
+              </tr>
+            </thead>
+            <tbody>
+              {skuTableData.map((row, index) => {
+                const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
+                
+                return (
+                  <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '16px' }}>{index + 1}</td>
+                    <td style={{ padding: '16px', fontWeight: '500' }}>{row.name}</td>
+                    <td style={{ padding: '16px' }}>{formatFn(row.current)}</td>
+                    <td style={{ padding: '16px' }}>{formatFn(row.compare)}</td>
+                    <td style={{ padding: '16px' }}>
+                      <ChangeIndicator current={row.current} previous={row.compare} />
+                    </td>
+                  </tr>
+                );
+              })}
+              {skuTableData.length === 0 && (
+                <tr>
+                  <td colSpan="5" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>Belum ada data tersedia</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
