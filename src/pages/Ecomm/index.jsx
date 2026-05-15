@@ -12,6 +12,7 @@ import {
 } from 'date-fns';
 import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronRight, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
+import ColumnHeader from '../../components/Table/ColumnHeader';
 
 // --- Helper Functions ---
 const formatRp = (value) => {
@@ -118,6 +119,7 @@ const Ecomm = () => {
   const [skuSelectedMetric, setSkuSelectedMetric] = useState('gmv');
   const [skuSearchQuery, setSkuSearchQuery] = useState('');
   const [skuSortConfig, setSkuSortConfig] = useState({ key: 'current', direction: 'desc' });
+  const [skuFilters, setSkuFilters] = useState({});
   const [selectedMetrics, setSelectedMetrics] = useState(['gmv', 'productsSold']);
 
   // Base date for "Today" simulation based on data if needed
@@ -322,6 +324,13 @@ const Ecomm = () => {
       result = result.filter(p => p.name.toLowerCase().includes(q));
     }
 
+    // Filter by Dropdowns
+    Object.keys(skuFilters).forEach(key => {
+      if (skuFilters[key]) {
+        result = result.filter(item => item[key] === skuFilters[key]);
+      }
+    });
+
     // Sort
     result.sort((a, b) => {
       let valA = a[skuSortConfig.key];
@@ -347,6 +356,10 @@ const Ecomm = () => {
       direction = 'asc';
     }
     setSkuSortConfig({ key, direction });
+  };
+
+  const handleSkuFilterChange = (key, value) => {
+    setSkuFilters(prev => ({ ...prev, [key]: value }));
   };
 
   const PIE_COLORS = ['#00B5A5', '#F59E0B', '#3B82F6'];
@@ -787,28 +800,35 @@ const Ecomm = () => {
         <div className="glass-panel" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.02)' }}>
+              <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
                 <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>No</th>
-                <th onClick={() => handleSort('name')} style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    Product Name {skuSortConfig.key === 'name' ? (skuSortConfig.direction === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>) : <ArrowUpDown size={14} opacity={0.3}/>}
-                  </div>
-                </th>
-                <th onClick={() => handleSort('current')} style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    Date A ({format(currentRange.start, 'dd/MM/yy')} - {format(currentRange.end, 'dd/MM/yy')}) {skuSortConfig.key === 'current' ? (skuSortConfig.direction === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>) : <ArrowUpDown size={14} opacity={0.3}/>}
-                  </div>
-                </th>
-                <th onClick={() => handleSort('compare')} style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    Date B ({format(compareRange.start, 'dd/MM/yy')} - {format(compareRange.end, 'dd/MM/yy')}) {skuSortConfig.key === 'compare' ? (skuSortConfig.direction === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>) : <ArrowUpDown size={14} opacity={0.3}/>}
-                  </div>
-                </th>
-                <th onClick={() => handleSort('change')} style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    Changes % {skuSortConfig.key === 'change' ? (skuSortConfig.direction === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>) : <ArrowUpDown size={14} opacity={0.3}/>}
-                  </div>
-                </th>
+                <ColumnHeader 
+                  label="Product Name" 
+                  sortKey="name" 
+                  sortConfig={skuSortConfig} 
+                  onSort={handleSort} 
+                  filterValue={skuFilters.name} 
+                  onFilterChange={handleSkuFilterChange} 
+                  options={Array.from(new Set(currentData.map(d => d.product).filter(Boolean))).sort()}
+                />
+                <ColumnHeader 
+                  label={`Date A (${format(currentRange.start, 'dd/MM/yy')} - ${format(currentRange.end, 'dd/MM/yy')})`} 
+                  sortKey="current" 
+                  sortConfig={skuSortConfig} 
+                  onSort={handleSort}
+                />
+                <ColumnHeader 
+                  label={`Date B (${format(compareRange.start, 'dd/MM/yy')} - ${format(compareRange.end, 'dd/MM/yy')})`} 
+                  sortKey="compare" 
+                  sortConfig={skuSortConfig} 
+                  onSort={handleSort}
+                />
+                <ColumnHeader 
+                  label="Changes %" 
+                  sortKey="change" 
+                  sortConfig={skuSortConfig} 
+                  onSort={handleSort}
+                />
               </tr>
             </thead>
             <tbody>
