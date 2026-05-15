@@ -10,7 +10,7 @@ import {
   subDays, isSameDay, isWithinInterval, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, format, isAfter, isBefore, eachDayOfInterval
 } from 'date-fns';
-import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronRight, Minus } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronRight, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
 
 // --- Helper Functions ---
@@ -116,6 +116,8 @@ const Ecomm = () => {
 
   const [activeTab, setActiveTab] = useState('Overview');
   const [skuSelectedMetric, setSkuSelectedMetric] = useState('gmv');
+  const [skuSearchQuery, setSkuSearchQuery] = useState('');
+  const [skuSortConfig, setSkuSortConfig] = useState({ key: 'current', direction: 'desc' });
   const [selectedMetrics, setSelectedMetrics] = useState(['gmv', 'productsSold']);
 
   // Base date for "Today" simulation based on data if needed
@@ -312,10 +314,40 @@ const Ecomm = () => {
       productMap[prod].compare += getMetricValue(item);
     });
 
-    const result = Object.values(productMap);
-    result.sort((a, b) => b.current - a.current);
+    let result = Object.values(productMap);
+
+    // Filter
+    if (skuSearchQuery.trim()) {
+      const q = skuSearchQuery.toLowerCase();
+      result = result.filter(p => p.name.toLowerCase().includes(q));
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      let valA = a[skuSortConfig.key];
+      let valB = b[skuSortConfig.key];
+
+      if (skuSortConfig.key === 'change') {
+        const getChange = (p) => p.compare === 0 ? (p.current > 0 ? 100 : 0) : ((p.current - p.compare) / p.compare) * 100;
+        valA = getChange(a);
+        valB = getChange(b);
+      }
+
+      if (valA < valB) return skuSortConfig.direction === 'asc' ? -1 : 1;
+      if (valA > valB) return skuSortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
     return result;
-  }, [activeTab, currentData, compareData, skuSelectedMetric]);
+  }, [activeTab, currentData, compareData, skuSelectedMetric, skuSearchQuery, skuSortConfig]);
+
+  const handleSort = (key) => {
+    let direction = 'desc';
+    if (skuSortConfig.key === key && skuSortConfig.direction === 'desc') {
+      direction = 'asc';
+    }
+    setSkuSortConfig({ key, direction });
+  };
 
   const PIE_COLORS = ['#00B5A5', '#F59E0B', '#3B82F6'];
   const pieData = [
@@ -709,27 +741,46 @@ const Ecomm = () => {
 
       {/* SKU Data Tab Content */}
       <div style={{ display: activeTab === 'SKU Data' ? 'block' : 'none' }} className="animation-fade-in">
-        {/* SKU Metric Selector */}
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
-          <span style={{ color: 'var(--text-secondary)', alignSelf: 'center', marginRight: '8px' }}>Pilih Metrik (max 1):</span>
-          {metricsInfo.map(metric => (
-            <button
-              key={metric.id}
-              onClick={() => setSkuSelectedMetric(metric.id)}
+        <div className="flex-between" style={{ marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+          {/* SKU Metric Selector */}
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--text-secondary)', alignSelf: 'center', marginRight: '8px' }}>Pilih Metrik (max 1):</span>
+            {metricsInfo.map(metric => (
+              <button
+                key={metric.id}
+                onClick={() => setSkuSelectedMetric(metric.id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  border: `1px solid ${skuSelectedMetric === metric.id ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                  backgroundColor: skuSelectedMetric === metric.id ? 'rgba(0, 181, 165, 0.1)' : 'transparent',
+                  color: skuSelectedMetric === metric.id ? 'var(--primary-color)' : 'var(--text-primary)',
+                  cursor: 'pointer',
+                  fontWeight: skuSelectedMetric === metric.id ? '600' : '400',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {metric.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search Bar */}
+          <div style={{ position: 'relative', width: '300px' }}>
+            <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-secondary)' }} />
+            <input 
+              type="text" 
+              placeholder="Cari produk..." 
+              value={skuSearchQuery}
+              onChange={(e) => setSkuSearchQuery(e.target.value)}
               style={{
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: `1px solid ${skuSelectedMetric === metric.id ? 'var(--primary-color)' : 'var(--border-color)'}`,
-                backgroundColor: skuSelectedMetric === metric.id ? 'rgba(0, 181, 165, 0.1)' : 'transparent',
-                color: skuSelectedMetric === metric.id ? 'var(--primary-color)' : 'var(--text-primary)',
-                cursor: 'pointer',
-                fontWeight: skuSelectedMetric === metric.id ? '600' : '400',
-                transition: 'all 0.2s'
+                width: '100%', padding: '10px 16px 10px 38px',
+                borderRadius: '8px', border: '1px solid var(--border-color)',
+                backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)',
+                outline: 'none', transition: 'border-color 0.2s'
               }}
-            >
-              {metric.label}
-            </button>
-          ))}
+            />
+          </div>
         </div>
 
         {/* SKU Table */}
@@ -738,10 +789,26 @@ const Ecomm = () => {
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.02)' }}>
                 <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>No</th>
-                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Product Name</th>
-                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Date A ({format(currentRange.start, 'dd/MM/yy')} - {format(currentRange.end, 'dd/MM/yy')})</th>
-                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Date B ({format(compareRange.start, 'dd/MM/yy')} - {format(compareRange.end, 'dd/MM/yy')})</th>
-                <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>Changes %</th>
+                <th onClick={() => handleSort('name')} style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Product Name {skuSortConfig.key === 'name' ? (skuSortConfig.direction === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>) : <ArrowUpDown size={14} opacity={0.3}/>}
+                  </div>
+                </th>
+                <th onClick={() => handleSort('current')} style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Date A ({format(currentRange.start, 'dd/MM/yy')} - {format(currentRange.end, 'dd/MM/yy')}) {skuSortConfig.key === 'current' ? (skuSortConfig.direction === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>) : <ArrowUpDown size={14} opacity={0.3}/>}
+                  </div>
+                </th>
+                <th onClick={() => handleSort('compare')} style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Date B ({format(compareRange.start, 'dd/MM/yy')} - {format(compareRange.end, 'dd/MM/yy')}) {skuSortConfig.key === 'compare' ? (skuSortConfig.direction === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>) : <ArrowUpDown size={14} opacity={0.3}/>}
+                  </div>
+                </th>
+                <th onClick={() => handleSort('change')} style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap', cursor: 'pointer', userSelect: 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    Changes % {skuSortConfig.key === 'change' ? (skuSortConfig.direction === 'asc' ? <ArrowUp size={14}/> : <ArrowDown size={14}/>) : <ArrowUpDown size={14} opacity={0.3}/>}
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
