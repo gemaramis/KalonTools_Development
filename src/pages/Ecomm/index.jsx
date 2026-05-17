@@ -337,7 +337,7 @@ const Ecomm = () => {
       let valB = b[skuSortConfig.key];
 
       if (skuSortConfig.key === 'change') {
-        const getChange = (p) => p.compare === 0 ? (p.current > 0 ? 100 : 0) : ((p.current - p.compare) / p.compare) * 100;
+        const getChange = (p) => p.current === 0 ? (p.compare > 0 ? 100 : 0) : ((p.compare - p.current) / p.current) * 100;
         valA = getChange(a);
         valB = getChange(b);
       }
@@ -843,7 +843,7 @@ const Ecomm = () => {
                     <td style={{ padding: '16px' }}>{formatFn(row.current)}</td>
                     <td style={{ padding: '16px' }}>{formatFn(row.compare)}</td>
                     <td style={{ padding: '16px' }}>
-                      <ChangeIndicator current={row.current} previous={row.compare} />
+                      <ChangeIndicator current={row.compare} previous={row.current} />
                     </td>
                   </tr>
                 );
