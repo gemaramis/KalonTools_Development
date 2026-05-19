@@ -418,7 +418,7 @@ const Ecomm = () => {
   }
 
   return (
-    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '24px', minWidth: 0 }}>
       
       {/* Header and Tabs */}
       <div style={{ marginBottom: '8px' }}>
