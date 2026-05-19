@@ -8,14 +8,25 @@ const parseRp = (value) => {
   return parseInt(numString, 10) || 0;
 };
 
+const INDONESIAN_MONTHS = {
+  'jan': 'Jan', 'feb': 'Feb', 'mar': 'Mar', 'apr': 'Apr', 'mei': 'May', 'jun': 'Jun',
+  'jul': 'Jul', 'ags': 'Aug', 'sep': 'Sep', 'okt': 'Oct', 'nov': 'Nov', 'des': 'Dec'
+};
+
 const parseDate = (dateStr) => {
   if (!dateStr) return null;
   // Try DD/MM/YY format first based on sample data
   const parsed = parse(dateStr, 'dd/MM/yy', new Date());
   if (isValid(parsed)) return parsed;
   
+  // Handle Indonesian months like "1 Okt 2025" or "1  Okt 2025"
+  let normalizedStr = dateStr.toLowerCase().replace(/\s+/g, ' ').trim();
+  Object.keys(INDONESIAN_MONTHS).forEach(idMonth => {
+    normalizedStr = normalizedStr.replace(new RegExp(`\\b${idMonth}\\b`, 'g'), INDONESIAN_MONTHS[idMonth]);
+  });
+
   // Fallback to JS Date parsing
-  const fallback = new Date(dateStr);
+  const fallback = new Date(normalizedStr);
   return isValid(fallback) ? fallback : null;
 };
 
@@ -96,25 +107,25 @@ export const useEcommerceData = (mainUrl, detailUrl, adsUrl) => {
             if (!adsCsv.trim().toLowerCase().startsWith('<!doctype') && !adsCsv.trim().toLowerCase().startsWith('<html')) {
               const results = await parseCSV(adsCsv, { header: true, skipEmptyLines: true });
               const adsParsed = results.data
-                .filter(row => row['Tanggal'] && row['Tanggal'].trim() !== '')
+                .filter(row => row['Date'] && row['Date'].trim() !== '')
                 .map(row => ({
-                  dateStr: row['Tanggal'],
-                  dateObj: parseDate(row['Tanggal']),
+                  dateStr: row['Date'],
+                  dateObj: parseDate(row['Date']),
                   month: row['Bulan'] || '',
                   product: row['Produk'] || '', // Assume it might have a product breakdown
                   gmv: 0, productsSold: 0, impressionsShopTab: 0, impressionsLive: 0, impressionsVideo: 0, impressionsProductCard: 0, impressionsTotal: 0, // Ecomm fields
 
                   // Ads fields
-                  skuOrders: parseRp(row['SKU Orders']),
+                  skuOrders: parseRp(row['Order'] || row['SKU Orders']),
                   grossRevenue: parseRp(row['Gross Revenue']),
-                  cost: parseRp(row['Cost']),
-                  roi: parseRp(row['ROI']) // Note: ROI might be percentage, parseRp strips symbols and parses float if we change it, but parseRp does parseInt. We will use a float parser for ROI.
+                  cost: parseRp(row['Cost '] || row['Cost']),
+                  roi: 0 // Parsed below
                 }))
                 .filter(item => item.dateObj !== null);
               
               // Let's quickly fix ROI parsing to handle floats since it's a percentage or ratio
               adsParsed.forEach(item => {
-                const originalRow = results.data.find(r => r['Tanggal'] === item.dateStr && (r['Produk'] || '') === item.product);
+                const originalRow = results.data.find(r => r['Date'] === item.dateStr && (r['Produk'] || '') === item.product);
                 if (originalRow && originalRow['ROI']) {
                   const cleaned = originalRow['ROI'].toString().replace(/[^0-9.,-]/g, '').replace(/,/, '.');
                   item.roi = parseFloat(cleaned) || 0;
