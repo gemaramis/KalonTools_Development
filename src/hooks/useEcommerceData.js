@@ -16,7 +16,10 @@ const INDONESIAN_MONTHS = {
 const parseDate = (dateStr) => {
   if (!dateStr) return null;
   // Try DD/MM/YY format first based on sample data
-  const parsed = parse(dateStr, 'dd/MM/yy', new Date());
+  let parsed = parse(dateStr, 'dd/MM/yy', new Date());
+  if (isValid(parsed)) return parsed;
+
+  parsed = parse(dateStr, 'dd/MM/yyyy', new Date());
   if (isValid(parsed)) return parsed;
   
   // Handle Indonesian months like "1 Okt 2025" or "1  Okt 2025"
