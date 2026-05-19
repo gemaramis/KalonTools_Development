@@ -126,8 +126,9 @@ const Ecomm = () => {
 
   // Base date for "Today" simulation based on data if needed
   const maxDate = useMemo(() => {
-    if (!mainData.length) return new Date();
-    return new Date(Math.max(...mainData.map(d => d.dateObj.getTime())));
+    const validData = mainData.filter(d => d.gmv > 0 || d.grossRevenue > 0 || d.cost > 0 || d.impressionsTotal > 0);
+    if (!validData.length) return new Date();
+    return new Date(Math.max(...validData.map(d => d.dateObj.getTime())));
   }, [mainData]);
 
   const [currentRange, setCurrentRange] = useState({
