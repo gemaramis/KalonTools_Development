@@ -618,6 +618,7 @@ const Ecomm = () => {
                   yAxisId={metricId} 
                   orientation={index % 2 === 0 ? "left" : "right"} 
                   hide={index > 1} // Hide axes beyond the first two to keep UI clean
+                  domain={['auto', 'auto']}
                   tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} 
                   axisLine={false} tickLine={false} 
                   tickFormatter={(val) => {
