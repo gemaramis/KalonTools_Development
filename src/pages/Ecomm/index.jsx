@@ -124,17 +124,28 @@ const Ecomm = () => {
   const [selectedMetrics, setSelectedMetrics] = useState(['gmv', 'productsSold']);
   const [isCompareEnabled, setIsCompareEnabled] = useState(false);
   
-  const scrollContainerRef = useRef(null);
+  const scrollContainerEcommRef = useRef(null);
+  const scrollContainerAdsRef = useRef(null);
 
-  const scrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+  const scrollLeftEcomm = () => {
+    if (scrollContainerEcommRef.current) {
+      scrollContainerEcommRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+  const scrollRightEcomm = () => {
+    if (scrollContainerEcommRef.current) {
+      scrollContainerEcommRef.current.scrollBy({ left: 300, behavior: 'smooth' });
     }
   };
 
-  const scrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+  const scrollLeftAds = () => {
+    if (scrollContainerAdsRef.current) {
+      scrollContainerAdsRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+  const scrollRightAds = () => {
+    if (scrollContainerAdsRef.current) {
+      scrollContainerAdsRef.current.scrollBy({ left: 300, behavior: 'smooth' });
     }
   };
 
@@ -483,7 +494,7 @@ const Ecomm = () => {
         </div>
       </div>
 
-      {/* Metric Cards */}
+      {/* Single Unified Box for Cards and Graph */}
       <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
@@ -493,114 +504,205 @@ const Ecomm = () => {
           scrollbar-width: none;
         }
       `}</style>
+      
       <div 
-        style={{ display: activeTab === 'Overview' ? 'block' : 'none', paddingBottom: '8px', position: 'relative' }}
+        className="glass-panel" 
+        style={{ display: activeTab === 'Overview' ? 'block' : 'none', padding: '24px' }}
       >
-        <button 
-          onClick={scrollLeft}
-          style={{
-            position: 'absolute', left: '-12px', top: '40%', transform: 'translateY(-50%)', zIndex: 10,
-            backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '50%',
-            width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer', color: 'var(--text-secondary)'
-          }}
-        >
-          <ChevronLeft size={18} />
-        </button>
-        <button 
-          onClick={scrollRight}
-          style={{
-            position: 'absolute', right: '-12px', top: '40%', transform: 'translateY(-50%)', zIndex: 10,
-            backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '50%',
-            width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer', color: 'var(--text-secondary)'
-          }}
-        >
-          <ChevronRight size={18} />
-        </button>
+        
+        {/* Ecommerce Metrics Row */}
+        <div style={{ position: 'relative', marginBottom: '24px' }}>
+          <p style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px' }}>Ecommerce Metrics</p>
+          <button 
+            onClick={scrollLeftEcomm}
+            style={{
+              position: 'absolute', left: '-12px', top: '55%', transform: 'translateY(-50%)', zIndex: 10,
+              backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '50%',
+              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer', color: 'var(--text-secondary)'
+            }}
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button 
+            onClick={scrollRightEcomm}
+            style={{
+              position: 'absolute', right: '-12px', top: '55%', transform: 'translateY(-50%)', zIndex: 10,
+              backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '50%',
+              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer', color: 'var(--text-secondary)'
+            }}
+          >
+            <ChevronRight size={18} />
+          </button>
 
-        <div ref={scrollContainerRef} className="hide-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: '16px', paddingBottom: '16px' }} onScroll={() => setTooltipState(null)}>
-          {[...ecommMetricsInfo, ...adsMetricsInfo].map(metric => {
-            const isAds = adsMetricsInfo.some(m => m.id === metric.id);
-            const currentVal = metric.id === 'roi' ? (currentData.reduce((s,i)=>s+i.roi,0)/(currentData.filter(i=>i.roi).length||1)) : calculateTotal(currentData, metric.id);
-            const compareVal = metric.id === 'roi' ? (compareData.reduce((s,i)=>s+i.roi,0)/(compareData.filter(i=>i.roi).length||1)) : calculateTotal(compareData, metric.id);
-            const change = calculateChange(currentVal, compareVal);
-            const isSelected = selectedMetrics.includes(metric.id);
-            const isPositive = change > 0;
-            const isNeutral = change === 0;
-            const selectedIndex = selectedMetrics.indexOf(metric.id);
-            const borderColor = isSelected ? CHART_COLORS[selectedIndex] : 'transparent';
+          <div ref={scrollContainerEcommRef} className="hide-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: '16px', paddingBottom: '8px' }} onScroll={() => setTooltipState(null)}>
+            {ecommMetricsInfo.map(metric => {
+              const currentVal = calculateTotal(currentData, metric.id);
+              const compareVal = calculateTotal(compareData, metric.id);
+              const change = calculateChange(currentVal, compareVal);
+              const isSelected = selectedMetrics.includes(metric.id);
+              const isPositive = change > 0;
+              const isNeutral = change === 0;
+              const selectedIndex = selectedMetrics.indexOf(metric.id);
+              const borderColor = isSelected ? CHART_COLORS[selectedIndex] : 'transparent';
 
-            return (
-              <div 
-                key={metric.id}
-                onClick={() => handleMetricToggle(metric.id)}
-                onMouseMove={(e) => {
-                  setTooltipState({ x: e.clientX, y: e.clientY, label: metric.label, value: metric.fullFormat(currentVal) });
-                }}
-                onMouseLeave={() => setTooltipState(null)}
-                style={{ 
-                  padding: '12px 16px', 
-                  cursor: 'pointer',
-                  border: isSelected ? `1px solid ${borderColor}` : `1px solid var(--border-color)`,
-                  backgroundColor: isSelected ? 'rgba(0, 190, 165, 0.03)' : 'var(--surface-color)',
-                  borderRadius: '8px',
-                  width: '200px', // Fixed width like TikTok so it doesn't stretch when zoomed out
-                  flexShrink: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '8px',
-                  position: 'relative',
-                  overflow: 'hidden'
-                }}
-              >
-                {/* TikTok Left Colored Border */}
-                <div style={{ position: 'absolute', top: '16px', left: 0, width: '3px', height: '16px', backgroundColor: borderColor, borderRadius: '0 4px 4px 0' }}></div>
-                
-                <div className="flex-between" style={{ width: '100%', paddingLeft: '8px' }}>
-                  <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
-                    {metric.label} {isAds && <span style={{fontSize: '0.65rem', backgroundColor: '#f3f4f6', padding: '2px 4px', borderRadius: '4px', marginLeft: '4px'}}>Ads</span>}
-                  </span>
-                  <div style={{ 
-                    width: '16px', height: '16px', 
-                    borderRadius: '4px', 
-                    border: `1px solid ${isSelected ? borderColor : 'var(--border-color)'}`,
-                    backgroundColor: isSelected ? borderColor : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    {isSelected && <span style={{ color: 'white', fontSize: '10px' }}>✓</span>}
-                  </div>
-                </div>
-                
-                <div style={{ paddingLeft: '8px' }}>
-                  <span style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-                    {metric.format(currentVal)}
-                  </span>
-                </div>
-
-                {isCompareEnabled && (
-                  <div className="flex-between" style={{ marginTop: 'auto', paddingTop: '4px', paddingLeft: '8px' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>vs last period</span>
-                    <span style={{ 
-                      fontSize: '0.75rem', 
-                      fontWeight: '600', 
-                      color: isNeutral ? 'var(--text-secondary)' : isPositive ? 'var(--success-color)' : 'var(--danger-color)',
-                      display: 'flex', alignItems: 'center'
+              return (
+                <div 
+                  key={metric.id}
+                  onClick={() => handleMetricToggle(metric.id)}
+                  onMouseMove={(e) => {
+                    setTooltipState({ x: e.clientX, y: e.clientY, label: metric.label, value: metric.fullFormat(currentVal) });
+                  }}
+                  onMouseLeave={() => setTooltipState(null)}
+                  style={{ 
+                    padding: '12px 16px', 
+                    cursor: 'pointer',
+                    border: isSelected ? `1px solid ${borderColor}` : `1px solid var(--border-color)`,
+                    backgroundColor: isSelected ? 'rgba(0, 190, 165, 0.03)' : 'white',
+                    borderRadius: '8px',
+                    width: '200px',
+                    flexShrink: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div style={{ position: 'absolute', top: '16px', left: 0, width: '3px', height: '16px', backgroundColor: borderColor, borderRadius: '0 4px 4px 0' }}></div>
+                  <div className="flex-between" style={{ width: '100%', paddingLeft: '8px' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>{metric.label}</span>
+                    <div style={{ 
+                      width: '16px', height: '16px', 
+                      borderRadius: '4px', 
+                      border: `1px solid ${isSelected ? borderColor : 'var(--border-color)'}`,
+                      backgroundColor: isSelected ? borderColor : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0
                     }}>
-                      {isNeutral ? <Minus size={12} style={{ marginRight: '2px' }}/> : isPositive ? <TrendingUp size={12} style={{ marginRight: '2px' }}/> : <TrendingDown size={12} style={{ marginRight: '2px' }}/>}
-                      {Math.abs(change).toFixed(2).replace('.00', '')}%
-                    </span>
+                      {isSelected && <span style={{ color: 'white', fontSize: '10px' }}>✓</span>}
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
+                  <div style={{ paddingLeft: '8px' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>{metric.format(currentVal)}</span>
+                  </div>
+                  {isCompareEnabled && (
+                    <div className="flex-between" style={{ marginTop: 'auto', paddingTop: '4px', paddingLeft: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>vs last period</span>
+                      <span style={{ 
+                        fontSize: '0.75rem', fontWeight: '600', 
+                        color: isNeutral ? 'var(--text-secondary)' : isPositive ? 'var(--success-color)' : 'var(--danger-color)',
+                        display: 'flex', alignItems: 'center'
+                      }}>
+                        {isNeutral ? <Minus size={12} style={{ marginRight: '2px' }}/> : isPositive ? <TrendingUp size={12} style={{ marginRight: '2px' }}/> : <TrendingDown size={12} style={{ marginRight: '2px' }}/>}
+                        {Math.abs(change).toFixed(2).replace('.00', '')}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Graph */}
-      <div className="glass-panel" style={{ padding: '24px', display: activeTab === 'Overview' ? 'block' : 'none' }}>
+        {/* Ads Metrics Row */}
+        <div style={{ position: 'relative', marginBottom: '32px' }}>
+          <p style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px' }}>Ads Metrics</p>
+          <button 
+            onClick={scrollLeftAds}
+            style={{
+              position: 'absolute', left: '-12px', top: '55%', transform: 'translateY(-50%)', zIndex: 10,
+              backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '50%',
+              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer', color: 'var(--text-secondary)'
+            }}
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <button 
+            onClick={scrollRightAds}
+            style={{
+              position: 'absolute', right: '-12px', top: '55%', transform: 'translateY(-50%)', zIndex: 10,
+              backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '50%',
+              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer', color: 'var(--text-secondary)'
+            }}
+          >
+            <ChevronRight size={18} />
+          </button>
+
+          <div ref={scrollContainerAdsRef} className="hide-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: '16px', paddingBottom: '8px' }} onScroll={() => setTooltipState(null)}>
+            {adsMetricsInfo.map(metric => {
+              const currentVal = metric.id === 'roi' ? (currentData.reduce((s,i)=>s+i.roi,0)/(currentData.filter(i=>i.roi).length||1)) : calculateTotal(currentData, metric.id);
+              const compareVal = metric.id === 'roi' ? (compareData.reduce((s,i)=>s+i.roi,0)/(compareData.filter(i=>i.roi).length||1)) : calculateTotal(compareData, metric.id);
+              const change = calculateChange(currentVal, compareVal);
+              const isSelected = selectedMetrics.includes(metric.id);
+              const isPositive = change > 0;
+              const isNeutral = change === 0;
+              const selectedIndex = selectedMetrics.indexOf(metric.id);
+              const borderColor = isSelected ? CHART_COLORS[selectedIndex] : 'transparent';
+
+              return (
+                <div 
+                  key={metric.id}
+                  onClick={() => handleMetricToggle(metric.id)}
+                  onMouseMove={(e) => {
+                    setTooltipState({ x: e.clientX, y: e.clientY, label: metric.label, value: metric.fullFormat(currentVal) });
+                  }}
+                  onMouseLeave={() => setTooltipState(null)}
+                  style={{ 
+                    padding: '12px 16px', 
+                    cursor: 'pointer',
+                    border: isSelected ? `1px solid ${borderColor}` : `1px solid var(--border-color)`,
+                    backgroundColor: isSelected ? 'rgba(0, 190, 165, 0.03)' : 'white',
+                    borderRadius: '8px',
+                    width: '200px',
+                    flexShrink: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <div style={{ position: 'absolute', top: '16px', left: 0, width: '3px', height: '16px', backgroundColor: borderColor, borderRadius: '0 4px 4px 0' }}></div>
+                  <div className="flex-between" style={{ width: '100%', paddingLeft: '8px' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>{metric.label}</span>
+                    <div style={{ 
+                      width: '16px', height: '16px', 
+                      borderRadius: '4px', 
+                      border: `1px solid ${isSelected ? borderColor : 'var(--border-color)'}`,
+                      backgroundColor: isSelected ? borderColor : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0
+                    }}>
+                      {isSelected && <span style={{ color: 'white', fontSize: '10px' }}>✓</span>}
+                    </div>
+                  </div>
+                  <div style={{ paddingLeft: '8px' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>{metric.format(currentVal)}</span>
+                  </div>
+                  {isCompareEnabled && (
+                    <div className="flex-between" style={{ marginTop: 'auto', paddingTop: '4px', paddingLeft: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>vs last period</span>
+                      <span style={{ 
+                        fontSize: '0.75rem', fontWeight: '600', 
+                        color: isNeutral ? 'var(--text-secondary)' : isPositive ? 'var(--success-color)' : 'var(--danger-color)',
+                        display: 'flex', alignItems: 'center'
+                      }}>
+                        {isNeutral ? <Minus size={12} style={{ marginRight: '2px' }}/> : isPositive ? <TrendingUp size={12} style={{ marginRight: '2px' }}/> : <TrendingDown size={12} style={{ marginRight: '2px' }}/>}
+                        {Math.abs(change).toFixed(2).replace('.00', '')}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Graph */}
         <div style={{ height: '300px', width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
