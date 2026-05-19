@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { useEcommerceData } from '../../hooks/useEcommerceData';
@@ -10,7 +10,7 @@ import {
   subDays, isSameDay, isWithinInterval, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, format, isAfter, isBefore, eachDayOfInterval
 } from 'date-fns';
-import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronRight, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
 import ColumnHeader from '../../components/Table/ColumnHeader';
 
@@ -123,6 +123,20 @@ const Ecomm = () => {
   const [skuFilters, setSkuFilters] = useState({});
   const [selectedMetrics, setSelectedMetrics] = useState(['gmv', 'productsSold']);
   const [isCompareEnabled, setIsCompareEnabled] = useState(false);
+  
+  const scrollContainerRef = useRef(null);
+
+  const scrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: 'smooth' });
+    }
+  };
 
   // Base date for "Today" simulation based on data if needed
   const maxDate = useMemo(() => {
@@ -470,10 +484,42 @@ const Ecomm = () => {
       </div>
 
       {/* Metric Cards */}
+      <style>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
       <div 
-        style={{ display: activeTab === 'Overview' ? 'block' : 'none', paddingBottom: '8px' }}
+        style={{ display: activeTab === 'Overview' ? 'block' : 'none', paddingBottom: '8px', position: 'relative' }}
       >
-        <div style={{ display: 'flex', overflowX: 'auto', gap: '16px', paddingBottom: '16px', scrollbarWidth: 'thin' }} onScroll={() => setTooltipState(null)}>
+        <button 
+          onClick={scrollLeft}
+          style={{
+            position: 'absolute', left: '-12px', top: '40%', transform: 'translateY(-50%)', zIndex: 10,
+            backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '50%',
+            width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer', color: 'var(--text-secondary)'
+          }}
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <button 
+          onClick={scrollRight}
+          style={{
+            position: 'absolute', right: '-12px', top: '40%', transform: 'translateY(-50%)', zIndex: 10,
+            backgroundColor: 'white', border: '1px solid var(--border-color)', borderRadius: '50%',
+            width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.1)', cursor: 'pointer', color: 'var(--text-secondary)'
+          }}
+        >
+          <ChevronRight size={18} />
+        </button>
+
+        <div ref={scrollContainerRef} className="hide-scrollbar" style={{ display: 'flex', overflowX: 'auto', gap: '16px', paddingBottom: '16px' }} onScroll={() => setTooltipState(null)}>
           {[...ecommMetricsInfo, ...adsMetricsInfo].map(metric => {
             const isAds = adsMetricsInfo.some(m => m.id === metric.id);
             const currentVal = metric.id === 'roi' ? (currentData.reduce((s,i)=>s+i.roi,0)/(currentData.filter(i=>i.roi).length||1)) : calculateTotal(currentData, metric.id);
@@ -483,7 +529,7 @@ const Ecomm = () => {
             const isPositive = change > 0;
             const isNeutral = change === 0;
             const selectedIndex = selectedMetrics.indexOf(metric.id);
-            const borderColor = isSelected ? CHART_COLORS[selectedIndex] : 'var(--border-color)';
+            const borderColor = isSelected ? CHART_COLORS[selectedIndex] : 'transparent';
 
             return (
               <div 
@@ -496,17 +542,22 @@ const Ecomm = () => {
                 style={{ 
                   padding: '12px 16px', 
                   cursor: 'pointer',
-                  border: isSelected ? `2px solid ${borderColor}` : `1px solid ${borderColor}`,
-                  backgroundColor: isSelected ? 'rgba(0, 190, 165, 0.05)' : 'var(--surface-color)',
+                  border: isSelected ? `1px solid ${borderColor}` : `1px solid var(--border-color)`,
+                  backgroundColor: isSelected ? 'rgba(0, 190, 165, 0.03)' : 'var(--surface-color)',
                   borderRadius: '8px',
-                  minWidth: '180px',
+                  width: '200px', // Fixed width like TikTok so it doesn't stretch when zoomed out
                   flexShrink: 0,
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: '8px'
+                  gap: '8px',
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}
               >
-                <div className="flex-between" style={{ width: '100%' }}>
+                {/* TikTok Left Colored Border */}
+                <div style={{ position: 'absolute', top: '16px', left: 0, width: '3px', height: '16px', backgroundColor: borderColor, borderRadius: '0 4px 4px 0' }}></div>
+                
+                <div className="flex-between" style={{ width: '100%', paddingLeft: '8px' }}>
                   <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
                     {metric.label} {isAds && <span style={{fontSize: '0.65rem', backgroundColor: '#f3f4f6', padding: '2px 4px', borderRadius: '4px', marginLeft: '4px'}}>Ads</span>}
                   </span>
@@ -522,14 +573,14 @@ const Ecomm = () => {
                   </div>
                 </div>
                 
-                <div>
+                <div style={{ paddingLeft: '8px' }}>
                   <span style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                     {metric.format(currentVal)}
                   </span>
                 </div>
 
                 {isCompareEnabled && (
-                  <div className="flex-between" style={{ marginTop: 'auto', paddingTop: '4px' }}>
+                  <div className="flex-between" style={{ marginTop: 'auto', paddingTop: '4px', paddingLeft: '8px' }}>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>vs last period</span>
                     <span style={{ 
                       fontSize: '0.75rem', 
