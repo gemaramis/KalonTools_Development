@@ -112,7 +112,8 @@ const Ecomm = () => {
   const { globalSettings } = useSettings();
   const { mainData, detailData, loading, error } = useEcommerceData(
     globalSettings?.ecommLink, 
-    globalSettings?.ecommDetailLink
+    globalSettings?.ecommDetailLink,
+    globalSettings?.adsLink
   );
 
   const [activeTab, setActiveTab] = useState('Overview');
@@ -121,6 +122,7 @@ const Ecomm = () => {
   const [skuSortConfig, setSkuSortConfig] = useState({ key: 'current', direction: 'desc' });
   const [skuFilters, setSkuFilters] = useState({});
   const [selectedMetrics, setSelectedMetrics] = useState(['gmv', 'productsSold']);
+  const [isCompareEnabled, setIsCompareEnabled] = useState(false);
 
   // Base date for "Today" simulation based on data if needed
   const maxDate = useMemo(() => {
@@ -157,7 +159,7 @@ const Ecomm = () => {
   const currentData = useMemo(() => filterDataByRange(mainData, currentRange), [mainData, currentRange]);
   const compareData = useMemo(() => filterDataByRange(mainData, compareRange), [mainData, compareRange]);
 
-  const metricsInfo = [
+  const ecommMetricsInfo = [
     { id: 'gmv', label: 'GMV', format: formatRp, fullFormat: formatRpFull },
     { id: 'productsSold', label: 'Produk terjual', format: formatNumber, fullFormat: formatNumberFull },
     { id: 'impressionsTotal', label: 'Total Impresi', format: formatNumber, fullFormat: formatNumberFull },
@@ -167,16 +169,26 @@ const Ecomm = () => {
     { id: 'impressionsProductCard', label: 'Impresi Kartu Produk', format: formatNumber, fullFormat: formatNumberFull },
   ];
 
+  const adsMetricsInfo = [
+    { id: 'skuOrders', label: 'SKU Orders', format: formatNumber, fullFormat: formatNumberFull },
+    { id: 'grossRevenue', label: 'Gross Revenue', format: formatRp, fullFormat: formatRpFull },
+    { id: 'cost', label: 'Cost', format: formatRp, fullFormat: formatRpFull },
+    { id: 'roi', label: 'ROI', format: (v) => `${v.toFixed(2)}`, fullFormat: (v) => `${v.toFixed(2)}` },
+  ];
+
+  const metricsInfo = [...ecommMetricsInfo, ...adsMetricsInfo];
+
   const handleMetricToggle = (metricId) => {
     if (selectedMetrics.includes(metricId)) {
       if (selectedMetrics.length > 1) {
         setSelectedMetrics(prev => prev.filter(m => m !== metricId));
       }
     } else {
-      if (selectedMetrics.length < 2) {
+      if (selectedMetrics.length < 4) {
         setSelectedMetrics(prev => [...prev, metricId]);
       } else {
-        setSelectedMetrics([selectedMetrics[1], metricId]); // Replace first
+        // Replace the oldest selection if 4 are already selected
+        setSelectedMetrics(prev => [...prev.slice(1), metricId]);
       }
     }
   };
@@ -186,27 +198,41 @@ const Ecomm = () => {
     const currentSums = {};
     currentData.forEach(item => {
       const dateStr = format(item.dateObj, 'yyyy-MM-dd');
-      if (!currentSums[dateStr]) currentSums[dateStr] = { gmv: 0, productsSold: 0, impressionsTotal: 0, impressionsShopTab: 0, impressionsLive: 0, impressionsVideo: 0, impressionsProductCard: 0 };
-      currentSums[dateStr].gmv += item.gmv;
-      currentSums[dateStr].productsSold += item.productsSold;
-      currentSums[dateStr].impressionsTotal += item.impressionsTotal;
-      currentSums[dateStr].impressionsShopTab += item.impressionsShopTab;
-      currentSums[dateStr].impressionsLive += item.impressionsLive;
-      currentSums[dateStr].impressionsVideo += item.impressionsVideo;
-      currentSums[dateStr].impressionsProductCard += item.impressionsProductCard;
+      if (!currentSums[dateStr]) currentSums[dateStr] = { gmv: 0, productsSold: 0, impressionsTotal: 0, impressionsShopTab: 0, impressionsLive: 0, impressionsVideo: 0, impressionsProductCard: 0, skuOrders: 0, grossRevenue: 0, cost: 0, roi: 0, roiCount: 0 };
+      currentSums[dateStr].gmv += item.gmv || 0;
+      currentSums[dateStr].productsSold += item.productsSold || 0;
+      currentSums[dateStr].impressionsTotal += item.impressionsTotal || 0;
+      currentSums[dateStr].impressionsShopTab += item.impressionsShopTab || 0;
+      currentSums[dateStr].impressionsLive += item.impressionsLive || 0;
+      currentSums[dateStr].impressionsVideo += item.impressionsVideo || 0;
+      currentSums[dateStr].impressionsProductCard += item.impressionsProductCard || 0;
+      currentSums[dateStr].skuOrders += item.skuOrders || 0;
+      currentSums[dateStr].grossRevenue += item.grossRevenue || 0;
+      currentSums[dateStr].cost += item.cost || 0;
+      if (item.roi) {
+        currentSums[dateStr].roi += item.roi;
+        currentSums[dateStr].roiCount += 1;
+      }
     });
 
     const compareSums = {};
     compareData.forEach(item => {
       const dateStr = format(item.dateObj, 'yyyy-MM-dd');
-      if (!compareSums[dateStr]) compareSums[dateStr] = { gmv: 0, productsSold: 0, impressionsTotal: 0, impressionsShopTab: 0, impressionsLive: 0, impressionsVideo: 0, impressionsProductCard: 0 };
-      compareSums[dateStr].gmv += item.gmv;
-      compareSums[dateStr].productsSold += item.productsSold;
-      compareSums[dateStr].impressionsTotal += item.impressionsTotal;
-      compareSums[dateStr].impressionsShopTab += item.impressionsShopTab;
-      compareSums[dateStr].impressionsLive += item.impressionsLive;
-      compareSums[dateStr].impressionsVideo += item.impressionsVideo;
-      compareSums[dateStr].impressionsProductCard += item.impressionsProductCard;
+      if (!compareSums[dateStr]) compareSums[dateStr] = { gmv: 0, productsSold: 0, impressionsTotal: 0, impressionsShopTab: 0, impressionsLive: 0, impressionsVideo: 0, impressionsProductCard: 0, skuOrders: 0, grossRevenue: 0, cost: 0, roi: 0, roiCount: 0 };
+      compareSums[dateStr].gmv += item.gmv || 0;
+      compareSums[dateStr].productsSold += item.productsSold || 0;
+      compareSums[dateStr].impressionsTotal += item.impressionsTotal || 0;
+      compareSums[dateStr].impressionsShopTab += item.impressionsShopTab || 0;
+      compareSums[dateStr].impressionsLive += item.impressionsLive || 0;
+      compareSums[dateStr].impressionsVideo += item.impressionsVideo || 0;
+      compareSums[dateStr].impressionsProductCard += item.impressionsProductCard || 0;
+      compareSums[dateStr].skuOrders += item.skuOrders || 0;
+      compareSums[dateStr].grossRevenue += item.grossRevenue || 0;
+      compareSums[dateStr].cost += item.cost || 0;
+      if (item.roi) {
+        compareSums[dateStr].roi += item.roi;
+        compareSums[dateStr].roiCount += 1;
+      }
     });
 
     const currentDays = eachDayOfInterval({ start: currentRange.start, end: currentRange.end });
@@ -222,25 +248,24 @@ const Ecomm = () => {
       const cKey = cDay ? format(cDay, 'yyyy-MM-dd') : null;
       const pKey = pDay ? format(pDay, 'yyyy-MM-dd') : null;
 
-      const cVals = cKey && currentSums[cKey] ? currentSums[cKey] : { gmv: 0, productsSold: 0, impressionsTotal: 0, impressionsShopTab: 0, impressionsLive: 0, impressionsVideo: 0, impressionsProductCard: 0 };
-      const pVals = pKey && compareSums[pKey] ? compareSums[pKey] : { gmv: 0, productsSold: 0, impressionsTotal: 0, impressionsShopTab: 0, impressionsLive: 0, impressionsVideo: 0, impressionsProductCard: 0 };
+      const cVals = cKey && currentSums[cKey] ? currentSums[cKey] : {};
+      const pVals = pKey && compareSums[pKey] ? compareSums[pKey] : {};
 
-      result.push({
+      const dataPoint = {
         date: cDay ? format(cDay, 'MMM d') : `Day ${i+1}`,
-        ...cVals,
-        gmv_compare: pVals.gmv,
-        productsSold_compare: pVals.productsSold,
-        impressionsTotal_compare: pVals.impressionsTotal,
-        impressionsShopTab_compare: pVals.impressionsShopTab,
-        impressionsLive_compare: pVals.impressionsLive,
-        impressionsVideo_compare: pVals.impressionsVideo,
-        impressionsProductCard_compare: pVals.impressionsProductCard,
+      };
+
+      metricsInfo.forEach(m => {
+        dataPoint[m.id] = cVals[m.id] ? (m.id === 'roi' ? (cVals.roiCount ? cVals.roi / cVals.roiCount : 0) : cVals[m.id]) : 0;
+        dataPoint[`${m.id}Compare`] = pVals[m.id] ? (m.id === 'roi' ? (pVals.roiCount ? pVals.roi / pVals.roiCount : 0) : pVals[m.id]) : 0;
       });
+
+      result.push(dataPoint);
     }
     return result;
   }, [currentData, compareData, currentRange, compareRange]);
 
-  const CHART_COLORS = ['#00B5A5', '#3B82F6'];
+  const CHART_COLORS = ['#00B5A5', '#3B82F6', '#F59E0B', '#8B5CF6'];
 
   // Detail GMV Logic
   // Find which week the currentRange mostly falls into
@@ -422,9 +447,22 @@ const Ecomm = () => {
             
             <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--border-color)' }}></div>
             
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: 'var(--text-secondary)' }}>Bandingkan:</span>
-              <EcommDateRangePicker range={compareRange} setRange={setCompareRange} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>
+                <input 
+                  type="checkbox" 
+                  checked={isCompareEnabled} 
+                  onChange={(e) => setIsCompareEnabled(e.target.checked)} 
+                  style={{ cursor: 'pointer' }}
+                />
+                Aktifkan Perbandingan
+              </label>
+              {isCompareEnabled && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Bandingkan:</span>
+                  <EcommDateRangePicker range={compareRange} setRange={setCompareRange} />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -432,66 +470,137 @@ const Ecomm = () => {
 
       {/* Metric Cards */}
       <div 
-        style={{ display: activeTab === 'Overview' ? 'flex' : 'none', overflowX: 'auto', gap: '16px', paddingBottom: '8px', scrollbarWidth: 'thin' }}
-        onScroll={() => setTooltipState(null)}
+        style={{ display: activeTab === 'Overview' ? 'flex' : 'none', flexDirection: 'column', gap: '20px', paddingBottom: '8px' }}
       >
-        {metricsInfo.map(metric => {
-          const currentVal = calculateTotal(currentData, metric.id);
-          const compareVal = calculateTotal(compareData, metric.id);
-          const change = calculateChange(currentVal, compareVal);
-          const isSelected = selectedMetrics.includes(metric.id);
-          const isPositive = change > 0;
-          const isNeutral = change === 0;
+        <div>
+          <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ecommerce Metrics</p>
+          <div style={{ display: 'flex', overflowX: 'auto', gap: '16px', paddingBottom: '8px', scrollbarWidth: 'thin' }} onScroll={() => setTooltipState(null)}>
+            {ecommMetricsInfo.map(metric => {
+              const currentVal = calculateTotal(currentData, metric.id);
+              const compareVal = calculateTotal(compareData, metric.id);
+              const change = calculateChange(currentVal, compareVal);
+              const isSelected = selectedMetrics.includes(metric.id);
+              const isPositive = change > 0;
+              const isNeutral = change === 0;
 
-          return (
-            <div 
-              key={metric.id}
-              onClick={() => handleMetricToggle(metric.id)}
-              onMouseMove={(e) => {
-                setTooltipState({ x: e.clientX, y: e.clientY, label: metric.label, value: metric.fullFormat(currentVal) });
-              }}
-              onMouseLeave={() => setTooltipState(null)}
-              className="glass-panel" 
-              style={{ 
-                padding: '16px', 
-                cursor: 'pointer',
-                border: isSelected ? `2px solid ${CHART_COLORS[selectedMetrics.indexOf(metric.id)] || 'var(--primary-color)'}` : '2px solid transparent',
-                backgroundColor: isSelected ? 'var(--surface-color)' : 'var(--bg-color)',
-                position: 'relative',
-                minWidth: '220px',
-                flexShrink: 0
-              }}
-            >
-              <div style={{ position: 'absolute', top: '16px', left: 0, width: '4px', height: '24px', backgroundColor: isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'transparent' }}></div>
-              <div className="flex-between" style={{ marginBottom: '12px', paddingLeft: '12px' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>{metric.label}</span>
-                <div style={{ 
-                  width: '16px', height: '16px', 
-                  borderRadius: '4px', 
-                  border: `1px solid ${isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'var(--border-color)'}`,
-                  backgroundColor: isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}>
-                  {isSelected && <span style={{ color: 'white', fontSize: '10px' }}>✓</span>}
+              return (
+                <div 
+                  key={metric.id}
+                  onClick={() => handleMetricToggle(metric.id)}
+                  onMouseMove={(e) => {
+                    setTooltipState({ x: e.clientX, y: e.clientY, label: metric.label, value: metric.fullFormat(currentVal) });
+                  }}
+                  onMouseLeave={() => setTooltipState(null)}
+                  className="glass-panel" 
+                  style={{ 
+                    padding: '16px', 
+                    cursor: 'pointer',
+                    border: isSelected ? `2px solid ${CHART_COLORS[selectedMetrics.indexOf(metric.id)]}` : '2px solid transparent',
+                    backgroundColor: isSelected ? 'var(--surface-color)' : 'var(--bg-color)',
+                    position: 'relative',
+                    minWidth: '220px',
+                    flexShrink: 0
+                  }}
+                >
+                  <div style={{ position: 'absolute', top: '16px', left: 0, width: '4px', height: '24px', backgroundColor: isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'transparent' }}></div>
+                  <div className="flex-between" style={{ marginBottom: '12px', paddingLeft: '12px' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>{metric.label}</span>
+                    <div style={{ 
+                      width: '16px', height: '16px', 
+                      borderRadius: '4px', 
+                      border: `1px solid ${isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'var(--border-color)'}`,
+                      backgroundColor: isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      {isSelected && <span style={{ color: 'white', fontSize: '10px' }}>✓</span>}
+                    </div>
+                  </div>
+                  <div style={{ paddingLeft: '12px', display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                      {metric.format(currentVal)}
+                    </span>
+                    {isCompareEnabled && (
+                      <span style={{ 
+                        fontSize: '0.75rem', 
+                        fontWeight: '600', 
+                        color: isNeutral ? 'var(--text-secondary)' : isPositive ? 'var(--success-color)' : 'var(--danger-color)',
+                        display: 'flex', alignItems: 'center', marginBottom: '4px'
+                      }}>
+                        {isNeutral ? <Minus size={12} style={{ marginRight: '2px' }}/> : isPositive ? <TrendingUp size={12} style={{ marginRight: '2px' }}/> : <TrendingDown size={12} style={{ marginRight: '2px' }}/>}
+                        {Math.abs(change).toFixed(2).replace('.00', '')}%
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div style={{ paddingLeft: '12px', display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
-                <span style={{ fontSize: '1.5rem', fontWeight: '700' }}>
-                  {metric.format(currentVal)}
-                </span>
-                <span style={{ 
-                  fontSize: '0.75rem', 
-                  fontWeight: '600', 
-                  color: isNeutral ? 'var(--text-secondary)' : isPositive ? 'var(--success-color)' : 'var(--danger-color)',
-                  display: 'flex', alignItems: 'center', marginBottom: '4px'
-                }}>
-                  {isNeutral ? <Minus size={12} style={{ marginRight: '2px' }}/> : isPositive ? <TrendingUp size={12} style={{ marginRight: '2px' }}/> : <TrendingDown size={12} style={{ marginRight: '2px' }}/>}
-                  {Math.abs(change).toFixed(2).replace('.00', '')}%
-                </span>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        </div>
+        
+        <div>
+          <p style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ads Metrics</p>
+          <div style={{ display: 'flex', overflowX: 'auto', gap: '16px', paddingBottom: '8px', scrollbarWidth: 'thin' }} onScroll={() => setTooltipState(null)}>
+            {adsMetricsInfo.map(metric => {
+              const currentVal = metric.id === 'roi' ? (currentData.reduce((s,i)=>s+i.roi,0)/(currentData.filter(i=>i.roi).length||1)) : calculateTotal(currentData, metric.id);
+              const compareVal = metric.id === 'roi' ? (compareData.reduce((s,i)=>s+i.roi,0)/(compareData.filter(i=>i.roi).length||1)) : calculateTotal(compareData, metric.id);
+              const change = calculateChange(currentVal, compareVal);
+              const isSelected = selectedMetrics.includes(metric.id);
+              const isPositive = change > 0;
+              const isNeutral = change === 0;
+
+              return (
+                <div 
+                  key={metric.id}
+                  onClick={() => handleMetricToggle(metric.id)}
+                  onMouseMove={(e) => {
+                    setTooltipState({ x: e.clientX, y: e.clientY, label: metric.label, value: metric.fullFormat(currentVal) });
+                  }}
+                  onMouseLeave={() => setTooltipState(null)}
+                  className="glass-panel" 
+                  style={{ 
+                    padding: '16px', 
+                    cursor: 'pointer',
+                    border: isSelected ? `2px solid ${CHART_COLORS[selectedMetrics.indexOf(metric.id)]}` : '2px solid transparent',
+                    backgroundColor: isSelected ? 'var(--surface-color)' : 'var(--bg-color)',
+                    position: 'relative',
+                    minWidth: '220px',
+                    flexShrink: 0
+                  }}
+                >
+                  <div style={{ position: 'absolute', top: '16px', left: 0, width: '4px', height: '24px', backgroundColor: isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'transparent' }}></div>
+                  <div className="flex-between" style={{ marginBottom: '12px', paddingLeft: '12px' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>{metric.label}</span>
+                    <div style={{ 
+                      width: '16px', height: '16px', 
+                      borderRadius: '4px', 
+                      border: `1px solid ${isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'var(--border-color)'}`,
+                      backgroundColor: isSelected ? CHART_COLORS[selectedMetrics.indexOf(metric.id)] : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      {isSelected && <span style={{ color: 'white', fontSize: '10px' }}>✓</span>}
+                    </div>
+                  </div>
+                  <div style={{ paddingLeft: '12px', display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
+                    <span style={{ fontSize: '1.5rem', fontWeight: '700' }}>
+                      {metric.format(currentVal)}
+                    </span>
+                    {isCompareEnabled && (
+                      <span style={{ 
+                        fontSize: '0.75rem', 
+                        fontWeight: '600', 
+                        color: isNeutral ? 'var(--text-secondary)' : isPositive ? 'var(--success-color)' : 'var(--danger-color)',
+                        display: 'flex', alignItems: 'center', marginBottom: '4px'
+                      }}>
+                        {isNeutral ? <Minus size={12} style={{ marginRight: '2px' }}/> : isPositive ? <TrendingUp size={12} style={{ marginRight: '2px' }}/> : <TrendingDown size={12} style={{ marginRight: '2px' }}/>}
+                        {Math.abs(change).toFixed(2).replace('.00', '')}%
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Graph */}
@@ -540,7 +649,7 @@ const Ecomm = () => {
               {selectedMetrics.map((metricId, index) => (
                 <React.Fragment key={metricId}>
                   <Line 
-                    yAxisId={index === 0 ? "left" : "right"}
+                    yAxisId={index % 2 === 0 ? "left" : "right"}
                     type="monotone" 
                     dataKey={metricId} 
                     name={metricsInfo.find(m => m.id === metricId).label}
@@ -549,18 +658,20 @@ const Ecomm = () => {
                     dot={false}
                     activeDot={{ r: 6 }}
                   />
-                  <Line 
-                    yAxisId={index === 0 ? "left" : "right"}
-                    type="monotone" 
-                    dataKey={`${metricId}_compare`} 
-                    name={`${metricsInfo.find(m => m.id === metricId).label} (Bandingkan)`}
-                    stroke={CHART_COLORS[index]} 
-                    strokeWidth={2}
-                    strokeDasharray="5 5"
-                    strokeOpacity={0.4}
-                    dot={false}
-                    activeDot={false}
-                  />
+                  {isCompareEnabled && (
+                    <Line 
+                      yAxisId={index % 2 === 0 ? "left" : "right"}
+                      type="monotone" 
+                      dataKey={`${metricId}Compare`} 
+                      name={`${metricsInfo.find(m => m.id === metricId).label} (Bandingkan)`}
+                      stroke={CHART_COLORS[index]} 
+                      strokeWidth={2}
+                      strokeDasharray="5 5"
+                      strokeOpacity={0.4}
+                      dot={false}
+                      activeDot={false}
+                    />
+                  )}
                 </React.Fragment>
               ))}
             </LineChart>

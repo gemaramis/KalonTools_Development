@@ -20,6 +20,7 @@ const Management = () => {
   const [schedulingLink, setSchedulingLink] = useState('');
   const [ecommLink, setEcommLink] = useState('');
   const [ecommDetailLink, setEcommDetailLink] = useState('');
+  const [adsLink, setAdsLink] = useState('');
   const [appsScriptUrl, setAppsScriptUrl] = useState('');
 
   const isSuperAdmin = currentUser?.id === 'superadmin';
@@ -51,6 +52,7 @@ const Management = () => {
     setSchedulingLink(monthSettings.schedulingSpreadsheetLink || '');
     setEcommLink(globalSettings?.ecommLink || '');
     setEcommDetailLink(globalSettings?.ecommDetailLink || '');
+    setAdsLink(globalSettings?.adsLink || '');
     setAppsScriptUrl(globalSettings?.appsScriptUrl || '');
   }, [selectedMonth, getSettingsForMonth, globalSettings]);
 
@@ -73,7 +75,8 @@ const Management = () => {
       ...prev, 
       appsScriptUrl,
       ecommLink,
-      ecommDetailLink
+      ecommDetailLink,
+      adsLink
     }));
     setLinksSaved(true);
     setTimeout(() => setLinksSaved(false), 3000);
@@ -364,6 +367,18 @@ const Management = () => {
                 value={ecommDetailLink} 
                 onChange={(e) => setEcommDetailLink(e.target.value)} 
                 placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=1551198310"
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Ads Spreadsheet Link</label>
+              <input 
+                type="url" 
+                className="input-field" 
+                value={adsLink} 
+                onChange={(e) => setAdsLink(e.target.value)} 
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=..."
                 style={{ width: '100%' }}
               />
             </div>
