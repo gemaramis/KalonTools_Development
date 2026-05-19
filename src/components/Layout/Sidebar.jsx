@@ -58,15 +58,9 @@ const Sidebar = () => {
           </div>
         )}
 
-        {permissions.canViewAds && (
-          <NavLink to="/ads" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <Megaphone size={20} /> Ads Module
-          </NavLink>
-        )}
-
-        {permissions.canViewEcomm && (
+        {(permissions.canViewEcomm || permissions.canViewAds) && (
           <NavLink to="/ecomm" className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-            <ShoppingCart size={20} /> Ecomm Module
+            <ShoppingCart size={20} /> Seller Center Tiktok
           </NavLink>
         )}
       </nav>
