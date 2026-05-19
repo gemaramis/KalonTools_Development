@@ -612,33 +612,26 @@ const Ecomm = () => {
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
               <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dy={10} />
               
-              <YAxis 
-                yAxisId="left" 
-                tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} 
-                axisLine={false} tickLine={false} 
-                tickFormatter={(val) => {
-                  if (val >= 1000000) return `Rp${(val / 1000000).toFixed(0)} jt`;
-                  if (val >= 1000) return `${(val / 1000).toFixed(0)} rb`;
-                  return val;
-                }}
-              />
-              
-              {selectedMetrics.length > 1 && (
+              {selectedMetrics.map((metricId, index) => (
                 <YAxis 
-                  yAxisId="right" 
-                  orientation="right" 
+                  key={`yaxis-${metricId}`}
+                  yAxisId={metricId} 
+                  orientation={index % 2 === 0 ? "left" : "right"} 
+                  hide={index > 1} // Hide axes beyond the first two to keep UI clean
                   tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} 
-                  axisLine={false} tickLine={false}
+                  axisLine={false} tickLine={false} 
                   tickFormatter={(val) => {
+                    if (val >= 1000000) return `Rp${(val / 1000000).toFixed(0)} jt`;
                     if (val >= 1000) return `${(val / 1000).toFixed(0)} rb`;
                     return val;
                   }}
                 />
-              )}
+              ))}
               
               <Tooltip 
                 formatter={(value, name) => {
-                  const isRp = name.includes('GMV');
+                  const isRp = name.includes('GMV') || name.includes('Revenue') || name.includes('Cost');
+                  if (name.includes('ROI')) return [value.toFixed(2), name];
                   return [isRp ? formatRpFull(value) : formatNumberFull(value), name];
                 }}
                 contentStyle={{ backgroundColor: 'var(--surface-color)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
@@ -650,7 +643,7 @@ const Ecomm = () => {
               {selectedMetrics.map((metricId, index) => (
                 <React.Fragment key={metricId}>
                   <Line 
-                    yAxisId={index % 2 === 0 ? "left" : "right"}
+                    yAxisId={metricId}
                     type="monotone" 
                     dataKey={metricId} 
                     name={metricsInfo.find(m => m.id === metricId).label}
@@ -661,7 +654,7 @@ const Ecomm = () => {
                   />
                   {isCompareEnabled && (
                     <Line 
-                      yAxisId={index % 2 === 0 ? "left" : "right"}
+                      yAxisId={metricId}
                       type="monotone" 
                       dataKey={`${metricId}Compare`} 
                       name={`${metricsInfo.find(m => m.id === metricId).label} (Bandingkan)`}
