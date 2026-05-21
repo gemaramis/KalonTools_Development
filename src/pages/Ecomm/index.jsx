@@ -784,7 +784,7 @@ const Ecomm = () => {
           <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Detail GMV</h2>
         </div>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '32px' }}>
-          Menampilkan data: <strong>{['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][aggregatedDetail.targetMonthIndex]} {aggregatedDetail.isFullMonth ? '(Full Month)' : `Week ${aggregatedDetail.targetWeekNum}`}</strong>
+          Menampilkan data: <strong>{['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][aggregatedDetail.targetMonthIndex]} {aggregatedDetail.isFullMonth ? '(Full Month)' : `Week ${aggregatedDetail.targetWeekNum}`}</strong> vs <strong>{['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][compareAggregatedDetail.targetMonthIndex]} {compareAggregatedDetail.isFullMonth ? '(Full Month)' : `Week ${compareAggregatedDetail.targetWeekNum}`}</strong>
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '48px', alignItems: 'center' }}>
