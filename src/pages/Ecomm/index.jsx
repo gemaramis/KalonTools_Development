@@ -293,35 +293,39 @@ const Ecomm = () => {
 
   const CHART_COLORS = ['#00B5A5', '#3B82F6', '#F59E0B', '#8B5CF6'];
 
-  // Detail GMV Logic
-  // Find which week the currentRange mostly falls into
-  const currentWeekNum = useMemo(() => {
-    const day = currentRange.start.getDate();
-    if (day <= 7) return 1;
-    if (day <= 14) return 2;
-    if (day <= 21) return 3;
-    return 4;
-  }, [currentRange]);
+  // Detail GMV Logic (Smart Auto-Update based on Date Range)
+  const aggregateDetailData = (range) => {
+    const targetDate = range.start;
+    const diffDays = (range.end - range.start) / (1000 * 60 * 60 * 24);
+    const isFullMonth = diffDays >= 20; // If they select > 20 days, assume they want the full month
+    
+    let targetWeekNum = 0;
+    if (!isFullMonth) {
+      const day = targetDate.getDate();
+      if (day <= 7) targetWeekNum = 1;
+      else if (day <= 14) targetWeekNum = 2;
+      else if (day <= 21) targetWeekNum = 3;
+      else targetWeekNum = 4;
+    }
 
-  const compareWeekNum = useMemo(() => {
-    const day = compareRange.start.getDate();
-    if (day <= 7) return 1;
-    if (day <= 14) return 2;
-    if (day <= 21) return 3;
-    return 4;
-  }, [compareRange]);
-
-  const currentMonthName = useMemo(() => {
-    return format(currentRange.start, 'MMMM');
-  }, [currentRange]);
-
-  // Helper for detail aggregation
-  const aggregateDetailData = (weekNum) => {
     const filterDetail = (dataArray) => {
-      const matched = dataArray.filter(d => d.week === weekNum);
-      const targetData = matched.length > 0 ? matched : dataArray;
+      // 1. Filter by Month
+      let matched = dataArray.filter(d => {
+        if (!d.month) return false;
+        const dbM = d.month.toLowerCase();
+        const mIdx = targetDate.getMonth();
+        // Support 'Maret', 'March', 'April', 'May', 'Mei'
+        const shortEn = ['jan', 'feb', 'mar', 'apr', 'mei', 'jun', 'jul', 'agu', 'sep', 'okt', 'nov', 'des'][mIdx];
+        const shortEnAlt = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'][mIdx];
+        return dbM.startsWith(shortEn) || dbM.startsWith(shortEnAlt) || dbM.includes(shortEn) || dbM.includes(shortEnAlt);
+      });
       
-      return targetData.reduce((acc, curr) => {
+      // 2. Filter by Week if not a full month
+      if (!isFullMonth && targetWeekNum > 0) {
+        matched = matched.filter(d => d.week === targetWeekNum);
+      }
+      
+      return matched.reduce((acc, curr) => {
         acc.affiliate += curr.affiliate;
         acc.seller += curr.seller;
         acc.total += (curr.affiliate + curr.seller);
@@ -336,14 +340,17 @@ const Ecomm = () => {
 
     return {
       total: totalGMV,
+      isFullMonth,
+      targetWeekNum,
+      targetMonthIndex: targetDate.getMonth(),
       live: { ...live, pct: totalGMV ? (live.total / totalGMV) * 100 : 0 },
       video: { ...video, pct: totalGMV ? (video.total / totalGMV) * 100 : 0 },
       productCard: { ...productCard, pct: totalGMV ? (productCard.total / totalGMV) * 100 : 0 }
     };
   };
 
-  const aggregatedDetail = useMemo(() => aggregateDetailData(currentWeekNum), [detailData, currentWeekNum]);
-  const compareAggregatedDetail = useMemo(() => aggregateDetailData(compareWeekNum), [detailData, compareWeekNum]);
+  const aggregatedDetail = useMemo(() => aggregateDetailData(currentRange), [detailData, currentRange]);
+  const compareAggregatedDetail = useMemo(() => aggregateDetailData(compareRange), [detailData, compareRange]);
 
   // --- SKU Data Aggregation ---
   const skuTableData = useMemo(() => {
@@ -777,7 +784,7 @@ const Ecomm = () => {
           <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Detail GMV</h2>
         </div>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '32px' }}>
-          Terakhir di update {currentMonthName} Week {currentWeekNum}
+          Menampilkan data: <strong>{['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][aggregatedDetail.targetMonthIndex]} {aggregatedDetail.isFullMonth ? '(Full Month)' : `Week ${aggregatedDetail.targetWeekNum}`}</strong>
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '48px', alignItems: 'center' }}>
