@@ -318,17 +318,7 @@ const Management = () => {
               />
             </div>
 
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Apps Script Web App URL (For Live Sync)</label>
-              <input 
-                type="url" 
-                className="input-field" 
-                value={appsScriptUrl} 
-                onChange={(e) => setAppsScriptUrl(e.target.value)} 
-                placeholder="https://script.google.com/macros/s/.../exec"
-                style={{ width: '100%' }}
-              />
-            </div>
+
           </div>
 
           <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '16px' }}>

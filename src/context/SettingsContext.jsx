@@ -80,7 +80,14 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
   const [globalSettings, setGlobalSettings] = useState(() => {
     try {
       const saved = localStorage.getItem('kln_global_settings');
-      if (saved && saved !== 'undefined') return JSON.parse(saved);
+      if (saved && saved !== 'undefined') {
+        const parsed = JSON.parse(saved);
+        return {
+          ...parsed,
+          adsLink: parsed.adsLink !== undefined ? parsed.adsLink : DEFAULT_ADS_LINK,
+          appsScriptUrl: parsed.appsScriptUrl || DEFAULT_APPS_SCRIPT_URL
+        };
+      }
     } catch (e) {
       console.error("Failed to parse global settings", e);
     }
@@ -133,7 +140,8 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
         ...globalSettings,
         appsScriptUrl: globalSettings.appsScriptUrl || DEFAULT_APPS_SCRIPT_URL,
         ecommLink: globalSettings.ecommLink || DEFAULT_ECOMM_LINK,
-        ecommDetailLink: globalSettings.ecommDetailLink || DEFAULT_ECOMM_DETAIL_LINK
+        ecommDetailLink: globalSettings.ecommDetailLink || DEFAULT_ECOMM_DETAIL_LINK,
+        adsLink: globalSettings.adsLink !== undefined ? globalSettings.adsLink : DEFAULT_ADS_LINK
       },
       setGlobalSettings 
     }}>
