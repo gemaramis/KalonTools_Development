@@ -12,13 +12,15 @@ export default async function handler(req, res) {
   try {
     let fetchUrl = targetUrl;
     
-    // Auto-convert standard edit link to CSV export link if detected
     if (targetUrl.includes('/edit')) {
       const sheetId = targetUrl.match(/\/d\/(.+?)\//)?.[1];
       const gidMatch = targetUrl.match(/[#&]gid=([0-9]+)/);
-      const gid = gidMatch ? gidMatch[1] : '0';
+      
       if (sheetId) {
-        fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+        fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+        if (gidMatch) {
+          fetchUrl += `&gid=${gidMatch[1]}`;
+        }
       }
     }
 
