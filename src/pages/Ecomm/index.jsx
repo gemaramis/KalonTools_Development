@@ -121,6 +121,8 @@ const Ecomm = () => {
   const [skuSearchQuery, setSkuSearchQuery] = useState('');
   const [skuSortConfig, setSkuSortConfig] = useState({ key: 'current', direction: 'desc' });
   const [skuFilters, setSkuFilters] = useState({});
+  const [skuSelectedProducts, setSkuSelectedProducts] = useState([]);
+  const [skuCurrentPage, setSkuCurrentPage] = useState(1);
   const [selectedMetrics, setSelectedMetrics] = useState(['gmv', 'productsSold']);
   const [isCompareEnabled, setIsCompareEnabled] = useState(false);
   
@@ -407,6 +409,48 @@ const Ecomm = () => {
 
     return result;
   }, [activeTab, currentData, compareData, skuSelectedMetric, skuSearchQuery, skuSortConfig]);
+
+  const paginatedSkuData = useMemo(() => {
+    const startIndex = (skuCurrentPage - 1) * 10;
+    return skuTableData.slice(startIndex, startIndex + 10);
+  }, [skuTableData, skuCurrentPage]);
+  const totalSkuPages = Math.ceil(skuTableData.length / 10);
+
+  const skuChartData = useMemo(() => {
+    if (skuSelectedProducts.length === 0) return [];
+    
+    const currentDays = eachDayOfInterval({ start: currentRange.start, end: currentRange.end });
+    const result = currentDays.map(day => {
+      const dataPoint = { date: format(day, 'MMM d') };
+      skuSelectedProducts.forEach(prodName => {
+        dataPoint[prodName] = 0;
+      });
+      return dataPoint;
+    });
+
+    currentData.forEach(item => {
+      if (item.product && skuSelectedProducts.includes(item.product)) {
+        const dateStr = format(item.dateObj, 'MMM d');
+        const dataPoint = result.find(d => d.date === dateStr);
+        if (dataPoint) {
+          dataPoint[item.product] += item[skuSelectedMetric] || 0;
+        }
+      }
+    });
+
+    return result;
+  }, [currentData, currentRange, skuSelectedProducts, skuSelectedMetric]);
+
+  const handleSkuProductSelect = (productName) => {
+    setSkuSelectedProducts(prev => {
+      if (prev.includes(productName)) {
+        return prev.filter(p => p !== productName);
+      } else {
+        if (prev.length < 2) return [...prev, productName];
+        return prev; // Max 2
+      }
+    });
+  };
 
   const handleSort = (key) => {
     let direction = 'desc';
@@ -1006,11 +1050,94 @@ const Ecomm = () => {
           </div>
         </div>
 
+        {/* SKU Comparison Top Area */}
+        {skuSelectedProducts.length > 0 && (
+          <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '24px' }}>Perbandingan Produk</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '24px' }}>
+              
+              {/* Metric Cards for Selected Products */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {skuSelectedProducts.map((prodName, index) => {
+                  // Find total metric for this product
+                  const prodData = skuTableData.find(p => p.name === prodName);
+                  const totalVal = prodData ? prodData.current : 0;
+                  const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                  const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
+                  const color = index === 0 ? CHART_COLORS[0] : CHART_COLORS[1];
+
+                  return (
+                    <div key={prodName} style={{ 
+                      padding: '16px', 
+                      border: `1px solid ${color}`, 
+                      borderRadius: '8px',
+                      backgroundColor: `${color}10`, // 10% opacity for background
+                      position: 'relative'
+                    }}>
+                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color, marginRight: '8px' }}></span>
+                        {prodName}
+                      </div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                        {formatFn(totalVal)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Line Chart */}
+              <div style={{ height: '250px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={skuChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dy={10} />
+                    <YAxis 
+                      tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} 
+                      axisLine={false} tickLine={false} 
+                      tickFormatter={(val) => {
+                        if (val >= 1000000) return `Rp${(val / 1000000).toFixed(0)} jt`;
+                        if (val >= 1000) return `${(val / 1000).toFixed(0)} rb`;
+                        return val;
+                      }}
+                    />
+                    <Tooltip 
+                      formatter={(value, name) => {
+                        const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                        const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
+                        return [formatFn(value), name];
+                      }}
+                      contentStyle={{ backgroundColor: 'var(--surface-color)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
+                      itemStyle={{ fontSize: '0.875rem', fontWeight: '500' }}
+                      labelStyle={{ color: 'var(--text-secondary)', marginBottom: '8px' }}
+                    />
+                    <Legend verticalAlign="top" height={36} iconType="plainline" wrapperStyle={{ fontSize: '0.875rem', paddingBottom: '16px' }}/>
+                    
+                    {skuSelectedProducts.map((prodName, index) => (
+                      <Line 
+                        key={prodName}
+                        type="monotone" 
+                        dataKey={prodName} 
+                        stroke={index === 0 ? CHART_COLORS[0] : CHART_COLORS[1]} 
+                        strokeWidth={2} 
+                        dot={false}
+                        activeDot={{ r: 6, fill: index === 0 ? CHART_COLORS[0] : CHART_COLORS[1], stroke: '#fff', strokeWidth: 2 }}
+                      />
+                    ))}
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+            </div>
+          </div>
+        )}
+
         {/* SKU Table */}
         <div className="glass-panel" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-color)' }}>
+                <th style={{ padding: '16px', width: '40px' }}></th>
                 <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>No</th>
                 <ColumnHeader 
                   label="Product Name" 
@@ -1042,13 +1169,24 @@ const Ecomm = () => {
               </tr>
             </thead>
             <tbody>
-              {skuTableData.map((row, index) => {
+              {paginatedSkuData.map((row, index) => {
                 const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
                 const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
+                const isSelected = skuSelectedProducts.includes(row.name);
+                const isDisabled = !isSelected && skuSelectedProducts.length >= 2;
                 
                 return (
-                  <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '16px' }}>{index + 1}</td>
+                  <tr key={index} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isSelected ? 'rgba(0, 181, 165, 0.05)' : 'transparent' }}>
+                    <td style={{ padding: '16px' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={isSelected}
+                        disabled={isDisabled}
+                        onChange={() => handleSkuProductSelect(row.name)}
+                        style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+                      />
+                    </td>
+                    <td style={{ padding: '16px' }}>{(skuCurrentPage - 1) * 10 + index + 1}</td>
                     <td style={{ padding: '16px', fontWeight: '500' }}>{row.name}</td>
                     <td style={{ padding: '16px' }}>{formatFn(row.current)}</td>
                     <td style={{ padding: '16px' }}>{formatFn(row.compare)}</td>
@@ -1058,13 +1196,46 @@ const Ecomm = () => {
                   </tr>
                 );
               })}
-              {skuTableData.length === 0 && (
+              {paginatedSkuData.length === 0 && (
                 <tr>
-                  <td colSpan="5" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>Belum ada data tersedia</td>
+                  <td colSpan="6" style={{ padding: '32px', textAlign: 'center', color: 'var(--text-secondary)' }}>Belum ada data tersedia</td>
                 </tr>
               )}
             </tbody>
           </table>
+          
+          {/* Pagination Controls */}
+          {totalSkuPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', padding: '16px', borderTop: '1px solid var(--border-color)' }}>
+              <button 
+                onClick={() => setSkuCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={skuCurrentPage === 1}
+                style={{ 
+                  padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', 
+                  backgroundColor: skuCurrentPage === 1 ? 'var(--bg-color)' : 'white',
+                  cursor: skuCurrentPage === 1 ? 'not-allowed' : 'pointer',
+                  color: skuCurrentPage === 1 ? 'var(--text-secondary)' : 'var(--text-primary)'
+                }}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                Page <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{skuCurrentPage}</span> of {totalSkuPages}
+              </span>
+              <button 
+                onClick={() => setSkuCurrentPage(prev => Math.min(totalSkuPages, prev + 1))}
+                disabled={skuCurrentPage === totalSkuPages}
+                style={{ 
+                  padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', 
+                  backgroundColor: skuCurrentPage === totalSkuPages ? 'var(--bg-color)' : 'white',
+                  cursor: skuCurrentPage === totalSkuPages ? 'not-allowed' : 'pointer',
+                  color: skuCurrentPage === totalSkuPages ? 'var(--text-secondary)' : 'var(--text-primary)'
+                }}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
