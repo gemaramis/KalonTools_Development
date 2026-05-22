@@ -138,7 +138,6 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
         ...globalSettings,
         appsScriptUrl: globalSettings.appsScriptUrl || DEFAULT_APPS_SCRIPT_URL,
         ecommLink: globalSettings.ecommLink || DEFAULT_ECOMM_LINK,
-        ecommDetailLink: globalSettings.ecommDetailLink || DEFAULT_ECOMM_DETAIL_LINK,
         adsLink: globalSettings.adsLink !== undefined ? globalSettings.adsLink : DEFAULT_ADS_LINK
       },
       setGlobalSettings 
