@@ -187,7 +187,7 @@ export const useEcommerceData = (ecommUrl, adsUrl) => {
     };
 
     fetchData();
-  }, [mainUrl, detailUrl, adsUrl]);
+  }, [ecommUrl, adsUrl]);
 
   return { mainData, detailData, loading, error };
 };
