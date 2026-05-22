@@ -14,7 +14,7 @@ export default async function handler(req, res) {
     
     if (targetUrl.includes('/edit')) {
       const sheetId = targetUrl.match(/\/d\/(.+?)\//)?.[1];
-      const gidMatch = targetUrl.match(/[#&]gid=([0-9]+)/);
+      const gidMatch = targetUrl.match(/[?#&]gid=([0-9]+)/);
       
       if (sheetId) {
         fetchUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
