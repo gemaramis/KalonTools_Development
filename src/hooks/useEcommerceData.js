@@ -49,9 +49,10 @@ export const useEcommerceData = (ecommUrl, adsUrl) => {
       return;
     }
 
-    // Explicitly set the known GIDs for the Master Spreadsheet tabs
+    // Use the hardcoded GID for Main Data since it's hidden from settings,
+    // but use the exact user-provided URL for Detail GMV so they can change the tab anytime.
     const mainUrl = ecommUrl.replace(/gid=[0-9]+/g, 'gid=1019025468');
-    const detailUrl = ecommUrl.replace(/gid=[0-9]+/g, 'gid=1551198310');
+    const detailUrl = ecommUrl;
 
     const fetchData = async () => {
       setLoading(true);
