@@ -416,20 +416,31 @@ const Ecomm = () => {
   }, [skuTableData, skuCurrentPage]);
   const totalSkuPages = Math.ceil(skuTableData.length / 10);
 
+  const productsToPlot = skuSelectedProducts.length > 0 
+    ? skuSelectedProducts 
+    : skuTableData.slice(0, 2).map(p => p.name);
+
   const skuChartData = useMemo(() => {
-    if (skuSelectedProducts.length === 0) return [];
+    if (productsToPlot.length === 0) return [];
     
     const currentDays = eachDayOfInterval({ start: currentRange.start, end: currentRange.end });
-    const result = currentDays.map(day => {
-      const dataPoint = { date: format(day, 'MMM d') };
-      skuSelectedProducts.forEach(prodName => {
-        dataPoint[prodName] = 0;
+    const compareDays = eachDayOfInterval({ start: compareRange.start, end: compareRange.end });
+    const maxDays = Math.max(currentDays.length, compareDays.length);
+    
+    const result = Array.from({ length: maxDays }).map((_, i) => {
+      const dataPoint = {};
+      const currDay = currentDays[i];
+      if (currDay) dataPoint.date = format(currDay, 'MMM d');
+      
+      productsToPlot.forEach(prodName => {
+        if (currDay) dataPoint[prodName] = 0;
+        if (isCompareEnabled) dataPoint[`${prodName}Compare`] = 0;
       });
       return dataPoint;
     });
 
     currentData.forEach(item => {
-      if (item.product && skuSelectedProducts.includes(item.product)) {
+      if (item.product && productsToPlot.includes(item.product)) {
         const dateStr = format(item.dateObj, 'MMM d');
         const dataPoint = result.find(d => d.date === dateStr);
         if (dataPoint) {
@@ -438,8 +449,20 @@ const Ecomm = () => {
       }
     });
 
+    if (isCompareEnabled) {
+      compareData.forEach(item => {
+        if (item.product && productsToPlot.includes(item.product)) {
+          const dateStr = format(item.dateObj, 'yyyy-MM-dd');
+          const dayIndex = compareDays.findIndex(d => format(d, 'yyyy-MM-dd') === dateStr);
+          if (dayIndex !== -1 && result[dayIndex]) {
+            result[dayIndex][`${item.product}Compare`] += item[skuSelectedMetric] || 0;
+          }
+        }
+      });
+    }
+
     return result;
-  }, [currentData, currentRange, skuSelectedProducts, skuSelectedMetric]);
+  }, [currentData, compareData, currentRange, compareRange, productsToPlot, skuSelectedMetric, isCompareEnabled]);
 
   const handleSkuProductSelect = (productName) => {
     setSkuSelectedProducts(prev => {
@@ -1051,40 +1074,51 @@ const Ecomm = () => {
         </div>
 
         {/* SKU Comparison Top Area */}
-        {skuSelectedProducts.length > 0 && (
-          <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '24px' }}>Perbandingan Produk</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '24px' }}>
-              
-              {/* Metric Cards for Selected Products */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {skuSelectedProducts.map((prodName, index) => {
-                  // Find total metric for this product
-                  const prodData = skuTableData.find(p => p.name === prodName);
-                  const totalVal = prodData ? prodData.current : 0;
-                  const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                  const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
-                  const color = index === 0 ? CHART_COLORS[0] : CHART_COLORS[1];
+        <div className="glass-panel" style={{ padding: '24px', marginBottom: '24px' }}>
+          <div className="flex-between" style={{ marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '1.125rem', fontWeight: '600' }}>Perbandingan Produk</h2>
+            {skuSelectedProducts.length === 0 && (
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>(Otomatis menampilkan 2 produk teratas)</span>
+            )}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '24px' }}>
+            
+            {/* Metric Cards for Selected Products */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {productsToPlot.map((prodName, index) => {
+                // Find total metric for this product
+                const prodData = skuTableData.find(p => p.name === prodName);
+                const totalVal = prodData ? prodData.current : 0;
+                const compareVal = prodData ? prodData.compare : 0;
+                const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
+                const color = index === 0 ? CHART_COLORS[0] : CHART_COLORS[1];
 
-                  return (
-                    <div key={prodName} style={{ 
-                      padding: '16px', 
-                      border: `1px solid ${color}`, 
-                      borderRadius: '8px',
-                      backgroundColor: `${color}10`, // 10% opacity for background
-                      position: 'relative'
-                    }}>
-                      <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color, marginRight: '8px' }}></span>
-                        {prodName}
-                      </div>
-                      <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-                        {formatFn(totalVal)}
-                      </div>
+                return (
+                  <div key={prodName} style={{ 
+                    padding: '16px', 
+                    border: `1px solid ${color}`, 
+                    borderRadius: '8px',
+                    backgroundColor: `${color}10`, // 10% opacity for background
+                    position: 'relative'
+                  }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color, marginRight: '8px' }}></span>
+                      {prodName}
                     </div>
-                  );
-                })}
-              </div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                      {formatFn(totalVal)}
+                    </div>
+                    {isCompareEnabled && (
+                      <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>vs last period:</span>
+                        <ChangeIndicator current={totalVal} previous={compareVal} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
 
               {/* Line Chart */}
               <div style={{ height: '250px' }}>
@@ -1111,26 +1145,39 @@ const Ecomm = () => {
                       itemStyle={{ fontSize: '0.875rem', fontWeight: '500' }}
                       labelStyle={{ color: 'var(--text-secondary)', marginBottom: '8px' }}
                     />
-                    <Legend verticalAlign="top" height={36} iconType="plainline" wrapperStyle={{ fontSize: '0.875rem', paddingBottom: '16px' }}/>
-                    
-                    {skuSelectedProducts.map((prodName, index) => (
+                  <Legend verticalAlign="top" height={36} iconType="plainline" wrapperStyle={{ fontSize: '0.875rem', paddingBottom: '16px' }}/>
+                  
+                  {productsToPlot.map((prodName, index) => (
+                    <React.Fragment key={prodName}>
                       <Line 
-                        key={prodName}
                         type="monotone" 
                         dataKey={prodName} 
+                        name={prodName}
                         stroke={index === 0 ? CHART_COLORS[0] : CHART_COLORS[1]} 
                         strokeWidth={2} 
                         dot={false}
                         activeDot={{ r: 6, fill: index === 0 ? CHART_COLORS[0] : CHART_COLORS[1], stroke: '#fff', strokeWidth: 2 }}
                       />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-
+                      {isCompareEnabled && (
+                        <Line 
+                          type="monotone" 
+                          dataKey={`${prodName}Compare`} 
+                          name={`${prodName} (Bandingkan)`}
+                          stroke={index === 0 ? CHART_COLORS[0] : CHART_COLORS[1]} 
+                          strokeWidth={2} 
+                          strokeDasharray="5 5"
+                          dot={false}
+                          activeDot={{ r: 4 }}
+                        />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
             </div>
+
           </div>
-        )}
+        </div>
 
         {/* SKU Table */}
         <div className="glass-panel" style={{ overflowX: 'auto' }}>
@@ -1183,7 +1230,7 @@ const Ecomm = () => {
                         checked={isSelected}
                         disabled={isDisabled}
                         onChange={() => handleSkuProductSelect(row.name)}
-                        style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}
+                        style={{ cursor: isDisabled ? 'not-allowed' : 'pointer', transform: 'scale(1.5)', accentColor: 'var(--primary-color)' }}
                       />
                     </td>
                     <td style={{ padding: '16px' }}>{(skuCurrentPage - 1) * 10 + index + 1}</td>
