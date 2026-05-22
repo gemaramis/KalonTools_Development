@@ -33,7 +33,7 @@ const parseDate = (dateStr) => {
   return isValid(fallback) ? fallback : null;
 };
 
-export const useEcommerceData = (mainUrl, detailUrl, adsUrl) => {
+export const useEcommerceData = (ecommUrl, adsUrl) => {
   const [mainData, setMainData] = useState([]);
   const [detailData, setDetailData] = useState({
     live: [],
@@ -44,10 +44,14 @@ export const useEcommerceData = (mainUrl, detailUrl, adsUrl) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!mainUrl || !detailUrl) {
+    if (!ecommUrl) {
       setLoading(false);
       return;
     }
+
+    const detailUrl = ecommUrl;
+    // Strip gid parameters to force fetching the default first tab (Main Data)
+    const mainUrl = ecommUrl.replace(/[?&#]gid=[^&#]+/g, '');
 
     const fetchData = async () => {
       setLoading(true);

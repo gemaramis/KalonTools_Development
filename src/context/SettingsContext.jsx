@@ -72,8 +72,7 @@ export const SettingsProvider = ({ children }) => {
 
 const DEFAULT_DEALING_LINK = 'https://docs.google.com/spreadsheets/d/1ZeGXZt0pAueJsPq_iqM_-PGE-LcPZ3c2AphDeIlWObA/edit?gid=0#gid=0';
 const DEFAULT_SCHEDULING_LINK = 'https://docs.google.com/spreadsheets/d/1ZeGXZt0pAueJsPq_iqM_-PGE-LcPZ3c2AphDeIlWObA/edit?gid=1978733706#gid=1978733706';
-const DEFAULT_ECOMM_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1019025468#gid=1019025468';
-const DEFAULT_ECOMM_DETAIL_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1551198310#gid=1551198310';
+const DEFAULT_ECOMM_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1551198310#gid=1551198310';
 const DEFAULT_ADS_LINK = '';
 const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bnB7QhSSoyJ9N2qLxUua2HBbpjD6FcbWNDpZta79bFZ_BmWdRUvvOQihFX6o/exec';
 
@@ -94,7 +93,6 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
     return { 
       appsScriptUrl: DEFAULT_APPS_SCRIPT_URL,
       ecommLink: DEFAULT_ECOMM_LINK,
-      ecommDetailLink: DEFAULT_ECOMM_DETAIL_LINK,
       adsLink: DEFAULT_ADS_LINK
     };
   });

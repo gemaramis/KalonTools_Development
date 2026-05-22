@@ -112,7 +112,6 @@ const Ecomm = () => {
   const { globalSettings } = useSettings();
   const { mainData, detailData, loading, error } = useEcommerceData(
     globalSettings?.ecommLink, 
-    globalSettings?.ecommDetailLink,
     globalSettings?.adsLink
   );
 

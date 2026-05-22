@@ -19,7 +19,6 @@ const Management = () => {
   const [dealingLink, setDealingLink] = useState('');
   const [schedulingLink, setSchedulingLink] = useState('');
   const [ecommLink, setEcommLink] = useState('');
-  const [ecommDetailLink, setEcommDetailLink] = useState('');
   const [adsLink, setAdsLink] = useState('');
   const [appsScriptUrl, setAppsScriptUrl] = useState('');
 
@@ -51,7 +50,6 @@ const Management = () => {
     setDealingLink(monthSettings.dealingSpreadsheetLink || '');
     setSchedulingLink(monthSettings.schedulingSpreadsheetLink || '');
     setEcommLink(globalSettings?.ecommLink || '');
-    setEcommDetailLink(globalSettings?.ecommDetailLink || '');
     setAdsLink(globalSettings?.adsLink || '');
     setAppsScriptUrl(globalSettings?.appsScriptUrl || '');
   }, [selectedMonth, getSettingsForMonth, globalSettings]);
@@ -75,7 +73,6 @@ const Management = () => {
       ...prev, 
       appsScriptUrl,
       ecommLink,
-      ecommDetailLink,
       adsLink
     }));
     setLinksSaved(true);
@@ -338,24 +335,12 @@ const Management = () => {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Ecommerce Main Data Link</label>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Ecommerce Spreadsheet Link</label>
               <input 
                 type="url" 
                 className="input-field" 
                 value={ecommLink} 
                 onChange={(e) => setEcommLink(e.target.value)} 
-                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=1019025468"
-                style={{ width: '100%' }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Ecommerce Detail GMV Link</label>
-              <input 
-                type="url" 
-                className="input-field" 
-                value={ecommDetailLink} 
-                onChange={(e) => setEcommDetailLink(e.target.value)} 
                 placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=1551198310"
                 style={{ width: '100%' }}
               />
