@@ -49,9 +49,9 @@ export const useEcommerceData = (ecommUrl, adsUrl) => {
       return;
     }
 
-    const detailUrl = ecommUrl;
-    // Strip gid parameters to force fetching the default first tab (Main Data)
-    const mainUrl = ecommUrl.replace(/[?&#]gid=[^&#]+/g, '');
+    // Explicitly set the known GIDs for the Master Spreadsheet tabs
+    const mainUrl = ecommUrl.replace(/gid=[0-9]+/g, 'gid=1019025468');
+    const detailUrl = ecommUrl.replace(/gid=[0-9]+/g, 'gid=1551198310');
 
     const fetchData = async () => {
       setLoading(true);
