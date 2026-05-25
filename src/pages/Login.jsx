@@ -11,7 +11,7 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (password === '123456') {
+    if (password === 'kln333315') {
       login(selectedRole);
     } else {
       setError('Incorrect password');
