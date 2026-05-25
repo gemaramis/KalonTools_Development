@@ -41,6 +41,20 @@ const formatNumberFull = (value) => {
   return new Intl.NumberFormat('id-ID').format(value);
 };
 
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+  if (percent < 0.05) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize="0.75rem" fontWeight="700">
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+
 const getDateRange = (rangeType, baseDate = new Date()) => {
   const end = baseDate;
   let start = baseDate;
@@ -940,6 +954,8 @@ const Ecomm = () => {
                   paddingAngle={2}
                   dataKey="value"
                   stroke="none"
+                  labelLine={false}
+                  label={renderCustomizedLabel}
                 >
                   {pieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
@@ -1116,6 +1132,8 @@ const Ecomm = () => {
                       paddingAngle={2}
                       dataKey="value"
                       stroke="none"
+                      labelLine={false}
+                      label={renderCustomizedLabel}
                     >
                       {overviewSkuPieData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} />
