@@ -241,7 +241,18 @@ const Ecomm = () => {
   }, [maxDate, mainData.length]);
 
   const currentData = useMemo(() => filterDataByRange(mainData, currentRange), [mainData, currentRange]);
-  const compareData = useMemo(() => filterDataByRange(mainData, compareRange), [mainData, compareRange]);
+    const effectiveCompareRange = useMemo(() => {
+    if (isCompareEnabled) return compareRange;
+    if (currentRange.start && currentRange.end) {
+      return {
+        start: subMonths(currentRange.start, 1),
+        end: subMonths(currentRange.end, 1)
+      };
+    }
+    return { start: null, end: null };
+  }, [isCompareEnabled, compareRange, currentRange]);
+
+  const compareData = useMemo(() => filterDataByRange(mainData, effectiveCompareRange), [mainData, effectiveCompareRange]);
 
   const ecommMetricsInfo = [
     { id: 'gmv', label: 'GMV', format: formatRp, fullFormat: formatRpFull },
@@ -1485,10 +1496,35 @@ const Ecomm = () => {
                     }}/>
                     <Tooltip 
                       cursor={{fill: 'var(--border-color)', opacity: 0.4}}
-                      contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                      formatter={(value) => {
-                        const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                        return metricInfo ? metricInfo.fullFormat(value) : formatNumberFull(value);
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          const keys = skuMonthlyCompareData.keys;
+                          const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                          const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
+                          
+                          const val1 = payload.find(p => p.name === keys[1])?.value || 0;
+                          const val2 = payload.find(p => p.name === keys[2])?.value || 0;
+                          
+                          return (
+                            <div style={{ backgroundColor: 'var(--bg-color)', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                              <p style={{ fontWeight: '600', marginBottom: '8px' }}>{label}</p>
+                              {payload.map((entry, index) => (
+                                <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                  <div style={{ width: '10px', height: '10px', backgroundColor: entry.color, borderRadius: '50%' }}></div>
+                                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{entry.name}:</span>
+                                  <span style={{ fontWeight: '500', fontSize: '0.875rem' }}>{formatFn(entry.value)}</span>
+                                </div>
+                              ))}
+                              {keys.length >= 3 && (
+                                <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Pertumbuhan ({keys[1]} - {keys[2]}):</span>
+                                  <ChangeIndicator current={val2} previous={val1} />
+                                </div>
+                              )}
+                            </div>
+                          );
+                        }
+                        return null;
                       }}
                     />
                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
@@ -1543,7 +1579,7 @@ const Ecomm = () => {
                 const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
                 const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
                 const isSelected = skuSelectedProducts.includes(row.name);
-                const isDisabled = !isSelected && skuSelectedProducts.length >= 2;
+                const isDisabled = !isSelected && skuSelectedProducts.length >= 5;
                 
                 return (
                   <tr key={index} style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: isSelected ? 'rgba(0, 181, 165, 0.05)' : 'transparent' }}>
