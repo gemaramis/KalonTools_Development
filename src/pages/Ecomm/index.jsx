@@ -976,6 +976,92 @@ const Ecomm = () => {
         </div>
       </div>
 
+      {/* Distribusi GMV per Produk (SKU) */}
+      <div className="glass-panel" style={{ padding: '24px', display: activeTab === 'Overview' ? 'block' : 'none', marginBottom: '24px' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '24px' }}>Distribusi GMV per Produk (SKU)</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '48px', alignItems: 'center' }}>
+            <div style={{ position: 'relative', height: '250px' }}>
+              {overviewSkuPieData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={overviewSkuPieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                      labelLine={false}
+                      label={renderCustomizedLabel}
+                    >
+                      {overviewSkuPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => formatRpFull(value)}
+                      contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-secondary)' }}>
+                  Tidak ada data
+                </div>
+              )}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>SKU</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto', paddingRight: '12px' }} className="hide-scrollbar">
+              {allOverviewSkus.map((entry, index) => {
+                const defaultSelected = allOverviewSkus.slice(0, 5).map(s => s.name);
+                const isSelected = overviewSelectedSkus.length > 0 
+                  ? overviewSelectedSkus.includes(entry.name)
+                  : defaultSelected.includes(entry.name);
+                  
+                const pieIndex = overviewSkuPieData.findIndex(d => d.name === entry.name);
+                const color = pieIndex !== -1 ? SKU_PIE_COLORS[pieIndex % SKU_PIE_COLORS.length] : 'var(--border-color)';
+                
+                const totalVal = allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0);
+                const pct = totalVal > 0 ? ((entry.value / totalVal) * 100).toFixed(1) : 0;
+                
+                return (
+                  <div 
+                    key={entry.name} 
+                    onClick={() => toggleOverviewSku(entry.name)}
+                    style={{ 
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+                      padding: '8px 12px', borderBottom: '1px solid var(--border-color)',
+                      cursor: 'pointer',
+                      backgroundColor: isSelected ? 'rgba(0,0,0,0.02)' : 'transparent',
+                      borderRadius: '8px',
+                      opacity: isSelected ? 1 : 0.5,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+                      <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color, flexShrink: 0 }}></div>
+                      <span style={{ fontWeight: isSelected ? '600' : '500', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{entry.name}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                      <span style={{ fontWeight: '600' }}>{formatRpDetail(entry.value)}</span>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', width: '48px', textAlign: 'right' }}>{pct}%</span>
+                      {isCompareEnabled && (
+                        <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                          <ChangeIndicator current={entry.value} previous={entry.compareValue} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       {/* Detail GMV */}
       <div className="glass-panel" style={{ padding: '24px', display: activeTab === 'Overview' ? 'block' : 'none' }}>
         <div className="flex-between" style={{ marginBottom: '16px' }}>
@@ -1161,91 +1247,6 @@ const Ecomm = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '48px', borderTop: '1px solid var(--border-color)', paddingTop: '32px', paddingBottom: '32px' }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '24px' }}>Distribusi GMV per Produk (SKU)</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '48px', alignItems: 'center' }}>
-            <div style={{ position: 'relative', height: '250px' }}>
-              {overviewSkuPieData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={overviewSkuPieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={70}
-                      outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="value"
-                      stroke="none"
-                      labelLine={false}
-                      label={renderCustomizedLabel}
-                    >
-                      {overviewSkuPieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value) => formatRpFull(value)}
-                      contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-secondary)' }}>
-                  Tidak ada data
-                </div>
-              )}
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>SKU</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto', paddingRight: '12px' }} className="hide-scrollbar">
-              {allOverviewSkus.map((entry, index) => {
-                const defaultSelected = allOverviewSkus.slice(0, 5).map(s => s.name);
-                const isSelected = overviewSelectedSkus.length > 0 
-                  ? overviewSelectedSkus.includes(entry.name)
-                  : defaultSelected.includes(entry.name);
-                  
-                const pieIndex = overviewSkuPieData.findIndex(d => d.name === entry.name);
-                const color = pieIndex !== -1 ? SKU_PIE_COLORS[pieIndex % SKU_PIE_COLORS.length] : 'var(--border-color)';
-                
-                const totalVal = allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0);
-                const pct = totalVal > 0 ? ((entry.value / totalVal) * 100).toFixed(1) : 0;
-                
-                return (
-                  <div 
-                    key={entry.name} 
-                    onClick={() => toggleOverviewSku(entry.name)}
-                    style={{ 
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-                      padding: '8px 12px', borderBottom: '1px solid var(--border-color)',
-                      cursor: 'pointer',
-                      backgroundColor: isSelected ? 'rgba(0,0,0,0.02)' : 'transparent',
-                      borderRadius: '8px',
-                      opacity: isSelected ? 1 : 0.5,
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
-                      <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color, flexShrink: 0 }}></div>
-                      <span style={{ fontWeight: isSelected ? '600' : '500', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{entry.name}</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                      <span style={{ fontWeight: '600' }}>{formatRpDetail(entry.value)}</span>
-                      <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', width: '48px', textAlign: 'right' }}>{pct}%</span>
-                      {isCompareEnabled && (
-                        <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
-                          <ChangeIndicator current={entry.value} previous={entry.compareValue} />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
 
         <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {activeMonths.map((monthStr) => {
