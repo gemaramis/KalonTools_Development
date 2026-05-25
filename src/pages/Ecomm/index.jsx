@@ -1066,11 +1066,9 @@ const Ecomm = () => {
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '120px' }}>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Total GMV</div>
                   <div style={{ fontSize: '0.875rem', fontWeight: '700' }}>{formatRpFull(allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0))}</div>
-                  {isCompareEnabled && (
-                    <div style={{ marginTop: '2px', display: 'flex', justifyContent: 'center' }}>
+                  <div style={{ marginTop: '2px', display: 'flex', justifyContent: 'center' }}>
                       <ChangeIndicator current={allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0)} previous={allOverviewSkus.reduce((acc, curr) => acc + curr.compareValue, 0)} />
                     </div>
-                  )}
                 </div>
               </div>
             </div>
@@ -1109,11 +1107,9 @@ const Ecomm = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                       <span style={{ fontWeight: '600' }}>{formatRpDetail(entry.value)}</span>
                       <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', width: '48px', textAlign: 'right' }}>{pct}%</span>
-                      {isCompareEnabled && (
-                        <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
+                      <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
                           <ChangeIndicator current={entry.value} previous={entry.compareValue} />
                         </div>
-                      )}
                     </div>
                   </div>
                 );
