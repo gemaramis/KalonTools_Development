@@ -1435,7 +1435,7 @@ const Ecomm = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={skuChartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 11}} dy={10} minTickGap={-10} interval="preserveStartEnd" />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 11}} dy={10} minTickGap={-10} interval="preserveStartEnd" tickFormatter={(val) => val.split(' ')[1] || val} />
                   <YAxis scale="sqrt" domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
                     const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
                     return metricInfo ? metricInfo.format(val) : formatNumber(val);
