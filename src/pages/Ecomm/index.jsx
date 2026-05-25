@@ -434,6 +434,23 @@ const Ecomm = () => {
     return result;
   }, [activeTab, currentData, compareData, skuSelectedMetric, skuSearchQuery, skuSortConfig]);
 
+  const SKU_PIE_COLORS = ['#00B5A5', '#F59E0B', '#3B82F6', '#8B5CF6', '#EC4899', '#64748B'];
+
+  const skuPieData = useMemo(() => {
+    if (!skuTableData || skuTableData.length === 0) return [];
+    
+    const sorted = [...skuTableData].sort((a, b) => b.current - a.current);
+    const top = sorted.slice(0, 5);
+    const others = sorted.slice(5).reduce((acc, curr) => acc + curr.current, 0);
+    
+    const result = top.map(p => ({ name: p.name, value: Math.max(0, p.current) }));
+    if (others > 0) {
+      result.push({ name: 'Lainnya', value: others });
+    }
+    // Filter out 0 values so the pie chart doesn't render empty slivers
+    return result.filter(d => d.value > 0);
+  }, [skuTableData]);
+
   const paginatedSkuData = useMemo(() => {
     const startIndex = (skuCurrentPage - 1) * 10;
     return skuTableData.slice(startIndex, startIndex + 10);
@@ -1160,33 +1177,24 @@ const Ecomm = () => {
               })}
             </div>
 
-              {/* Line Chart */}
-              <div style={{ height: '250px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={skuChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dy={10} />
-                    <YAxis 
-                      tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} 
-                      axisLine={false} tickLine={false} 
-                      tickFormatter={(val) => {
-                        if (val >= 1000000) return `Rp${(val / 1000000).toFixed(0)} jt`;
-                        if (val >= 1000) return `${(val / 1000).toFixed(0)} rb`;
-                        return val;
-                      }}
-                    />
-                    <Tooltip 
-                      formatter={(value, name) => {
-                        const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                        const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
-                        return [formatFn(value), name];
-                      }}
-                      contentStyle={{ backgroundColor: 'var(--surface-color)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }}
-                      itemStyle={{ fontSize: '0.875rem', fontWeight: '500' }}
-                      labelStyle={{ color: 'var(--text-secondary)', marginBottom: '8px' }}
-                    />
-                  <Legend verticalAlign="top" height={36} iconType="plainline" wrapperStyle={{ fontSize: '0.875rem', paddingBottom: '16px' }}/>
-                  
+            {/* Line Chart */}
+            <div style={{ height: '300px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={skuChartData}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                  <XAxis dataKey="displayDate" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} dy={10}/>
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                    const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                    return metricInfo ? metricInfo.format(val) : formatNumber(val);
+                  }}/>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                    formatter={(value) => {
+                      const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                      return metricInfo ? metricInfo.fullFormat(value) : formatNumberFull(value);
+                    }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }}/>
                   {productsToPlot.map((prodName, index) => (
                     <React.Fragment key={prodName}>
                       <Line 
