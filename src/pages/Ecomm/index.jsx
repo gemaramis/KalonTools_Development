@@ -745,7 +745,7 @@ const Ecomm = () => {
               {isCompareEnabled && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Bandingkan:</span>
-                  <EcommDateRangePicker range={compareRange} setRange={setCompareRange} />
+                  <EcommDateRangePicker range={compareRange} setRange={setCompareRange} maxDate={subDays(currentRange.start, 1)} />
                 </div>
               )}
             </div>
