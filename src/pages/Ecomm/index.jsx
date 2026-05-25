@@ -258,7 +258,7 @@ const Ecomm = () => {
     { id: 'gmv', label: 'GMV', format: formatRp, fullFormat: formatRpFull },
     { id: 'productsSold', label: 'Produk terjual', format: formatNumber, fullFormat: formatNumberFull },
     { id: 'impressionsTotal', label: 'Total Impresi', format: formatNumber, fullFormat: formatNumberFull },
-    { id: 'impressionsShopTab', label: 'Impresi Shop', format: formatNumber, fullFormat: formatNumberFull },
+    { id: 'impressionsShopTab', label: 'Impresi Shop Tab', format: formatNumber, fullFormat: formatNumberFull },
     { id: 'impressionsLive', label: 'Impresi Live', format: formatNumber, fullFormat: formatNumberFull },
     { id: 'impressionsVideo', label: 'Impresi Video', format: formatNumber, fullFormat: formatNumberFull },
     { id: 'impressionsProductCard', label: 'Impresi Kartu Produk', format: formatNumber, fullFormat: formatNumberFull },
