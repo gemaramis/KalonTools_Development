@@ -552,7 +552,7 @@ const Ecomm = () => {
 
   const productsToPlot = skuSelectedProducts.length > 0 
     ? skuSelectedProducts 
-    : skuTableData.slice(0, 2).map(p => p.name);
+    : skuTableData.slice(0, 5).map(p => p.name);
 
   const skuChartData = useMemo(() => {
     if (productsToPlot.length === 0) return [];
@@ -644,8 +644,10 @@ const Ecomm = () => {
       if (prev.includes(productName)) {
         return prev.filter(p => p !== productName);
       } else {
-        if (prev.length < 2) return [...prev, productName];
-        return prev; // Max 2
+        if (prev.length >= 5) {
+          return [...prev.slice(1), productName];
+        }
+        return [...prev, productName];
       }
     });
   };
@@ -1374,7 +1376,7 @@ const Ecomm = () => {
           <div className="flex-between" style={{ marginBottom: '24px' }}>
             <h2 style={{ fontSize: '1.125rem', fontWeight: '600' }}>Perbandingan Produk</h2>
             {skuSelectedProducts.length === 0 && (
-              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>(Otomatis menampilkan 2 produk teratas)</span>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>(Otomatis menampilkan 5 produk teratas)</span>
             )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '24px' }}>
@@ -1388,7 +1390,7 @@ const Ecomm = () => {
                 const compareVal = prodData ? prodData.compare : 0;
                 const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
                 const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
-                const color = index === 0 ? CHART_COLORS[0] : CHART_COLORS[1];
+                const color = SKU_PIE_COLORS[index % SKU_PIE_COLORS.length];
 
                 return (
                   <div key={prodName} style={{ 
@@ -1440,7 +1442,7 @@ const Ecomm = () => {
                         type="monotone" 
                         dataKey={prodName} 
                         name={prodName}
-                        stroke={index === 0 ? CHART_COLORS[0] : CHART_COLORS[1]} 
+                        stroke={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} 
                         strokeWidth={2} 
                         dot={false}
                         activeDot={{ r: 6, fill: index === 0 ? CHART_COLORS[0] : CHART_COLORS[1], stroke: '#fff', strokeWidth: 2 }}
