@@ -4,10 +4,11 @@ import { useSettings } from '../../context/SettingsContext';
 import { useEcommerceData } from '../../hooks/useEcommerceData';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  PieChart, Pie, Cell
+  PieChart, Pie, Cell,
+  BarChart, Bar
 } from 'recharts';
 import { 
-  subDays, isSameDay, isWithinInterval, startOfMonth, endOfMonth,
+  subDays, subMonths, isSameDay, isWithinInterval, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, format, isAfter, isBefore, eachDayOfInterval
 } from 'date-fns';
 import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
@@ -596,6 +597,47 @@ const Ecomm = () => {
 
     return result;
   }, [currentData, compareData, currentRange, compareRange, productsToPlot, skuSelectedMetric, isCompareEnabled]);
+
+
+  const skuMonthlyCompareData = useMemo(() => {
+    if (productsToPlot.length === 0 || !currentRange.end) return { data: [], keys: [] };
+
+    const month1Date = currentRange.end;
+    const month2Date = subMonths(month1Date, 1);
+    const month3Date = subMonths(month1Date, 2);
+
+    const month1Name = format(month1Date, 'MMM yyyy');
+    const month2Name = format(month2Date, 'MMM yyyy');
+    const month3Name = format(month3Date, 'MMM yyyy');
+
+    const result = productsToPlot.map(prodName => {
+      let m1 = 0, m2 = 0, m3 = 0;
+
+      mainData.forEach(item => {
+        if (item.product === prodName && item.dateObj) {
+          if (format(item.dateObj, 'M-yyyy') === format(month1Date, 'M-yyyy')) {
+            m1 += item[skuSelectedMetric] || 0;
+          } else if (format(item.dateObj, 'M-yyyy') === format(month2Date, 'M-yyyy')) {
+            m2 += item[skuSelectedMetric] || 0;
+          } else if (format(item.dateObj, 'M-yyyy') === format(month3Date, 'M-yyyy')) {
+            m3 += item[skuSelectedMetric] || 0;
+          }
+        }
+      });
+
+      return {
+        productName: prodName,
+        [month1Name]: m1,
+        [month2Name]: m2,
+        [month3Name]: m3
+      };
+    });
+
+    return {
+      data: result,
+      keys: [month3Name, month2Name, month1Name] // oldest to newest
+    };
+  }, [productsToPlot, mainData, currentRange.end, skuSelectedMetric]);
 
   const handleSkuProductSelect = (productName) => {
     setSkuSelectedProducts(prev => {
@@ -1257,6 +1299,37 @@ const Ecomm = () => {
             </div>
 
           </div>
+
+          {/* Bar Chart 3 Bulan Terakhir */}
+          {skuMonthlyCompareData.keys.length > 0 && (
+            <div style={{ marginTop: '48px', borderTop: '1px solid var(--border-color)', paddingTop: '32px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '24px' }}>Riwayat 3 Bulan Terakhir ({skuMonthlyCompareData.keys.join(' vs ')})</h3>
+              <div style={{ height: '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={skuMonthlyCompareData.data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                    <XAxis dataKey="productName" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                      const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                      return metricInfo ? metricInfo.format(val) : formatNumber(val);
+                    }}/>
+                    <Tooltip 
+                      cursor={{fill: 'var(--border-color)', opacity: 0.4}}
+                      contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                      formatter={(value) => {
+                        const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                        return metricInfo ? metricInfo.fullFormat(value) : formatNumberFull(value);
+                      }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                    <Bar dataKey={skuMonthlyCompareData.keys[0]} fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey={skuMonthlyCompareData.keys[1]} fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey={skuMonthlyCompareData.keys[2]} fill="var(--primary-color)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
         </div>
           </>
         )}
