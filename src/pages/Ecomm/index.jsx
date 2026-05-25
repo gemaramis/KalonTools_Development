@@ -552,7 +552,7 @@ const Ecomm = () => {
 
   const productsToPlot = skuSelectedProducts.length > 0 
     ? skuSelectedProducts 
-    : skuTableData.slice(0, 5).map(p => p.name);
+    : skuTableData.slice(0, 2).map(p => p.name);
 
   const skuChartData = useMemo(() => {
     if (productsToPlot.length === 0) return [];
@@ -1063,18 +1063,15 @@ const Ecomm = () => {
                     Tidak ada data
                   </div>
                 )}
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>SKU</div>
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '120px' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Total GMV</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: '700' }}>{formatRpFull(allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0))}</div>
+                  {isCompareEnabled && (
+                    <div style={{ marginTop: '2px', display: 'flex', justifyContent: 'center' }}>
+                      <ChangeIndicator current={allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0)} previous={allOverviewSkus.reduce((acc, curr) => acc + curr.compareValue, 0)} />
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div style={{ marginTop: '16px', textAlign: 'center' }}>
-                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Total GMV</div>
-                <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>{formatRpFull(allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0))}</div>
-                {isCompareEnabled && (
-                  <div style={{ marginTop: '4px', display: 'flex', justifyContent: 'center' }}>
-                    <ChangeIndicator current={allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0)} previous={allOverviewSkus.reduce((acc, curr) => acc + curr.compareValue, 0)} />
-                  </div>
-                )}
               </div>
             </div>
 
@@ -1387,7 +1384,7 @@ const Ecomm = () => {
           <div className="flex-between" style={{ marginBottom: '24px' }}>
             <h2 style={{ fontSize: '1.125rem', fontWeight: '600' }}>Perbandingan Produk</h2>
             {skuSelectedProducts.length === 0 && (
-              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>(Otomatis menampilkan 5 produk teratas)</span>
+              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>(Otomatis menampilkan 2 produk teratas)</span>
             )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: '24px' }}>
@@ -1475,6 +1472,8 @@ const Ecomm = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+
+          </div>
           {/* Bar Chart 3 Bulan Terakhir */}
           {skuMonthlyCompareData.keys.length > 0 && (
             <div style={{ marginTop: '48px', borderTop: '1px solid var(--border-color)', paddingTop: '32px' }}>
@@ -1505,8 +1504,6 @@ const Ecomm = () => {
               </div>
             </div>
           )}
-
-          </div>
         </div>
 
         {/* SKU Table */}
