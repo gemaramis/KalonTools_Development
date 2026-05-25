@@ -453,25 +453,34 @@ const Ecomm = () => {
 
   const overviewSkuPieData = useMemo(() => {
     const productMap = {};
+    const compareProductMap = {};
+
     currentData.forEach(item => {
       const prod = item.product || 'Unknown';
       if (!productMap[prod]) productMap[prod] = 0;
       productMap[prod] += (item.gmv || 0);
     });
+
+    compareData.forEach(item => {
+      const prod = item.product || 'Unknown';
+      if (!compareProductMap[prod]) compareProductMap[prod] = 0;
+      compareProductMap[prod] += (item.gmv || 0);
+    });
     
     const sorted = Object.entries(productMap)
-      .map(([name, value]) => ({ name, value }))
+      .map(([name, value]) => ({ name, value, compareValue: compareProductMap[name] || 0 }))
       .sort((a, b) => b.value - a.value);
       
     const top = sorted.slice(0, 5);
     const others = sorted.slice(5).reduce((acc, curr) => acc + curr.value, 0);
+    const compareOthers = sorted.slice(5).reduce((acc, curr) => acc + curr.compareValue, 0);
     
-    const result = top.map(p => ({ name: p.name, value: Math.max(0, p.value) }));
+    const result = top.map(p => ({ name: p.name, value: Math.max(0, p.value), compareValue: Math.max(0, p.compareValue) }));
     if (others > 0) {
-      result.push({ name: 'Lainnya', value: others });
+      result.push({ name: 'Lainnya', value: others, compareValue: Math.max(0, compareOthers) });
     }
     return result.filter(d => d.value > 0);
-  }, [currentData]);
+  }, [currentData, compareData]);
 
   const paginatedSkuData = useMemo(() => {
     const startIndex = (skuCurrentPage - 1) * 10;
@@ -1141,6 +1150,11 @@ const Ecomm = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                       <span style={{ fontWeight: '600' }}>{formatRpDetail(entry.value)}</span>
                       <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', width: '48px', textAlign: 'right' }}>{pct}%</span>
+                      {isCompareEnabled && (
+                        <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                          <ChangeIndicator current={entry.value} previous={entry.compareValue} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
