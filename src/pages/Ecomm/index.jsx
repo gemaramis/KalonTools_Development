@@ -966,7 +966,22 @@ const Ecomm = () => {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-              <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} dy={10} />
+              <XAxis 
+                dataKey="date" 
+                tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} 
+                axisLine={false} 
+                tickLine={false} 
+                dy={10} 
+                minTickGap={15}
+                interval="preserveStartEnd"
+                tickFormatter={(val) => {
+                  const parts = val.split(' ');
+                  if (parts.length === 2) {
+                    return parts[1] === '1' ? parts[0] : parts[1];
+                  }
+                  return val;
+                }}
+              />
               
               {selectedMetrics.map((metricId, index) => (
                 <YAxis 
@@ -1435,7 +1450,22 @@ const Ecomm = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={skuChartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 11}} dy={10} minTickGap={-10} interval="preserveStartEnd" tickFormatter={(val) => val.split(' ')[1] || val} />
+                  <XAxis 
+                    dataKey="date" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: 'var(--text-secondary)', fontSize: 11}} 
+                    dy={10} 
+                    minTickGap={15} 
+                    interval="preserveStartEnd" 
+                    tickFormatter={(val) => {
+                      const parts = val.split(' ');
+                      if (parts.length === 2) {
+                        return parts[1] === '1' ? parts[0] : parts[1];
+                      }
+                      return val;
+                    }} 
+                  />
                   <YAxis scale="sqrt" domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
                     const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
                     return metricInfo ? metricInfo.format(val) : formatNumber(val);
