@@ -13,6 +13,7 @@ import {
 import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
 import ColumnHeader from '../../components/Table/ColumnHeader';
+import ActionPlanNotes from '../../components/Ecomm/ActionPlanNotes';
 
 // --- Helper Functions ---
 const formatRp = (value) => {
@@ -109,7 +110,7 @@ const ChangeIndicator = ({ current, previous }) => {
 
 // --- Main Component ---
 const Ecomm = () => {
-  const { globalSettings } = useSettings();
+  const { globalSettings, getSettingsForMonth, updateMonthlySettings } = useSettings();
   const { mainData, detailData, loading, error } = useEcommerceData(
     globalSettings?.ecommLink, 
     globalSettings?.adsLink
@@ -127,6 +128,18 @@ const Ecomm = () => {
   
   const scrollContainerEcommRef = useRef(null);
   const scrollContainerAdsRef = useRef(null);
+
+  // Month tracking for Action Plan Notes
+  const targetMonthIndex = currentRange.start.getMonth();
+  const monthNames = ['January', 'February', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+  const activeMonthStr = monthNames[targetMonthIndex];
+  
+  const monthSettings = getSettingsForMonth(activeMonthStr);
+  const actionPlanNotes = monthSettings.actionPlanNotes || [];
+
+  const handleUpdateNotes = (newNotes) => {
+    updateMonthlySettings(activeMonthStr, { actionPlanNotes: newNotes });
+  };
 
   const scrollLeftEcomm = () => {
     if (scrollContainerEcommRef.current) {
@@ -1025,6 +1038,14 @@ const Ecomm = () => {
             </div>
 
           </div>
+        </div>
+
+        <div style={{ marginTop: '24px' }}>
+          <ActionPlanNotes 
+            monthName={activeMonthStr}
+            notes={actionPlanNotes}
+            onUpdateNotes={handleUpdateNotes}
+          />
         </div>
       </div>
 

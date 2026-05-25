@@ -124,6 +124,7 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
     
     return {
       ...settings,
+      actionPlanNotes: settings.actionPlanNotes || [],
       dealingSpreadsheetLink: settings.dealingSpreadsheetLink || DEFAULT_DEALING_LINK,
       schedulingSpreadsheetLink: settings.schedulingSpreadsheetLink || DEFAULT_SCHEDULING_LINK
     };
