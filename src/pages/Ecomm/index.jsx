@@ -745,6 +745,11 @@ const Ecomm = () => {
                 />
                 Aktifkan Perbandingan
               </label>
+              {!isCompareEnabled && (
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontStyle: 'italic', backgroundColor: 'rgba(0,0,0,0.03)', padding: '2px 8px', borderRadius: '4px' }}>
+                  (Otomatis membandingkan dengan bulan sebelumnya)
+                </span>
+              )}
               {isCompareEnabled && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>Bandingkan:</span>
@@ -1409,17 +1414,17 @@ const Ecomm = () => {
 
                 return (
                   <div key={prodName} style={{ 
-                    padding: '16px', 
+                    padding: '8px 12px', 
                     border: `1px solid ${color}`, 
                     borderRadius: '8px',
                     backgroundColor: `${color}10`, // 10% opacity for background
                     position: 'relative'
                   }}>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', backgroundColor: color, marginRight: '8px' }}></span>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: color, marginRight: '6px' }}></span>
                       {prodName}
                     </div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                    <div style={{ fontSize: '1.125rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {formatFn(totalVal)}
                     </div>
                     {isCompareEnabled && (
@@ -1434,7 +1439,7 @@ const Ecomm = () => {
             </div>
 
             {/* Line Chart */}
-            <div style={{ height: '300px' }}>
+            <div style={{ height: '100%', minHeight: '300px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={skuChartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
