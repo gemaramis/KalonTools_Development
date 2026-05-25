@@ -451,6 +451,28 @@ const Ecomm = () => {
     return result.filter(d => d.value > 0);
   }, [skuTableData]);
 
+  const overviewSkuPieData = useMemo(() => {
+    const productMap = {};
+    currentData.forEach(item => {
+      const prod = item.product || 'Unknown';
+      if (!productMap[prod]) productMap[prod] = 0;
+      productMap[prod] += (item.gmv || 0);
+    });
+    
+    const sorted = Object.entries(productMap)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+      
+    const top = sorted.slice(0, 5);
+    const others = sorted.slice(5).reduce((acc, curr) => acc + curr.value, 0);
+    
+    const result = top.map(p => ({ name: p.name, value: Math.max(0, p.value) }));
+    if (others > 0) {
+      result.push({ name: 'Lainnya', value: others });
+    }
+    return result.filter(d => d.value > 0);
+  }, [currentData]);
+
   const paginatedSkuData = useMemo(() => {
     const startIndex = (skuCurrentPage - 1) * 10;
     return skuTableData.slice(startIndex, startIndex + 10);
@@ -1066,6 +1088,64 @@ const Ecomm = () => {
               </div>
             </div>
 
+          </div>
+        </div>
+
+        <div style={{ marginTop: '48px', borderTop: '1px solid var(--border-color)', paddingTop: '32px', paddingBottom: '32px' }}>
+          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '24px' }}>Distribusi GMV per Produk (SKU)</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '48px', alignItems: 'center' }}>
+            <div style={{ position: 'relative', height: '250px' }}>
+              {overviewSkuPieData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={overviewSkuPieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={70}
+                      outerRadius={100}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {overviewSkuPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value) => formatRpFull(value)}
+                      contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-secondary)' }}>
+                  Tidak ada data
+                </div>
+              )}
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>SKU</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {overviewSkuPieData.map((entry, index) => {
+                const totalVal = overviewSkuPieData.reduce((acc, curr) => acc + curr.value, 0);
+                const pct = totalVal > 0 ? ((entry.value / totalVal) * 100).toFixed(1) : 0;
+                return (
+                  <div key={entry.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
+                      <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: SKU_PIE_COLORS[index % SKU_PIE_COLORS.length], flexShrink: 0 }}></div>
+                      <span style={{ fontWeight: '500', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{entry.name}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                      <span style={{ fontWeight: '600' }}>{formatRpDetail(entry.value)}</span>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', width: '48px', textAlign: 'right' }}>{pct}%</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
