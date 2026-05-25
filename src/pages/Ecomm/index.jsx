@@ -544,14 +544,6 @@ const Ecomm = () => {
       compareValue: Math.max(0, p.compareValue) 
     }));
     
-    if (othersValue > 0) {
-      result.push({ 
-        name: 'Lainnya', 
-        value: Math.max(0, othersValue), 
-        compareValue: Math.max(0, othersCompare) 
-      });
-    }
-    
     return result.filter(d => d.value > 0);
   }, [allOverviewSkus, overviewSelectedSkus]);
 
@@ -1080,10 +1072,10 @@ const Ecomm = () => {
                   </div>
                 )}
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', width: '120px' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Total GMV</div>
-                  <div style={{ fontSize: '0.875rem', fontWeight: '700' }}>{formatRpFull(allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0))}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '2px' }}>Total Pilihan</div>
+                  <div style={{ fontSize: '0.875rem', fontWeight: '700' }}>{formatRpFull(overviewSkuPieData.reduce((acc, curr) => acc + curr.value, 0))}</div>
                   <div style={{ marginTop: '2px', display: 'flex', justifyContent: 'center' }}>
-                      <ChangeIndicator current={allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0)} previous={allOverviewSkus.reduce((acc, curr) => acc + curr.compareValue, 0)} />
+                      <ChangeIndicator current={overviewSkuPieData.reduce((acc, curr) => acc + curr.value, 0)} previous={overviewSkuPieData.reduce((acc, curr) => acc + curr.compareValue, 0)} />
                     </div>
                 </div>
               </div>
@@ -1602,7 +1594,7 @@ const Ecomm = () => {
                     <td style={{ padding: '16px' }}>{formatFn(row.current)}</td>
                     <td style={{ padding: '16px' }}>{formatFn(row.compare)}</td>
                     <td style={{ padding: '16px' }}>
-                      <ChangeIndicator current={row.compare} previous={row.current} />
+                      <ChangeIndicator current={row.current} previous={row.compare} />
                     </td>
                   </tr>
                 );

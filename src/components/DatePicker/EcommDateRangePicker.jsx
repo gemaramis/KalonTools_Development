@@ -49,7 +49,7 @@ const staticRanges = createStaticRanges([
   }
 ]);
 
-const EcommDateRangePicker = ({ range, setRange }) => {
+const EcommDateRangePicker = ({ range, setRange, maxDate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
   const dropdownRef = useRef(null);
@@ -135,6 +135,7 @@ const EcommDateRangePicker = ({ range, setRange }) => {
         locale={id}
         staticRanges={staticRanges}
         inputRanges={[]}
+        maxDate={maxDate || new Date()}
         rangeColors={['#00B5A5']} // Custom primary color
       />
     </div>,
