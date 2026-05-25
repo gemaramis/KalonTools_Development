@@ -1444,7 +1444,7 @@ const Ecomm = () => {
                 <LineChart data={skuChartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                   <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} dy={10}/>
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                  <YAxis scale="sqrt" domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
                     const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
                     return metricInfo ? metricInfo.format(val) : formatNumber(val);
                   }}/>
@@ -1495,7 +1495,7 @@ const Ecomm = () => {
                   <BarChart data={skuMonthlyCompareData.data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                     <XAxis dataKey="productName" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                    <YAxis scale="sqrt" domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
                       const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
                       return metricInfo ? metricInfo.format(val) : formatNumber(val);
                     }}/>
