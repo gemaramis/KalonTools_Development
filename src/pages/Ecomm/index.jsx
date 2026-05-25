@@ -10,7 +10,7 @@ import {
   subDays, isSameDay, isWithinInterval, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, format, isAfter, isBefore, eachDayOfInterval
 } from 'date-fns';
-import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
 import ColumnHeader from '../../components/Table/ColumnHeader';
 import ActionPlanNotes from '../../components/Ecomm/ActionPlanNotes';
@@ -206,6 +206,8 @@ const Ecomm = () => {
     return result.length > 0 ? result : [monthNames[new Date().getMonth()]];
   }, [currentRange]);
 
+  const [isDistribusiVisible, setIsDistribusiVisible] = useState(true);
+  const [isDetailGMVVisible, setIsDetailGMVVisible] = useState(true);
   const [overviewSelectedSkus, setOverviewSelectedSkus] = useState([]);
 
   const toggleOverviewSku = (skuName) => {
@@ -978,7 +980,12 @@ const Ecomm = () => {
 
       {/* Distribusi GMV per Produk (SKU) */}
       <div className="glass-panel" style={{ padding: '24px', display: activeTab === 'Overview' ? 'block' : 'none', marginBottom: '24px' }}>
-          <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '24px' }}>Distribusi GMV per Produk (SKU)</h3>
+        <div className="flex-between" style={{ marginBottom: isDistribusiVisible ? "24px" : "0", cursor: "pointer" }} onClick={() => setIsDistribusiVisible(!isDistribusiVisible)}>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Distribusi GMV per Produk (SKU)</h2>
+          {isDistribusiVisible ? <ChevronUp size={20} color="var(--text-secondary)" /> : <ChevronDown size={20} color="var(--text-secondary)" />}
+        </div>
+        {isDistribusiVisible && (
+          <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '48px', alignItems: 'center' }}>
             <div style={{ position: 'relative', height: '250px' }}>
               {overviewSkuPieData.length > 0 ? (
@@ -1061,12 +1068,17 @@ const Ecomm = () => {
               })}
             </div>
           </div>
+          </>
+        )}
         </div>
       {/* Detail GMV */}
       <div className="glass-panel" style={{ padding: '24px', display: activeTab === 'Overview' ? 'block' : 'none' }}>
-        <div className="flex-between" style={{ marginBottom: '16px' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: '600' }}>Detail GMV</h2>
+        <div className="flex-between" style={{ marginBottom: isDetailGMVVisible ? "16px" : "0", cursor: "pointer" }} onClick={() => setIsDetailGMVVisible(!isDetailGMVVisible)}>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Detail GMV</h2>
+          {isDetailGMVVisible ? <ChevronUp size={20} color="var(--text-secondary)" /> : <ChevronDown size={20} color="var(--text-secondary)" />}
         </div>
+        {isDetailGMVVisible && (
+          <>
         <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '32px' }}>
           Menampilkan data: <strong>{['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][aggregatedDetail.targetMonthIndex]} {aggregatedDetail.isFullMonth ? '(Full Month)' : `Week ${aggregatedDetail.targetWeekNum}`}</strong> vs <strong>{['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][compareAggregatedDetail.targetMonthIndex]} {compareAggregatedDetail.isFullMonth ? '(Full Month)' : `Week ${compareAggregatedDetail.targetWeekNum}`}</strong>
         </p>
@@ -1246,8 +1258,13 @@ const Ecomm = () => {
 
           </div>
         </div>
+          </>
+        )}
+      </div>
 
-
+      {/* Action Plan Notes */}
+      <div className="glass-panel" style={{ padding: "24px", display: activeTab === "Overview" ? "block" : "none" }}>
+        <h2 style={{ fontSize: "1.25rem", fontWeight: "600", marginBottom: "24px" }}>Action Plan Notes</h2>
         <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           {activeMonths.map((monthStr) => {
             const monthSettings = getSettingsForMonth(monthStr);
