@@ -993,7 +993,7 @@ const Ecomm = () => {
         {/* Graph */}
         <div style={{ height: '300px', width: '100%' }}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <LineChart key={selectedMetrics.join('-')} data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
               <XAxis 
                 dataKey="date" 
@@ -1470,7 +1470,7 @@ const Ecomm = () => {
             {/* Line Chart */}
             <div style={{ height: '100%', minHeight: '300px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={skuChartData}>
+                <LineChart key={productsToPlot.join('-')} data={skuChartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                   <XAxis 
                     dataKey="date" 
