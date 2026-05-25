@@ -206,6 +206,21 @@ const Ecomm = () => {
     return result.length > 0 ? result : [monthNames[new Date().getMonth()]];
   }, [currentRange]);
 
+  const [overviewSelectedSkus, setOverviewSelectedSkus] = useState([]);
+
+  const toggleOverviewSku = (skuName) => {
+    setOverviewSelectedSkus(prev => {
+      if (prev.includes(skuName)) {
+        return prev.filter(n => n !== skuName);
+      }
+      if (prev.length >= 5) {
+        // Replace the oldest selected item
+        return [...prev.slice(1), skuName];
+      }
+      return [...prev, skuName];
+    });
+  };
+
   const [tooltipState, setTooltipState] = useState(null);
 
   // Update defaults once maxDate is available (if historical data)
@@ -465,7 +480,7 @@ const Ecomm = () => {
     return result.filter(d => d.value > 0);
   }, [skuTableData]);
 
-  const overviewSkuPieData = useMemo(() => {
+  const allOverviewSkus = useMemo(() => {
     const productMap = {};
     const compareProductMap = {};
 
@@ -481,20 +496,50 @@ const Ecomm = () => {
       compareProductMap[prod] += (item.gmv || 0);
     });
     
-    const sorted = Object.entries(productMap)
+    return Object.entries(productMap)
       .map(([name, value]) => ({ name, value, compareValue: compareProductMap[name] || 0 }))
       .sort((a, b) => b.value - a.value);
-      
-    const top = sorted.slice(0, 5);
-    const others = sorted.slice(5).reduce((acc, curr) => acc + curr.value, 0);
-    const compareOthers = sorted.slice(5).reduce((acc, curr) => acc + curr.compareValue, 0);
-    
-    const result = top.map(p => ({ name: p.name, value: Math.max(0, p.value), compareValue: Math.max(0, p.compareValue) }));
-    if (others > 0) {
-      result.push({ name: 'Lainnya', value: others, compareValue: Math.max(0, compareOthers) });
-    }
-    return result.filter(d => d.value > 0);
   }, [currentData, compareData]);
+
+  const overviewSkuPieData = useMemo(() => {
+    if (allOverviewSkus.length === 0) return [];
+    
+    const selectedNames = overviewSelectedSkus.length > 0 
+      ? overviewSelectedSkus 
+      : allOverviewSkus.slice(0, 5).map(s => s.name);
+      
+    let selectedItems = [];
+    let othersValue = 0;
+    let othersCompare = 0;
+    
+    allOverviewSkus.forEach(item => {
+      if (selectedNames.includes(item.name)) {
+        selectedItems.push(item);
+      } else {
+        othersValue += item.value;
+        othersCompare += item.compareValue;
+      }
+    });
+    
+    // Sort selected items by value so the pie chart looks ordered
+    selectedItems.sort((a, b) => b.value - a.value);
+    
+    const result = selectedItems.map(p => ({ 
+      name: p.name, 
+      value: Math.max(0, p.value), 
+      compareValue: Math.max(0, p.compareValue) 
+    }));
+    
+    if (othersValue > 0) {
+      result.push({ 
+        name: 'Lainnya', 
+        value: Math.max(0, othersValue), 
+        compareValue: Math.max(0, othersCompare) 
+      });
+    }
+    
+    return result.filter(d => d.value > 0);
+  }, [allOverviewSkus, overviewSelectedSkus]);
 
   const paginatedSkuData = useMemo(() => {
     const startIndex = (skuCurrentPage - 1) * 10;
@@ -1155,15 +1200,36 @@ const Ecomm = () => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {overviewSkuPieData.map((entry, index) => {
-                const totalVal = overviewSkuPieData.reduce((acc, curr) => acc + curr.value, 0);
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '250px', overflowY: 'auto', paddingRight: '12px' }} className="hide-scrollbar">
+              {allOverviewSkus.map((entry, index) => {
+                const defaultSelected = allOverviewSkus.slice(0, 5).map(s => s.name);
+                const isSelected = overviewSelectedSkus.length > 0 
+                  ? overviewSelectedSkus.includes(entry.name)
+                  : defaultSelected.includes(entry.name);
+                  
+                const pieIndex = overviewSkuPieData.findIndex(d => d.name === entry.name);
+                const color = pieIndex !== -1 ? SKU_PIE_COLORS[pieIndex % SKU_PIE_COLORS.length] : 'var(--border-color)';
+                
+                const totalVal = allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0);
                 const pct = totalVal > 0 ? ((entry.value / totalVal) * 100).toFixed(1) : 0;
+                
                 return (
-                  <div key={entry.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                  <div 
+                    key={entry.name} 
+                    onClick={() => toggleOverviewSku(entry.name)}
+                    style={{ 
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+                      padding: '8px 12px', borderBottom: '1px solid var(--border-color)',
+                      cursor: 'pointer',
+                      backgroundColor: isSelected ? 'rgba(0,0,0,0.02)' : 'transparent',
+                      borderRadius: '8px',
+                      opacity: isSelected ? 1 : 0.5,
+                      transition: 'all 0.2s'
+                    }}
+                  >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', overflow: 'hidden' }}>
-                      <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: SKU_PIE_COLORS[index % SKU_PIE_COLORS.length], flexShrink: 0 }}></div>
-                      <span style={{ fontWeight: '500', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{entry.name}</span>
+                      <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: color, flexShrink: 0 }}></div>
+                      <span style={{ fontWeight: isSelected ? '600' : '500', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{entry.name}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
                       <span style={{ fontWeight: '600' }}>{formatRpDetail(entry.value)}</span>
