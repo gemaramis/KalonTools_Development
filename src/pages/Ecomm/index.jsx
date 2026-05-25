@@ -1300,36 +1300,6 @@ const Ecomm = () => {
 
           </div>
 
-          {/* Bar Chart 3 Bulan Terakhir */}
-          {skuMonthlyCompareData.keys.length > 0 && (
-            <div style={{ marginTop: '48px', borderTop: '1px solid var(--border-color)', paddingTop: '32px' }}>
-              <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '24px' }}>Riwayat 3 Bulan Terakhir ({skuMonthlyCompareData.keys.join(' vs ')})</h3>
-              <div style={{ height: '300px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={skuMonthlyCompareData.data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                    <XAxis dataKey="productName" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} dy={10} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
-                      const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                      return metricInfo ? metricInfo.format(val) : formatNumber(val);
-                    }}/>
-                    <Tooltip 
-                      cursor={{fill: 'var(--border-color)', opacity: 0.4}}
-                      contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                      formatter={(value) => {
-                        const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                        return metricInfo ? metricInfo.fullFormat(value) : formatNumberFull(value);
-                      }}
-                    />
-                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                    <Bar dataKey={skuMonthlyCompareData.keys[0]} fill="#cbd5e1" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey={skuMonthlyCompareData.keys[1]} fill="#94a3b8" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey={skuMonthlyCompareData.keys[2]} fill="var(--primary-color)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          )}
         </div>
           </>
         )}
@@ -1492,6 +1462,36 @@ const Ecomm = () => {
                 </LineChart>
               </ResponsiveContainer>
             </div>
+          {/* Bar Chart 3 Bulan Terakhir */}
+          {skuMonthlyCompareData.keys.length > 0 && (
+            <div style={{ marginTop: '48px', borderTop: '1px solid var(--border-color)', paddingTop: '32px' }}>
+              <h3 style={{ fontSize: '1rem', fontWeight: '600', marginBottom: '24px' }}>Riwayat 3 Bulan Terakhir ({skuMonthlyCompareData.keys.join(' vs ')})</h3>
+              <div style={{ height: '300px' }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={skuMonthlyCompareData.data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                    <XAxis dataKey="productName" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                      const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                      return metricInfo ? metricInfo.format(val) : formatNumber(val);
+                    }}/>
+                    <Tooltip 
+                      cursor={{fill: 'var(--border-color)', opacity: 0.4}}
+                      contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                      formatter={(value) => {
+                        const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
+                        return metricInfo ? metricInfo.fullFormat(value) : formatNumberFull(value);
+                      }}
+                    />
+                    <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
+                    <Bar dataKey={skuMonthlyCompareData.keys[0]} fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey={skuMonthlyCompareData.keys[1]} fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey={skuMonthlyCompareData.keys[2]} fill="var(--primary-color)" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
 
           </div>
         </div>
