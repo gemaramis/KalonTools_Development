@@ -130,16 +130,26 @@ const Ecomm = () => {
   const scrollContainerAdsRef = useRef(null);
 
   // Month tracking for Action Plan Notes
-  const targetMonthIndex = currentRange.start.getMonth();
-  const monthNames = ['January', 'February', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-  const activeMonthStr = monthNames[targetMonthIndex];
-  
-  const monthSettings = getSettingsForMonth(activeMonthStr);
-  const actionPlanNotes = monthSettings.actionPlanNotes || [];
-
-  const handleUpdateNotes = (newNotes) => {
-    updateMonthlySettings(activeMonthStr, { actionPlanNotes: newNotes });
-  };
+  const activeMonths = useMemo(() => {
+    const monthNames = ['January', 'February', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    if (!currentRange.start) return [monthNames[new Date().getMonth()]];
+    
+    const start = new Date(currentRange.start);
+    const end = currentRange.end ? new Date(currentRange.end) : new Date(currentRange.start);
+    
+    const result = [];
+    const d = new Date(start);
+    d.setDate(1); // Set to 1st of month to avoid overflow
+    const endYearMonth = end.getFullYear() * 12 + end.getMonth();
+    
+    while (d.getFullYear() * 12 + d.getMonth() <= endYearMonth) {
+      // Prevent duplicates in case of timezone/date shifting weirdness
+      const mStr = monthNames[d.getMonth()];
+      if (!result.includes(mStr)) result.push(mStr);
+      d.setMonth(d.getMonth() + 1);
+    }
+    return result.length > 0 ? result : [monthNames[new Date().getMonth()]];
+  }, [currentRange]);
 
   const scrollLeftEcomm = () => {
     if (scrollContainerEcommRef.current) {
@@ -1040,12 +1050,20 @@ const Ecomm = () => {
           </div>
         </div>
 
-        <div style={{ marginTop: '24px' }}>
-          <ActionPlanNotes 
-            monthName={activeMonthStr}
-            notes={actionPlanNotes}
-            onUpdateNotes={handleUpdateNotes}
-          />
+        <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {activeMonths.map((monthStr) => {
+            const monthSettings = getSettingsForMonth(monthStr);
+            const actionPlanNotes = monthSettings.actionPlanNotes || [];
+            
+            return (
+              <ActionPlanNotes 
+                key={monthStr}
+                monthName={monthStr}
+                notes={actionPlanNotes}
+                onUpdateNotes={(newNotes) => updateMonthlySettings(monthStr, { actionPlanNotes: newNotes })}
+              />
+            );
+          })}
         </div>
       </div>
 
