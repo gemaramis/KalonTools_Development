@@ -1441,6 +1441,7 @@ const Ecomm = () => {
                     return metricInfo ? metricInfo.format(val) : formatNumber(val);
                   }}/>
                   <Tooltip 
+                    itemSorter={(item) => -item.value}
                     contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                     formatter={(value) => {
                       const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
