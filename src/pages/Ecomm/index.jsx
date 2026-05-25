@@ -17,6 +17,35 @@ import ColumnHeader from '../../components/Table/ColumnHeader';
 import ActionPlanNotes from '../../components/Ecomm/ActionPlanNotes';
 
 // --- Helper Functions ---
+const CustomXAxisTick = ({ x, y, payload, isLongRange }) => {
+  const parts = payload.value.split(' ');
+  if (parts.length !== 2) return <text x={x} y={y + 10} fill="var(--text-secondary)" fontSize={11} textAnchor="middle">{payload.value}</text>;
+  
+  const isFirstOfMonth = parts[1] === '1';
+  
+  if (isLongRange) {
+    if (isFirstOfMonth) {
+      return (
+        <g transform={`translate(${x},${y})`}>
+          <line x1={0} y1={-5} x2={0} y2={5} stroke="var(--border-color)" strokeWidth={1.5} />
+          <text x={0} y={20} fill="var(--primary-color)" fontSize={12} fontWeight="600" textAnchor="middle">{parts[0]}</text>
+        </g>
+      );
+    }
+    return null;
+  } else {
+    return (
+      <g transform={`translate(${x},${y})`}>
+        {isFirstOfMonth ? (
+          <text x={0} y={15} fill="var(--primary-color)" fontSize={11} fontWeight="600" textAnchor="middle">{parts[0]}</text>
+        ) : (
+          <text x={0} y={15} fill="var(--text-secondary)" fontSize={11} textAnchor="middle">{parts[1]}</text>
+        )}
+      </g>
+    );
+  }
+};
+
 const formatRp = (value) => {
   if (value >= 1000000000) return `Rp${(value / 1000000000).toFixed(1).replace('.0', '')} M`;
   if (value >= 1000000) return `Rp${(value / 1000000).toFixed(1).replace('.0', '')} Jt`;
@@ -968,19 +997,12 @@ const Ecomm = () => {
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
               <XAxis 
                 dataKey="date" 
-                tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} 
                 axisLine={false} 
                 tickLine={false} 
                 dy={10} 
-                minTickGap={15}
-                interval="preserveStartEnd"
-                tickFormatter={(val) => {
-                  const parts = val.split(' ');
-                  if (parts.length === 2) {
-                    return parts[1] === '1' ? parts[0] : parts[1];
-                  }
-                  return val;
-                }}
+                interval={chartData.length > 60 ? 0 : "preserveStartEnd"}
+                minTickGap={chartData.length > 60 ? 0 : 15}
+                tick={<CustomXAxisTick isLongRange={chartData.length > 60} />}
               />
               
               {selectedMetrics.map((metricId, index) => (
@@ -1454,17 +1476,10 @@ const Ecomm = () => {
                     dataKey="date" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{fill: 'var(--text-secondary)', fontSize: 11}} 
                     dy={10} 
-                    minTickGap={15} 
-                    interval="preserveStartEnd" 
-                    tickFormatter={(val) => {
-                      const parts = val.split(' ');
-                      if (parts.length === 2) {
-                        return parts[1] === '1' ? parts[0] : parts[1];
-                      }
-                      return val;
-                    }} 
+                    interval={skuChartData.length > 60 ? 0 : "preserveStartEnd"}
+                    minTickGap={skuChartData.length > 60 ? 0 : 15}
+                    tick={<CustomXAxisTick isLongRange={skuChartData.length > 60} />}
                   />
                   <YAxis scale="sqrt" domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
                     const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
