@@ -1030,40 +1030,51 @@ const Ecomm = () => {
         </div>
         {isDistribusiVisible && (
           <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '48px', alignItems: 'center' }}>
-            <div style={{ position: 'relative', height: '250px' }}>
-              {overviewSkuPieData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={overviewSkuPieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={70}
-                      outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="value"
-                      stroke="none"
-                      labelLine={false}
-                      label={renderCustomizedLabel}
-                    >
-                      {overviewSkuPieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      formatter={(value) => formatRpFull(value)}
-                      contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              ) : (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-secondary)' }}>
-                  Tidak ada data
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '48px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div style={{ position: 'relative', height: '250px', width: '100%' }}>
+                {overviewSkuPieData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={overviewSkuPieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={70}
+                        outerRadius={100}
+                        paddingAngle={2}
+                        dataKey="value"
+                        stroke="none"
+                        labelLine={false}
+                        label={renderCustomizedLabel}
+                      >
+                        {overviewSkuPieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value) => formatRpFull(value)}
+                        contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-secondary)' }}>
+                    Tidak ada data
+                  </div>
+                )}
+                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>SKU</div>
                 </div>
-              )}
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>SKU</div>
+              </div>
+              <div style={{ marginTop: '16px', textAlign: 'center' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Total GMV</div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '700' }}>{formatRpFull(allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0))}</div>
+                {isCompareEnabled && (
+                  <div style={{ marginTop: '4px', display: 'flex', justifyContent: 'center' }}>
+                    <ChangeIndicator current={allOverviewSkus.reduce((acc, curr) => acc + curr.value, 0)} previous={allOverviewSkus.reduce((acc, curr) => acc + curr.compareValue, 0)} />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -1102,7 +1113,7 @@ const Ecomm = () => {
                       <span style={{ fontWeight: '600' }}>{formatRpDetail(entry.value)}</span>
                       <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', width: '48px', textAlign: 'right' }}>{pct}%</span>
                       {isCompareEnabled && (
-                        <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
                           <ChangeIndicator current={entry.value} previous={entry.compareValue} />
                         </div>
                       )}
@@ -1197,7 +1208,7 @@ const Ecomm = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formatRpDetail(aggregatedDetail.live.affiliate)}</span>
-                    <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
                       <ChangeIndicator current={aggregatedDetail.live.affiliate} previous={compareAggregatedDetail.live.affiliate} />
                     </div>
                   </div>
@@ -1209,7 +1220,7 @@ const Ecomm = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formatRpDetail(aggregatedDetail.live.seller)}</span>
-                    <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
                       <ChangeIndicator current={aggregatedDetail.live.seller} previous={compareAggregatedDetail.live.seller} />
                     </div>
                   </div>
@@ -1239,7 +1250,7 @@ const Ecomm = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formatRpDetail(aggregatedDetail.video.affiliate)}</span>
-                    <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
                       <ChangeIndicator current={aggregatedDetail.video.affiliate} previous={compareAggregatedDetail.video.affiliate} />
                     </div>
                   </div>
@@ -1251,7 +1262,7 @@ const Ecomm = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formatRpDetail(aggregatedDetail.video.seller)}</span>
-                    <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
                       <ChangeIndicator current={aggregatedDetail.video.seller} previous={compareAggregatedDetail.video.seller} />
                     </div>
                   </div>
@@ -1280,7 +1291,7 @@ const Ecomm = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formatRpDetail(aggregatedDetail.productCard.affiliate)}</span>
-                    <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
                       <ChangeIndicator current={aggregatedDetail.productCard.affiliate} previous={compareAggregatedDetail.productCard.affiliate} />
                     </div>
                   </div>
@@ -1292,7 +1303,7 @@ const Ecomm = () => {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '0.875rem', fontWeight: '500' }}>{formatRpDetail(aggregatedDetail.productCard.seller)}</span>
-                    <div style={{ width: '60px', display: 'flex', justifyContent: 'flex-end' }}>
+                    <div style={{ minWidth: "60px", display: "flex", justifyContent: "flex-end" }}>
                       <ChangeIndicator current={aggregatedDetail.productCard.seller} previous={compareAggregatedDetail.productCard.seller} />
                     </div>
                   </div>
