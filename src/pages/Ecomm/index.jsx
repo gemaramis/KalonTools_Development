@@ -129,27 +129,7 @@ const Ecomm = () => {
   const scrollContainerEcommRef = useRef(null);
   const scrollContainerAdsRef = useRef(null);
 
-  // Month tracking for Action Plan Notes
-  const activeMonths = useMemo(() => {
-    const monthNames = ['January', 'February', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-    if (!currentRange.start) return [monthNames[new Date().getMonth()]];
-    
-    const start = new Date(currentRange.start);
-    const end = currentRange.end ? new Date(currentRange.end) : new Date(currentRange.start);
-    
-    const result = [];
-    const d = new Date(start);
-    d.setDate(1); // Set to 1st of month to avoid overflow
-    const endYearMonth = end.getFullYear() * 12 + end.getMonth();
-    
-    while (d.getFullYear() * 12 + d.getMonth() <= endYearMonth) {
-      // Prevent duplicates in case of timezone/date shifting weirdness
-      const mStr = monthNames[d.getMonth()];
-      if (!result.includes(mStr)) result.push(mStr);
-      d.setMonth(d.getMonth() + 1);
-    }
-    return result.length > 0 ? result : [monthNames[new Date().getMonth()]];
-  }, [currentRange]);
+
 
   const scrollLeftEcomm = () => {
     if (scrollContainerEcommRef.current) {
@@ -189,6 +169,28 @@ const Ecomm = () => {
     start: subDays(new Date(), 13),
     end: subDays(new Date(), 7)
   });
+
+  // Month tracking for Action Plan Notes
+  const activeMonths = useMemo(() => {
+    const monthNames = ['January', 'February', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    if (!currentRange.start) return [monthNames[new Date().getMonth()]];
+    
+    const start = new Date(currentRange.start);
+    const end = currentRange.end ? new Date(currentRange.end) : new Date(currentRange.start);
+    
+    const result = [];
+    const d = new Date(start);
+    d.setDate(1); // Set to 1st of month to avoid overflow
+    const endYearMonth = end.getFullYear() * 12 + end.getMonth();
+    
+    while (d.getFullYear() * 12 + d.getMonth() <= endYearMonth) {
+      // Prevent duplicates in case of timezone/date shifting weirdness
+      const mStr = monthNames[d.getMonth()];
+      if (!result.includes(mStr)) result.push(mStr);
+      d.setMonth(d.getMonth() + 1);
+    }
+    return result.length > 0 ? result : [monthNames[new Date().getMonth()]];
+  }, [currentRange]);
 
   const [tooltipState, setTooltipState] = useState(null);
 
