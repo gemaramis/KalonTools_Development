@@ -1443,7 +1443,7 @@ const Ecomm = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={skuChartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
-                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} dy={10}/>
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 11}} dy={10} minTickGap={-10} interval="preserveStartEnd" />
                   <YAxis scale="sqrt" domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
                     const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
                     return metricInfo ? metricInfo.format(val) : formatNumber(val);
@@ -1560,13 +1560,13 @@ const Ecomm = () => {
                   options={Array.from(new Set(currentData.map(d => d.product).filter(Boolean))).sort()}
                 />
                 <ColumnHeader 
-                  label={`Date A (${format(currentRange.start, 'dd/MM/yy')} - ${format(currentRange.end, 'dd/MM/yy')})`} 
+                  label={`${format(currentRange.start, 'dd/MM/yy')} - ${format(currentRange.end, 'dd/MM/yy')}`} 
                   sortKey="current" 
                   sortConfig={skuSortConfig} 
                   onSort={handleSort}
                 />
                 <ColumnHeader 
-                  label={`Date B (${format(compareRange.start, 'dd/MM/yy')} - ${format(compareRange.end, 'dd/MM/yy')})`} 
+                  label={effectiveCompareRange.start ? `${format(effectiveCompareRange.start, 'dd/MM/yy')} - ${format(effectiveCompareRange.end, 'dd/MM/yy')}` : '-'} 
                   sortKey="compare" 
                   sortConfig={skuSortConfig} 
                   onSort={handleSort}
