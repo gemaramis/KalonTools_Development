@@ -13,6 +13,7 @@ import {
 } from 'date-fns';
 import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
+import FinanceDataTab from './FinanceDataTab';
 import ColumnHeader from '../../components/Table/ColumnHeader';
 import ActionPlanNotes from '../../components/Ecomm/ActionPlanNotes';
 
@@ -157,9 +158,10 @@ const ChangeIndicator = ({ current, previous }) => {
 // --- Main Component ---
 const Ecomm = () => {
   const { globalSettings, getSettingsForMonth, updateMonthlySettings } = useSettings();
-  const { mainData, detailData, loading, error } = useEcommerceData(
+  const { mainData, detailData, financeData, loading, error } = useEcommerceData(
     globalSettings?.ecommLink, 
-    globalSettings?.adsLink
+    globalSettings?.adsLink,
+    globalSettings?.financeLink
   );
 
   const [activeTab, setActiveTab] = useState('Overview');
@@ -786,6 +788,16 @@ const Ecomm = () => {
           }}>
           SKU Data
           {activeTab === 'SKU Data' && <div style={{ position: 'absolute', bottom: '-1px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--primary-color)' }}></div>}
+        </div>
+        <div 
+          onClick={() => setActiveTab('Finance Data')}
+          style={{ 
+            fontSize: '1.125rem', fontWeight: activeTab === 'Finance Data' ? '600' : '500', 
+            color: activeTab === 'Finance Data' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            cursor: 'pointer', paddingBottom: '12px', position: 'relative'
+          }}>
+          Finance Data
+          {activeTab === 'Finance Data' && <div style={{ position: 'absolute', bottom: '-1px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--primary-color)' }}></div>}
         </div>
       </div>
 
@@ -1739,6 +1751,9 @@ const Ecomm = () => {
           )}
         </div>
       </div>
+
+      {/* Finance Data Tab Content */}
+      <FinanceDataTab financeData={financeData} activeTab={activeTab} />
 
       {/* Custom Tooltip Portal */}
       {tooltipState && (() => {

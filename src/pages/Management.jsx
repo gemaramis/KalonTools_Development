@@ -19,6 +19,7 @@ const Management = () => {
   const [dealingLink, setDealingLink] = useState('');
   const [schedulingLink, setSchedulingLink] = useState('');
   const [ecommLink, setEcommLink] = useState('');
+  const [financeLink, setFinanceLink] = useState('');
   const [adsLink, setAdsLink] = useState('');
   const [appsScriptUrl, setAppsScriptUrl] = useState('');
 
@@ -50,6 +51,7 @@ const Management = () => {
     setDealingLink(monthSettings.dealingSpreadsheetLink || '');
     setSchedulingLink(monthSettings.schedulingSpreadsheetLink || '');
     setEcommLink(globalSettings?.ecommLink || '');
+    setFinanceLink(globalSettings?.financeLink || '');
     setAdsLink(globalSettings?.adsLink || '');
     setAppsScriptUrl(globalSettings?.appsScriptUrl || '');
   }, [selectedMonth, getSettingsForMonth, globalSettings]);
@@ -73,6 +75,7 @@ const Management = () => {
       ...prev, 
       appsScriptUrl,
       ecommLink,
+      financeLink,
       adsLink
     }));
     setLinksSaved(true);
@@ -342,6 +345,17 @@ const Management = () => {
                 value={ecommLink} 
                 onChange={(e) => setEcommLink(e.target.value)} 
                 placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=1551198310"
+                style={{ width: '100%' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Finance Actual Data Link</label>
+              <input 
+                type="url" 
+                className="input-field" 
+                value={financeLink} 
+                onChange={(e) => setFinanceLink(e.target.value)} 
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=251030538"
                 style={{ width: '100%' }}
               />
             </div>

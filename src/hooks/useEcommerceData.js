@@ -33,13 +33,14 @@ const parseDate = (dateStr) => {
   return isValid(fallback) ? fallback : null;
 };
 
-export const useEcommerceData = (ecommUrl, adsUrl) => {
+export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
   const [mainData, setMainData] = useState([]);
   const [detailData, setDetailData] = useState({
     live: [],
     video: [],
     productCard: []
   });
+  const [financeData, setFinanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -180,6 +181,58 @@ export const useEcommerceData = (ecommUrl, adsUrl) => {
           });
         }
 
+        // --- Fetch Finance Data ---
+        if (financeUrl) {
+          const financeFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(financeUrl)}`;
+          const financeRes = await fetch(financeFetchUrl);
+          if (financeRes.ok) {
+            const financeCsv = await financeRes.text();
+            if (!financeCsv.trim().toLowerCase().startsWith('<!doctype') && !financeCsv.trim().toLowerCase().startsWith('<html')) {
+              const results = await parseCSV(financeCsv, { header: false, skipEmptyLines: true });
+              const rows = results.data;
+              if (rows.length > 0) {
+                const monthIndices = [];
+                rows[0].forEach((cell, index) => {
+                   if (cell && cell.trim() !== '' && cell !== 'Time period:') {
+                      monthIndices.push({ index, month: cell.trim() });
+                   }
+                });
+
+                const parsedFinance = monthIndices.map(m => ({
+                  month: m.month,
+                  settlement: 0, revenue: 0, platformCommission: 0, dynamicCommission: 0,
+                  adminMall: 0, adminOrder: 0, affiliateCommission: 0,
+                  campaignPackage: 0, campaignAdditional: 0
+                }));
+
+                rows.forEach(row => {
+                  const label = [row[0]||'', row[1]||'', row[2]||'', row[3]||''].join(' ').toLowerCase();
+                  let key = null;
+                  if (label.includes('total settlement amount')) key = 'settlement';
+                  else if (label.includes('total revenue')) key = 'revenue';
+                  else if (label.includes('platform commission fee')) key = 'platformCommission';
+                  else if (label.includes('dynamic commission')) key = 'dynamicCommission';
+                  else if (label.includes('mall service fee')) key = 'adminMall';
+                  else if (label.includes('order processing fee')) key = 'adminOrder';
+                  else if (label.includes('affiliate commission') && !label.includes('partner') && !label.includes('shop ads')) key = 'affiliateCommission';
+                  else if (label.includes('additional campaign package')) key = 'campaignAdditional';
+                  else if (label.includes('campaign package')) key = 'campaignPackage';
+                  
+                  if (key) {
+                    parsedFinance.forEach((item, idx) => {
+                      const val = row[monthIndices[idx].index];
+                      if (val) {
+                        item[key] = parseInt(val.toString().replace(/[^0-9,-]/g, '')) || 0;
+                      }
+                    });
+                  }
+                });
+                setFinanceData(parsedFinance);
+              }
+            }
+          }
+        }
+
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -188,7 +241,7 @@ export const useEcommerceData = (ecommUrl, adsUrl) => {
     };
 
     fetchData();
-  }, [ecommUrl, adsUrl]);
+  }, [ecommUrl, adsUrl, financeUrl]);
 
-  return { mainData, detailData, loading, error };
+  return { mainData, detailData, financeData, loading, error };
 };
