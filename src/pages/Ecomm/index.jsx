@@ -1040,7 +1040,7 @@ const Ecomm = () => {
                 <React.Fragment key={metricId}>
                   <Line 
                     yAxisId={metricId}
-                    type="monotone" 
+                    type="linear" 
                     dataKey={metricId} 
                     name={metricsInfo.find(m => m.id === metricId).label}
                     stroke={CHART_COLORS[index]} 
@@ -1051,7 +1051,7 @@ const Ecomm = () => {
                   {isCompareEnabled && (
                     <Line 
                       yAxisId={metricId}
-                      type="monotone" 
+                      type="linear" 
                       dataKey={`${metricId}Compare`} 
                       name={`${metricsInfo.find(m => m.id === metricId).label} (Bandingkan)`}
                       stroke={CHART_COLORS[index]} 
@@ -1499,7 +1499,7 @@ const Ecomm = () => {
                   {productsToPlot.map((prodName, index) => (
                     <React.Fragment key={prodName}>
                       <Line 
-                        type="monotone" 
+                        type="linear" 
                         dataKey={prodName} 
                         name={prodName}
                         stroke={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} 
@@ -1509,7 +1509,7 @@ const Ecomm = () => {
                       />
                       {isCompareEnabled && (
                         <Line 
-                          type="monotone" 
+                          type="linear" 
                           dataKey={`${prodName}Compare`} 
                           name={`${prodName} (Bandingkan)`}
                           stroke={index === 0 ? CHART_COLORS[0] : CHART_COLORS[1]} 
