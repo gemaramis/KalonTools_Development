@@ -271,6 +271,31 @@ const Ecomm = () => {
     }
   }, [maxDate, mainData.length]);
 
+  // Auto-sync compareRange when currentRange changes to prevent overlapping
+  useEffect(() => {
+    if (mainData.length === 0) return;
+    
+    // Calculate difference in whole days
+    const diffDays = Math.floor((currentRange.end.getTime() - currentRange.start.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // The new compare range should end exactly 1 day before the current range starts
+    const newCompareEnd = subDays(currentRange.start, 1);
+    
+    // The new compare range should start exactly diffDays before its end
+    const newCompareStart = subDays(newCompareEnd, diffDays);
+    
+    // Set to end of day for newCompareEnd to match standard picker behavior
+    newCompareEnd.setHours(23, 59, 59, 999);
+    
+    // Prevent infinite loops or unnecessary re-renders
+    if (compareRange.start.getTime() !== newCompareStart.getTime() || compareRange.end.getTime() !== newCompareEnd.getTime()) {
+      setCompareRange({
+        start: newCompareStart,
+        end: newCompareEnd
+      });
+    }
+  }, [currentRange.start, currentRange.end]);
+
   const currentData = useMemo(() => filterDataByRange(mainData, currentRange), [mainData, currentRange]);
     const effectiveCompareRange = useMemo(() => {
     if (isCompareEnabled) return compareRange;
