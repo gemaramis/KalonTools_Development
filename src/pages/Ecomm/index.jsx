@@ -1753,7 +1753,7 @@ const Ecomm = () => {
       </div>
 
       {/* Finance Data Tab Content */}
-      <FinanceDataTab financeData={financeData} activeTab={activeTab} />
+      <FinanceDataTab financeData={financeData} mainData={mainData} activeTab={activeTab} />
 
       {/* Custom Tooltip Portal */}
       {tooltipState && (() => {

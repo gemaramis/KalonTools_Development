@@ -205,12 +205,14 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                   settlement: 0, revenue: 0, platformCommission: 0, dynamicCommission: 0,
                   adminMall: 0, adminOrder: 0, affiliateCommission: 0,
                   campaignPackage: 0, campaignAdditional: 0,
-                  adsBudget: 0, kolBudget: 0
+                  adsBudget: 0, kolBudget: 0,
+                  adsGmv: 0, shippingCost: 0
                 }));
 
                 // Extract Ads and KOL budgets from rawAdsCsv if available
                 let adsValues = [];
                 let kolValues = [];
+                let adsGmvValues = [];
                 if (rawAdsCsv) {
                   try {
                     const adsResults = await parseCSV(rawAdsCsv, { header: false, skipEmptyLines: true });
@@ -226,11 +228,16 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                       adsValues = totalIndices.map(i => parseInt(spendingRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
                     
-                    const kolRow = adsRows.find(r => r.includes('KOL cost'));
+                    const kolRow = adsRows.find(r => r[0] === 'KOL cost' || r.includes('KOL cost'));
                     if (kolRow) {
                       const kolIndices = [];
                       kolRow.forEach((c, i) => { if (c === 'KOL cost') kolIndices.push(i); });
                       kolValues = kolIndices.map(i => parseInt(kolRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+                    }
+                    
+                    const gmvRow = adsRows.find(r => r[0] === 'GMV' || r.includes('GMV'));
+                    if (gmvRow) {
+                      adsGmvValues = totalIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
                   } catch (e) {
                     console.error("Error parsing ads/kol budget:", e);
@@ -249,6 +256,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                   else if (label.includes('affiliate commission') && !label.includes('partner') && !label.includes('shop ads')) key = 'affiliateCommission';
                   else if (label.includes('additional campaign package')) key = 'campaignAdditional';
                   else if (label.includes('campaign package')) key = 'campaignPackage';
+                  else if (label === 'shipping cost' || (row[0] === 'Shipping cost' && row[1]?.includes('net shipping cost'))) key = 'shippingCost';
                   
                   if (key) {
                     parsedFinance.forEach((item, idx) => {
@@ -262,7 +270,8 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                 setFinanceData(parsedFinance.map((item, idx) => ({
                   ...item,
                   adsBudget: adsValues[idx] || 0,
-                  kolBudget: kolValues[idx] || 0
+                  kolBudget: kolValues[idx] || 0,
+                  adsGmv: adsGmvValues[idx] || 0
                 })));
               }
             }
