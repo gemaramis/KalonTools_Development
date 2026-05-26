@@ -220,22 +220,22 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                     
                     const totalIndices = [];
                     if (adsRows[3]) {
-                      adsRows[3].forEach((c, i) => { if (c === 'TOTAL') totalIndices.push(i); });
+                      adsRows[3].forEach((c, i) => { if (typeof c === 'string' && c.trim().toUpperCase() === 'TOTAL') totalIndices.push(i); });
                     }
                     
-                    const spendingRow = adsRows.find(r => r.includes('Spending'));
+                    const spendingRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'spending'));
                     if (spendingRow) {
                       adsValues = totalIndices.map(i => parseInt(spendingRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
                     
-                    const kolRow = adsRows.find(r => r[0] === 'KOL cost' || r.includes('KOL cost'));
+                    const kolRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'kol cost'));
                     if (kolRow) {
                       const kolIndices = [];
-                      kolRow.forEach((c, i) => { if (c === 'KOL cost') kolIndices.push(i); });
+                      kolRow.forEach((c, i) => { if (typeof c === 'string' && c.trim().toLowerCase() === 'kol cost') kolIndices.push(i); });
                       kolValues = kolIndices.map(i => parseInt(kolRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
                     
-                    const gmvRow = adsRows.find(r => r[0] === 'GMV' || r.includes('GMV'));
+                    const gmvRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toUpperCase() === 'GMV'));
                     if (gmvRow) {
                       adsGmvValues = totalIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
