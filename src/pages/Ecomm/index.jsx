@@ -47,14 +47,15 @@ const CustomXAxisTick = ({ x, y, payload, isLongRange }) => {
 };
 
 const formatRp = (value) => {
-  if (value >= 1000000000) return `Rp${(value / 1000000000).toFixed(1).replace('.0', '')} M`;
-  if (value >= 1000000) return `Rp${(value / 1000000).toFixed(1).replace('.0', '')} Jt`;
-  if (value >= 1000) return `Rp${(value / 1000).toFixed(1).replace('.0', '')} rb`;
-  return `Rp${value}`;
+  const v = Math.round(value);
+  if (v >= 1000000000) return `Rp${(v / 1000000000).toFixed(1).replace('.0', '')} M`;
+  if (v >= 1000000) return `Rp${(v / 1000000).toFixed(1).replace('.0', '')} Jt`;
+  if (v >= 1000) return `Rp${(v / 1000).toFixed(1).replace('.0', '')} rb`;
+  return `Rp${v}`;
 };
 
 const formatRpFull = (value) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value).replace(/,00$/, '');
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Math.round(value)).replace(/,00$/, '');
 };
 
 const formatRpDetail = (value) => {
@@ -62,13 +63,14 @@ const formatRpDetail = (value) => {
 };
 
 const formatNumber = (value) => {
-  if (value >= 1000000000) return `${(value / 1000000000).toFixed(1).replace('.0', '')} M`;
-  if (value >= 1000000) return `${(value / 1000000).toFixed(1).replace('.0', '')} Jt`;
-  return new Intl.NumberFormat('id-ID').format(value);
+  const v = Math.round(value);
+  if (v >= 1000000000) return `${(v / 1000000000).toFixed(1).replace('.0', '')} M`;
+  if (v >= 1000000) return `${(v / 1000000).toFixed(1).replace('.0', '')} Jt`;
+  return new Intl.NumberFormat('id-ID').format(v);
 };
 
 const formatNumberFull = (value) => {
-  return new Intl.NumberFormat('id-ID').format(value);
+  return new Intl.NumberFormat('id-ID').format(Math.round(value));
 };
 
 const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -380,8 +382,8 @@ const Ecomm = () => {
       };
 
       metricsInfo.forEach(m => {
-        dataPoint[m.id] = cVals[m.id] ? (m.id === 'roi' ? (cVals.roiCount ? cVals.roi / cVals.roiCount : 0) : cVals[m.id]) : 0;
-        dataPoint[`${m.id}Compare`] = pVals[m.id] ? (m.id === 'roi' ? (pVals.roiCount ? pVals.roi / pVals.roiCount : 0) : pVals[m.id]) : 0;
+        dataPoint[m.id] = cVals[m.id] ? (m.id === 'roi' ? (cVals.roiCount ? cVals.roi / cVals.roiCount : 0) : cVals[m.id]) : 0.01;
+        dataPoint[`${m.id}Compare`] = pVals[m.id] ? (m.id === 'roi' ? (pVals.roiCount ? pVals.roi / pVals.roiCount : 0) : pVals[m.id]) : 0.01;
       });
 
       result.push(dataPoint);
@@ -599,8 +601,8 @@ const Ecomm = () => {
       if (currDay) dataPoint.date = format(currDay, 'MMM d');
       
       productsToPlot.forEach(prodName => {
-        if (currDay) dataPoint[prodName] = 0;
-        if (isCompareEnabled) dataPoint[`${prodName}Compare`] = 0;
+        if (currDay) dataPoint[prodName] = 0.01;
+        if (isCompareEnabled) dataPoint[`${prodName}Compare`] = 0.01;
       });
       return dataPoint;
     });
