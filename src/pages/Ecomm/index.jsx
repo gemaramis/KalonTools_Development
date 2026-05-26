@@ -297,15 +297,16 @@ const Ecomm = () => {
   }, [currentRange.start, currentRange.end]);
 
   const currentData = useMemo(() => filterDataByRange(mainData, currentRange), [mainData, currentRange]);
-    const effectiveCompareRange = useMemo(() => {
+  const effectiveCompareRange = useMemo(() => {
     if (isCompareEnabled) return compareRange;
     if (currentRange.start && currentRange.end) {
-      return {
-        start: subMonths(currentRange.start, 1),
-        end: subMonths(currentRange.end, 1)
-      };
+      const diffDays = Math.floor((currentRange.end.getTime() - currentRange.start.getTime()) / (1000 * 60 * 60 * 24));
+      const end = subDays(currentRange.start, 1);
+      const start = subDays(end, diffDays);
+      end.setHours(23, 59, 59, 999);
+      return { start, end };
     }
-    return { start: null, end: null };
+    return {};
   }, [isCompareEnabled, compareRange, currentRange]);
 
   const compareData = useMemo(() => filterDataByRange(mainData, effectiveCompareRange), [mainData, effectiveCompareRange]);
