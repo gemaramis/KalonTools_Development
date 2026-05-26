@@ -74,7 +74,7 @@ const DEFAULT_DEALING_LINK = 'https://docs.google.com/spreadsheets/d/1ZeGXZt0pAu
 const DEFAULT_SCHEDULING_LINK = 'https://docs.google.com/spreadsheets/d/1ZeGXZt0pAueJsPq_iqM_-PGE-LcPZ3c2AphDeIlWObA/edit?gid=1978733706#gid=1978733706';
 const DEFAULT_ECOMM_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1551198310#gid=1551198310';
 const DEFAULT_FINANCE_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=251030538#gid=251030538';
-const DEFAULT_ADS_LINK = '';
+const DEFAULT_ADS_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1151289301#gid=1151289301';
 const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bnB7QhSSoyJ9N2qLxUua2HBbpjD6FcbWNDpZta79bFZ_BmWdRUvvOQihFX6o/exec';
 
   const [globalSettings, setGlobalSettings] = useState(() => {
@@ -84,8 +84,8 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
         const parsed = JSON.parse(saved);
         return {
           ...parsed,
-          adsLink: parsed.adsLink !== undefined ? parsed.adsLink : DEFAULT_ADS_LINK,
-          financeLink: parsed.financeLink !== undefined ? parsed.financeLink : DEFAULT_FINANCE_LINK,
+          adsLink: parsed.adsLink || DEFAULT_ADS_LINK,
+          financeLink: parsed.financeLink || DEFAULT_FINANCE_LINK,
           appsScriptUrl: parsed.appsScriptUrl || DEFAULT_APPS_SCRIPT_URL
         };
       }
@@ -143,7 +143,7 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
         appsScriptUrl: globalSettings.appsScriptUrl || DEFAULT_APPS_SCRIPT_URL,
         ecommLink: globalSettings.ecommLink || DEFAULT_ECOMM_LINK,
         financeLink: globalSettings.financeLink || DEFAULT_FINANCE_LINK,
-        adsLink: globalSettings.adsLink !== undefined ? globalSettings.adsLink : DEFAULT_ADS_LINK
+        adsLink: globalSettings.adsLink || DEFAULT_ADS_LINK
       },
       setGlobalSettings 
     }}>
