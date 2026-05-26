@@ -620,14 +620,28 @@ const Ecomm = () => {
     if (isCompareEnabled) {
       compareData.forEach(item => {
         if (item.product && productsToPlot.includes(item.product)) {
-          const dateStr = format(item.dateObj, 'yyyy-MM-dd');
-          const dayIndex = compareDays.findIndex(d => format(d, 'yyyy-MM-dd') === dateStr);
-          if (dayIndex !== -1 && result[dayIndex]) {
-            result[dayIndex][`${item.product}Compare`] += item[skuSelectedMetric] || 0;
+          const dateStr = format(item.dateObj, 'MMM d');
+          const dataPoint = result.find(d => d.date === dateStr);
+          if (dataPoint) {
+            dataPoint[`${item.product}Compare`] += item[skuSelectedMetric] || 0;
           }
         }
       });
     }
+
+    // Apply manual sqrt transformation to prevent d3-shape bugs on steep drops to 0
+    result.forEach(dataPoint => {
+      productsToPlot.forEach(prodName => {
+        if (dataPoint[prodName] !== undefined) {
+          dataPoint[`${prodName}_original`] = dataPoint[prodName];
+          dataPoint[prodName] = Math.sqrt(Math.max(0, dataPoint[prodName]));
+        }
+        if (isCompareEnabled && dataPoint[`${prodName}Compare`] !== undefined) {
+          dataPoint[`${prodName}Compare_original`] = dataPoint[`${prodName}Compare`];
+          dataPoint[`${prodName}Compare`] = Math.sqrt(Math.max(0, dataPoint[`${prodName}Compare`]));
+        }
+      });
+    });
 
     return result;
   }, [currentData, compareData, currentRange, compareRange, productsToPlot, skuSelectedMetric, isCompareEnabled]);
@@ -661,9 +675,12 @@ const Ecomm = () => {
 
       return {
         productName: prodName,
-        [month1Name]: m1,
-        [month2Name]: m2,
-        [month3Name]: m3
+        [month1Name]: Math.sqrt(Math.max(0, m1)),
+        [`${month1Name}_original`]: m1,
+        [month2Name]: Math.sqrt(Math.max(0, m2)),
+        [`${month2Name}_original`]: m2,
+        [month3Name]: Math.sqrt(Math.max(0, m3)),
+        [`${month3Name}_original`]: m3
       };
     });
 
@@ -1483,23 +1500,25 @@ const Ecomm = () => {
                     minTickGap={skuChartData.length > 60 ? 0 : 15}
                     tick={<CustomXAxisTick isLongRange={skuChartData.length > 60} />}
                   />
-                  <YAxis scale="sqrt" domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                  <YAxis domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                    const originalVal = val * val;
                     const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                    return metricInfo ? metricInfo.format(val) : formatNumber(val);
+                    return metricInfo ? metricInfo.format(originalVal) : formatNumber(originalVal);
                   }}/>
                   <Tooltip 
                     itemSorter={(item) => -item.value}
                     contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                    formatter={(value) => {
+                    formatter={(value, name, props) => {
+                      const originalValue = props.payload[`${name}_original`] !== undefined ? props.payload[`${name}_original`] : (value * value);
                       const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                      return metricInfo ? metricInfo.fullFormat(value) : formatNumberFull(value);
+                      return [metricInfo ? metricInfo.fullFormat(originalValue) : formatNumberFull(originalValue), name];
                     }}
                   />
                   <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }}/>
                   {productsToPlot.map((prodName, index) => (
                     <React.Fragment key={prodName}>
                       <Line 
-                        type="linear" 
+                        type="monotone" 
                         dataKey={prodName} 
                         name={prodName}
                         stroke={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} 
@@ -1509,7 +1528,7 @@ const Ecomm = () => {
                       />
                       {isCompareEnabled && (
                         <Line 
-                          type="linear" 
+                          type="monotone" 
                           dataKey={`${prodName}Compare`} 
                           name={`${prodName} (Bandingkan)`}
                           stroke={index === 0 ? CHART_COLORS[0] : CHART_COLORS[1]} 
@@ -1535,9 +1554,10 @@ const Ecomm = () => {
                   <BarChart data={skuMonthlyCompareData.data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                     <XAxis dataKey="productName" axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} dy={10} />
-                    <YAxis scale="sqrt" domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                    <YAxis domain={[0, 'auto']} axisLine={false} tickLine={false} tick={{fill: 'var(--text-secondary)', fontSize: 12}} tickFormatter={(val) => {
+                      const originalVal = val * val;
                       const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                      return metricInfo ? metricInfo.format(val) : formatNumber(val);
+                      return metricInfo ? metricInfo.format(originalVal) : formatNumber(originalVal);
                     }}/>
                     <Tooltip 
                       cursor={{fill: 'var(--border-color)', opacity: 0.4}}
@@ -1545,25 +1565,29 @@ const Ecomm = () => {
                         if (active && payload && payload.length) {
                           const keys = skuMonthlyCompareData.keys;
                           const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                          const formatFn = metricInfo ? metricInfo.fullFormat : formatNumberFull;
                           
                           const val1 = payload.find(p => p.name === keys[1])?.value || 0;
                           const val2 = payload.find(p => p.name === keys[2])?.value || 0;
                           
                           return (
-                            <div style={{ backgroundColor: 'var(--bg-color)', padding: '12px', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                            <div style={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '12px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                               <p style={{ fontWeight: '600', marginBottom: '8px' }}>{label}</p>
-                              {payload.map((entry, index) => (
+                              {payload.map((entry, index) => {
+                                const originalValue = entry.payload[`${entry.dataKey}_original`] !== undefined ? entry.payload[`${entry.dataKey}_original`] : (entry.value * entry.value);
+                                return (
                                 <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                                  <div style={{ width: '10px', height: '10px', backgroundColor: entry.color, borderRadius: '50%' }}></div>
+                                  <div style={{ width: '12px', height: '12px', backgroundColor: entry.fill, borderRadius: '2px' }} />
                                   <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>{entry.name}:</span>
-                                  <span style={{ fontWeight: '500', fontSize: '0.875rem' }}>{formatFn(entry.value)}</span>
+                                  <span style={{ fontWeight: '500', fontSize: '0.875rem' }}>
+                                    {metricInfo ? metricInfo.fullFormat(originalValue) : formatNumberFull(originalValue)}
+                                  </span>
                                 </div>
-                              ))}
+                                );
+                              })}
                               {keys.length >= 3 && (
                                 <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px dashed var(--border-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                   <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Pertumbuhan ({keys[1]} - {keys[2]}):</span>
-                                  <ChangeIndicator current={val2} previous={val1} />
+                                  <ChangeIndicator current={val2 * val2} previous={val1 * val1} />
                                 </div>
                               )}
                             </div>
