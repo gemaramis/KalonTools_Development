@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const formatRp = (value) => {
   if (value === undefined || value === null) return '-';
@@ -19,6 +20,33 @@ const FinanceDataTab = ({ financeData, activeTab }) => {
         </div>
       ) : (
         <>
+          <div className="glass-panel" style={{ padding: '24px', marginBottom: '32px' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '24px', color: 'var(--text-primary)' }}>Grafik Pengeluaran Marketing (Ads & KOL)</h3>
+            <div style={{ width: '100%', height: 350 }}>
+              <ResponsiveContainer>
+                <BarChart data={financeData} margin={{ top: 10, right: 10, left: 20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} dy={10} />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: 'var(--text-secondary)', fontSize: 12 }} 
+                    tickFormatter={(value) => `Rp${(value / 1000000).toFixed(0)}M`}
+                    dx={-10}
+                  />
+                  <RechartsTooltip 
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                    contentStyle={{ backgroundColor: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }}
+                    formatter={(value) => formatRp(value)}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                  <Bar dataKey="adsBudget" name="TikTok Ads Budget" fill="var(--primary-color)" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                  <Bar dataKey="kolBudget" name="KOL Budget" fill="var(--warning-color)" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
           <div className="glass-panel" style={{ overflowX: 'auto', marginBottom: '32px' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
@@ -53,6 +81,14 @@ const FinanceDataTab = ({ financeData, activeTab }) => {
                 <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                   <td style={{ padding: '16px', fontWeight: '500' }}>Biaya Komisi Affiliate</td>
                   {financeData.map(d => <td key={d.month} style={{ padding: '16px', color: 'var(--danger-color)' }}>{formatRp(d.affiliateCommission)}</td>)}
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ padding: '16px', fontWeight: '500' }}>Budget Ads (TikTok Ads)</td>
+                  {financeData.map(d => <td key={d.month} style={{ padding: '16px', color: 'var(--danger-color)' }}>{formatRp(d.adsBudget)}</td>)}
+                </tr>
+                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  <td style={{ padding: '16px', fontWeight: '500' }}>Budget KOL</td>
+                  {financeData.map(d => <td key={d.month} style={{ padding: '16px', color: 'var(--danger-color)' }}>{formatRp(d.kolBudget)}</td>)}
                 </tr>
               </tbody>
             </table>
@@ -99,6 +135,8 @@ const FinanceDataTab = ({ financeData, activeTab }) => {
                   {renderInsight('Total Biaya Admin', (last.adminMall + last.adminOrder), (prev.adminMall + prev.adminOrder))}
                   {renderInsight('Total Biaya Campaign', (last.campaignPackage + last.campaignAdditional), (prev.campaignPackage + prev.campaignAdditional))}
                   {renderInsight('Komisi Affiliate', last.affiliateCommission, prev.affiliateCommission)}
+                  {renderInsight('Budget Ads', last.adsBudget, prev.adsBudget)}
+                  {renderInsight('Budget KOL', last.kolBudget, prev.kolBudget)}
                 </>
               );
             })()}

@@ -108,11 +108,13 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
         }
 
         // --- Fetch Ads Data ---
+        let rawAdsCsv = null;
         if (adsUrl) {
           const adsFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(adsUrl)}`;
           const adsRes = await fetch(adsFetchUrl);
           if (adsRes.ok) {
             const adsCsv = await adsRes.text();
+            rawAdsCsv = adsCsv;
             if (!adsCsv.trim().toLowerCase().startsWith('<!doctype') && !adsCsv.trim().toLowerCase().startsWith('<html')) {
               const results = await parseCSV(adsCsv, { header: true, skipEmptyLines: true });
               const adsParsed = results.data
@@ -202,8 +204,38 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                   month: m.month,
                   settlement: 0, revenue: 0, platformCommission: 0, dynamicCommission: 0,
                   adminMall: 0, adminOrder: 0, affiliateCommission: 0,
-                  campaignPackage: 0, campaignAdditional: 0
+                  campaignPackage: 0, campaignAdditional: 0,
+                  adsBudget: 0, kolBudget: 0
                 }));
+
+                // Extract Ads and KOL budgets from rawAdsCsv if available
+                let adsValues = [];
+                let kolValues = [];
+                if (rawAdsCsv) {
+                  try {
+                    const adsResults = await parseCSV(rawAdsCsv, { header: false, skipEmptyLines: true });
+                    const adsRows = adsResults.data;
+                    
+                    const totalIndices = [];
+                    if (adsRows[3]) {
+                      adsRows[3].forEach((c, i) => { if (c === 'TOTAL') totalIndices.push(i); });
+                    }
+                    
+                    const spendingRow = adsRows.find(r => r.includes('Spending'));
+                    if (spendingRow) {
+                      adsValues = totalIndices.map(i => parseInt(spendingRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+                    }
+                    
+                    const kolRow = adsRows.find(r => r.includes('KOL cost'));
+                    if (kolRow) {
+                      const kolIndices = [];
+                      kolRow.forEach((c, i) => { if (c === 'KOL cost') kolIndices.push(i); });
+                      kolValues = kolIndices.map(i => parseInt(kolRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+                    }
+                  } catch (e) {
+                    console.error("Error parsing ads/kol budget:", e);
+                  }
+                }
 
                 rows.forEach(row => {
                   const label = [row[0]||'', row[1]||'', row[2]||'', row[3]||''].join(' ').toLowerCase();
@@ -227,7 +259,11 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                     });
                   }
                 });
-                setFinanceData(parsedFinance);
+                setFinanceData(parsedFinance.map((item, idx) => ({
+                  ...item,
+                  adsBudget: adsValues[idx] || 0,
+                  kolBudget: kolValues[idx] || 0
+                })));
               }
             }
           }
