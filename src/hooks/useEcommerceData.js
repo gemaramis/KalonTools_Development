@@ -109,9 +109,16 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
 
         // --- Fetch Ads Data ---
         let rawAdsCsv = null;
+        const DEFAULT_ADS_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1151289301#gid=1151289301';
+        
         if (adsUrl) {
           const adsFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(adsUrl)}`;
-          const adsRes = await fetch(adsFetchUrl);
+          let adsRes = await fetch(adsFetchUrl);
+          
+          if (!adsRes.ok && adsUrl !== DEFAULT_ADS_LINK) {
+             adsRes = await fetch(`/api/read-sheet?targetUrl=${encodeURIComponent(DEFAULT_ADS_LINK)}`);
+          }
+          
           if (adsRes.ok) {
             const adsCsv = await adsRes.text();
             rawAdsCsv = adsCsv;
