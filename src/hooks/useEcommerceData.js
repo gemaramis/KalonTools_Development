@@ -110,12 +110,13 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
         // --- Fetch Ads Data ---
         let rawAdsCsv = null;
         const DEFAULT_ADS_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1151289301#gid=1151289301';
+        const actualAdsUrl = adsUrl && adsUrl.trim() !== '' ? adsUrl : DEFAULT_ADS_LINK;
         
-        if (adsUrl) {
-          const adsFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(adsUrl)}`;
+        if (actualAdsUrl) {
+          const adsFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(actualAdsUrl)}`;
           let adsRes = await fetch(adsFetchUrl);
           
-          if (!adsRes.ok && adsUrl !== DEFAULT_ADS_LINK) {
+          if (!adsRes.ok && actualAdsUrl !== DEFAULT_ADS_LINK) {
              adsRes = await fetch(`/api/read-sheet?targetUrl=${encodeURIComponent(DEFAULT_ADS_LINK)}`);
           }
           
@@ -230,21 +231,24 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                       adsRows[3].forEach((c, i) => { if (typeof c === 'string' && c.trim().toUpperCase() === 'TOTAL') totalIndices.push(i); });
                     }
                     
-                    const spendingRow = adsRows.find(r => r.some(c => typeof c === 'string' && (c.trim().toLowerCase() === 'ad cost' || c.trim().toLowerCase() === 'spending')));
+                    // Search from the bottom to get the final summary rows (e.g. Row 37 and 38)
+                    const reversedAdsRows = [...adsRows].reverse();
+                    
+                    const spendingRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && (c.trim().toLowerCase() === 'ad cost' || c.trim().toLowerCase() === 'spending')));
                     if (spendingRow) {
                       const adIndices = [];
                       spendingRow.forEach((c, i) => { if (typeof c === 'string' && (c.trim().toLowerCase() === 'ad cost' || c.trim().toLowerCase() === 'spending')) adIndices.push(i); });
                       adsValues = adIndices.map(i => parseInt(spendingRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
                     
-                    const kolRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'kol cost'));
+                    const kolRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'kol cost'));
                     if (kolRow) {
                       const kolIndices = [];
                       kolRow.forEach((c, i) => { if (typeof c === 'string' && c.trim().toLowerCase() === 'kol cost') kolIndices.push(i); });
                       kolValues = kolIndices.map(i => parseInt(kolRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
                     
-                    const gmvRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toUpperCase() === 'GMV'));
+                    const gmvRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toUpperCase() === 'GMV'));
                     if (gmvRow) {
                       adsGmvValues = totalIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
