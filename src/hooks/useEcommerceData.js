@@ -108,21 +108,114 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
         }
 
         // --- Fetch Ads Data ---
-        let rawAdsCsv = null;
+        let adsValues = [];
+        let kolValues = [];
+        let adsGmvValues = [];
         const DEFAULT_ADS_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=372012532#gid=372012532';
         const actualAdsUrl = adsUrl && adsUrl.trim() !== '' ? adsUrl : DEFAULT_ADS_LINK;
-        
+
+        const attemptParseAds = async (targetUrl) => {
+          let aVals = [], kVals = [], gVals = [];
+          try {
+            const fetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(targetUrl)}`;
+            const res = await fetch(fetchUrl);
+            if (!res.ok) return { aVals, kVals, gVals, ok: false };
+            
+            const csvText = await res.text();
+            if (csvText.trim().toLowerCase().startsWith('<!doctype') || csvText.trim().toLowerCase().startsWith('<html')) {
+              return { aVals, kVals, gVals, ok: false };
+            }
+            
+            const results = await parseCSV(csvText, { header: false, skipEmptyLines: true });
+            const adsRows = results.data;
+            
+            const totalIndices = [];
+            const totalRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toUpperCase() === 'TOTAL'));
+            if (totalRow) {
+              totalRow.forEach((c, i) => { if (typeof c === 'string' && c.trim().toUpperCase() === 'TOTAL') totalIndices.push(i); });
+            }
+            
+            let valueIndices = [];
+            const monthRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'month'));
+            if (monthRow) {
+              monthRow.forEach((c, i) => {
+                if (i > 0 && typeof c === 'string' && c.trim() !== '') valueIndices.push(i);
+              });
+            }
+            
+            const reversedAdsRows = [...adsRows].reverse();
+            
+            const spendingRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && ['ad cost', 'spending', 'ads cost'].includes(c.trim().toLowerCase())));
+            if (spendingRow) {
+              const labelIndices = [];
+              spendingRow.forEach((c, i) => { 
+                if (typeof c === 'string' && ['ad cost', 'spending', 'ads cost'].includes(c.trim().toLowerCase())) {
+                  labelIndices.push(i);
+                }
+              });
+              
+              if (labelIndices.length > 1) {
+                aVals = labelIndices.map(i => parseInt(spendingRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+              } else if (labelIndices.length === 1 && valueIndices.length > 0) {
+                aVals = valueIndices.map(i => parseInt(spendingRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+              }
+            }
+            
+            const kolRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase().includes('kol')));
+            if (kolRow) {
+              const labelIndices = [];
+              kolRow.forEach((c, i) => { 
+                if (typeof c === 'string' && c.trim().toLowerCase().includes('kol')) {
+                  labelIndices.push(i);
+                }
+              });
+              
+              if (labelIndices.length > 1) {
+                kVals = labelIndices.map(i => parseInt(kolRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+              } else if (labelIndices.length === 1 && valueIndices.length > 0) {
+                kVals = valueIndices.map(i => parseInt(kolRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+              }
+            }
+            
+            const gmvRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toUpperCase() === 'GMV'));
+            if (gmvRow) {
+              const labelIndices = [];
+              gmvRow.forEach((c, i) => {
+                if (typeof c === 'string' && c.trim().toUpperCase() === 'GMV') labelIndices.push(i);
+              });
+              
+              if (labelIndices.length > 1) {
+                gVals = labelIndices.map(i => parseInt(gmvRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+              } else if (labelIndices.length === 1 && valueIndices.length > 0) {
+                gVals = valueIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+              } else if (totalIndices.length > 0) {
+                gVals = totalIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+              }
+            }
+            
+            return { aVals, kVals, gVals, ok: true };
+          } catch (e) {
+            console.error(e);
+            return { aVals, kVals, gVals, ok: false };
+          }
+        };
+
         if (actualAdsUrl) {
-          const adsFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(actualAdsUrl)}`;
-          let adsRes = await fetch(adsFetchUrl);
+          let parsedAds = await attemptParseAds(actualAdsUrl);
           
-          if (!adsRes.ok && actualAdsUrl !== DEFAULT_ADS_LINK) {
-             adsRes = await fetch(`/api/read-sheet?targetUrl=${encodeURIComponent(DEFAULT_ADS_LINK)}`);
+          // If the URL succeeded but yielded absolutely no values, it might be the wrong spreadsheet tab.
+          if ((!parsedAds.ok || (parsedAds.aVals.length === 0 && parsedAds.kVals.length === 0)) && actualAdsUrl !== DEFAULT_ADS_LINK) {
+            parsedAds = await attemptParseAds(DEFAULT_ADS_LINK);
           }
           
+          adsValues = parsedAds.aVals;
+          kolValues = parsedAds.kVals;
+          adsGmvValues = parsedAds.gVals;
+
+          // Now fetch details for table display
+          const adsRes = await fetch(`/api/read-sheet?targetUrl=${encodeURIComponent(actualAdsUrl)}`);
           if (adsRes.ok) {
             const adsCsv = await adsRes.text();
-            rawAdsCsv = adsCsv;
             if (!adsCsv.trim().toLowerCase().startsWith('<!doctype') && !adsCsv.trim().toLowerCase().startsWith('<html')) {
               const results = await parseCSV(adsCsv, { header: true, skipEmptyLines: true });
               const adsParsed = results.data
@@ -217,85 +310,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                   adsGmv: 0, shippingCost: 0
                 }));
 
-                // Extract Ads and KOL budgets from rawAdsCsv if available
-                let adsValues = [];
-                let kolValues = [];
-                let adsGmvValues = [];
-                if (rawAdsCsv) {
-                  try {
-                    const adsResults = await parseCSV(rawAdsCsv, { header: false, skipEmptyLines: true });
-                    const adsRows = adsResults.data;
-                    
-                    // Extract total indices for very old formats
-                    const totalRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toUpperCase() === 'TOTAL'));
-                    if (totalRow) {
-                      totalRow.forEach((c, i) => { if (typeof c === 'string' && c.trim().toUpperCase() === 'TOTAL') totalIndices.push(i); });
-                    }
-                    
-                    // Extract month indices for new layout format
-                    let valueIndices = [];
-                    const monthRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'month'));
-                    if (monthRow) {
-                      monthRow.forEach((c, i) => {
-                        if (i > 0 && typeof c === 'string' && c.trim() !== '') {
-                          valueIndices.push(i);
-                        }
-                      });
-                    }
-                    
-                    const reversedAdsRows = [...adsRows].reverse();
-                    
-                    const spendingRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && ['ad cost', 'spending', 'ads cost'].includes(c.trim().toLowerCase())));
-                    if (spendingRow) {
-                      const labelIndices = [];
-                      spendingRow.forEach((c, i) => { 
-                        if (typeof c === 'string' && ['ad cost', 'spending', 'ads cost'].includes(c.trim().toLowerCase())) {
-                          labelIndices.push(i);
-                        }
-                      });
-                      
-                      if (labelIndices.length > 1) {
-                        adsValues = labelIndices.map(i => parseInt(spendingRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-                      } else if (labelIndices.length === 1 && valueIndices.length > 0) {
-                        adsValues = valueIndices.map(i => parseInt(spendingRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-                      }
-                    }
-                    
-                    const kolRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase().includes('kol')));
-                    if (kolRow) {
-                      const labelIndices = [];
-                      kolRow.forEach((c, i) => { 
-                        if (typeof c === 'string' && c.trim().toLowerCase().includes('kol')) {
-                          labelIndices.push(i);
-                        }
-                      });
-                      
-                      if (labelIndices.length > 1) {
-                        kolValues = labelIndices.map(i => parseInt(kolRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-                      } else if (labelIndices.length === 1 && valueIndices.length > 0) {
-                        kolValues = valueIndices.map(i => parseInt(kolRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-                      }
-                    }
-                    
-                    const gmvRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toUpperCase() === 'GMV'));
-                    if (gmvRow) {
-                      const labelIndices = [];
-                      gmvRow.forEach((c, i) => {
-                        if (typeof c === 'string' && c.trim().toUpperCase() === 'GMV') labelIndices.push(i);
-                      });
-                      
-                      if (labelIndices.length > 1) {
-                        adsGmvValues = labelIndices.map(i => parseInt(gmvRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-                      } else if (labelIndices.length === 1 && valueIndices.length > 0) {
-                        adsGmvValues = valueIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-                      } else if (totalIndices.length > 0) {
-                        adsGmvValues = totalIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-                      }
-                    }
-                  } catch (e) {
-                    console.error("Error parsing ads/kol budget:", e);
-                  }
-                }
+
 
                 rows.forEach(row => {
                   const label = [row[0]||'', row[1]||'', row[2]||'', row[3]||''].join(' ').toLowerCase();
