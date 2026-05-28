@@ -15,8 +15,11 @@ const FinanceDataTab = ({ financeData, mainData, activeTab }) => {
     if (!mainData) return agg;
     mainData.forEach(d => {
       if (d.month && d.gmv) {
-         const idToEn = { 'januari': 'January', 'februari': 'February', 'maret': 'Maret', 'april': 'April', 'mei': 'Mei' };
-         const enMonth = idToEn[d.month.toLowerCase()] || d.month;
+         const idToEn = { 
+           'januari': 'January', 'februari': 'February', 'maret': 'Maret', 'april': 'April', 'mei': 'Mei',
+           'jan': 'January', 'feb': 'February', 'mar': 'Maret', 'apr': 'April'
+         };
+         const enMonth = idToEn[d.month.toLowerCase().trim()] || d.month;
          if (!agg[enMonth]) agg[enMonth] = 0;
          agg[enMonth] += d.gmv;
       }

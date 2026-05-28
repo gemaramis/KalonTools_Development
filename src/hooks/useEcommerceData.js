@@ -223,9 +223,11 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
                       adsRows[3].forEach((c, i) => { if (typeof c === 'string' && c.trim().toUpperCase() === 'TOTAL') totalIndices.push(i); });
                     }
                     
-                    const spendingRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'spending'));
+                    const spendingRow = adsRows.find(r => r.some(c => typeof c === 'string' && (c.trim().toLowerCase() === 'ad cost' || c.trim().toLowerCase() === 'spending')));
                     if (spendingRow) {
-                      adsValues = totalIndices.map(i => parseInt(spendingRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
+                      const adIndices = [];
+                      spendingRow.forEach((c, i) => { if (typeof c === 'string' && (c.trim().toLowerCase() === 'ad cost' || c.trim().toLowerCase() === 'spending')) adIndices.push(i); });
+                      adsValues = adIndices.map(i => parseInt(spendingRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
                     }
                     
                     const kolRow = adsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase() === 'kol cost'));
