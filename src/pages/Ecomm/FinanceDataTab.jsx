@@ -2,13 +2,13 @@ import React, { useMemo } from 'react';
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 
-const formatRp = (value) => {
+const baseFormatRp = (value) => {
   if (value === undefined || value === null) return '-';
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
 };
 
-const FinanceDataTab = ({ financeData, mainData, activeTab }) => {
-  if (activeTab !== 'Finance Data') return null;
+const FinanceDataTab = ({ financeData, mainData, isDataHidden }) => {
+  const formatRp = (value) => isDataHidden ? 'Rp ***.***' : baseFormatRp(value);
 
   const shopGmvByMonth = useMemo(() => {
     const agg = {};

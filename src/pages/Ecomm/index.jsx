@@ -11,7 +11,7 @@ import {
   subDays, subMonths, isSameDay, isWithinInterval, startOfMonth, endOfMonth,
   startOfWeek, endOfWeek, format, isAfter, isBefore, eachDayOfInterval
 } from 'date-fns';
-import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
 import FinanceDataTab from './FinanceDataTab';
 import ColumnHeader from '../../components/Table/ColumnHeader';
@@ -47,7 +47,7 @@ const CustomXAxisTick = ({ x, y, payload, isLongRange }) => {
   }
 };
 
-const formatRp = (value) => {
+const baseFormatRp = (value) => {
   const v = Math.round(value);
   if (v >= 1000000000) return `Rp${(v / 1000000000).toFixed(1).replace('.0', '')} M`;
   if (v >= 1000000) return `Rp${(v / 1000000).toFixed(1).replace('.0', '')} Jt`;
@@ -55,12 +55,12 @@ const formatRp = (value) => {
   return `Rp${v}`;
 };
 
-const formatRpFull = (value) => {
+const baseFormatRpFull = (value) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(Math.round(value)).replace(/,00$/, '');
 };
 
-const formatRpDetail = (value) => {
-  return formatRpFull(value);
+const baseFormatRpDetail = (value) => {
+  return baseFormatRpFull(value);
 };
 
 const formatNumber = (value) => {
@@ -163,6 +163,11 @@ const Ecomm = () => {
     globalSettings?.adsLink,
     globalSettings?.financeLink
   );
+
+  const [isDataHidden, setIsDataHidden] = useState(false);
+  const formatRp = (v) => isDataHidden ? 'Rp ***.***' : baseFormatRp(v);
+  const formatRpFull = (v) => isDataHidden ? 'Rp ***.***' : baseFormatRpFull(v);
+  const formatRpDetail = (v) => isDataHidden ? 'Rp ***.***' : baseFormatRpDetail(v);
 
   const [activeTab, setActiveTab] = useState('Overview');
   const [skuSelectedMetric, setSkuSelectedMetric] = useState('gmv');
@@ -808,6 +813,21 @@ const Ecomm = () => {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '0.875rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button 
+                onClick={() => setIsDataHidden(!isDataHidden)}
+                style={{ 
+                  display: 'flex', alignItems: 'center', gap: '6px', 
+                  padding: '6px 12px', borderRadius: '6px', 
+                  backgroundColor: isDataHidden ? 'var(--primary-color)' : 'transparent',
+                  color: isDataHidden ? 'white' : 'var(--text-secondary)',
+                  border: `1px solid ${isDataHidden ? 'var(--primary-color)' : 'var(--border-color)'}`,
+                  cursor: 'pointer', fontSize: '0.875rem', fontWeight: '500',
+                  transition: 'all 0.2s'
+                }}
+              >
+                {isDataHidden ? <EyeOff size={14} /> : <Eye size={14} />}
+                {isDataHidden ? 'Tampilkan Nominal' : 'Sembunyikan Nominal'}
+              </button>
               <EcommDateRangePicker range={currentRange} setRange={setCurrentRange} />
             </div>
             
@@ -1752,8 +1772,19 @@ const Ecomm = () => {
         </div>
       </div>
 
-      {/* Finance Data Tab Content */}
-      <FinanceDataTab financeData={financeData} mainData={mainData} activeTab={activeTab} />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+        <button 
+          onClick={() => setIsDataHidden(!isDataHidden)}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border-color)', background: 'var(--bg-color)', cursor: 'pointer' }}
+        >
+          {isDataHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+          {isDataHidden ? 'Show Sensitive Data' : 'Hide Sensitive Data'}
+        </button>
+      </div>
+
+      {activeTab === 'Finance Data' && (
+        <FinanceDataTab financeData={financeData} mainData={mainData} isDataHidden={isDataHidden} />
+      )}
 
       {/* Custom Tooltip Portal */}
       {tooltipState && (() => {
