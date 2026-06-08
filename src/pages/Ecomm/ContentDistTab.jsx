@@ -49,8 +49,9 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
         rejectedGrowth: calcGrowth(w.rejected, prevWeek?.rejected),
         deliveringGrowth: calcGrowth(w.delivering, prevWeek?.delivering),
         readyPctOfTotal: w.totalVideo > 0 ? (w.ready / w.totalVideo) * 100 : 0,
+        notActivePctOfTotal: w.totalVideo > 0 ? (w.notActive / w.totalVideo) * 100 : 0,
         inQueuePct: w.ready > 0 ? (w.inQueue / w.ready) * 100 : 0,
-        learningPct: w.ready > 0 ? (w.learning / w.ready) * 100 : 0,
+        learningPct: w.inQueue > 0 ? (w.learning / w.inQueue) * 100 : 0,
         rejectedPct: w.ready > 0 ? (w.rejected / w.ready) * 100 : 0,
         deliveringPct: w.ready > 0 ? (w.delivering / w.ready) * 100 : 0,
       };
@@ -124,7 +125,15 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                     contentStyle={{ backgroundColor: 'var(--surface-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}
                     formatter={(value, name, props) => {
                       const totalReady = props.payload.ready;
-                      const pct = totalReady > 0 ? ((value / totalReady) * 100).toFixed(1) : 0;
+                      const totalInQueue = props.payload.inQueue;
+                      
+                      let pct = 0;
+                      if (name === 'Learning') {
+                        pct = totalInQueue > 0 ? ((value / totalInQueue) * 100).toFixed(1) : 0;
+                      } else {
+                        pct = totalReady > 0 ? ((value / totalReady) * 100).toFixed(1) : 0;
+                      }
+                      
                       return [`${formatNumber(value)} (${pct}%)`, name];
                     }}
                   />
@@ -148,6 +157,7 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                   <th style={{ padding: '16px 24px', fontWeight: '600', color: 'var(--text-secondary)' }}>Minggu</th>
                   <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)' }}>Total Video</th>
                   <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)' }}>Ready (%)</th>
+                  <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)' }}>Not Active (%)</th>
                   <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)' }}>In Queue (%)</th>
                   <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)' }}>Learning (%)</th>
                   <th style={{ padding: '16px', fontWeight: '600', color: 'var(--text-secondary)' }}>Delivering (%)</th>
@@ -163,7 +173,11 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                       <td style={{ padding: '16px' }}>{formatNumber(w.totalVideo)}</td>
                       <td style={{ padding: '16px' }}>
                         <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{formatNumber(w.ready)}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{w.readyPctOfTotal.toFixed(1)}% dari Total</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{w.readyPctOfTotal.toFixed(1)}%</div>
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                        <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{formatNumber(w.notActive)}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{w.notActivePctOfTotal.toFixed(1)}%</div>
                       </td>
                       <td style={{ padding: '16px' }}>
                         <div style={{ fontWeight: '500', color: 'var(--warning-color)', display: 'flex', alignItems: 'center', gap: '4px' }}>
