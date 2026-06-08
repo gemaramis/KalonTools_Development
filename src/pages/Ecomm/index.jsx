@@ -14,6 +14,7 @@ import {
 import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Minus, Search, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff } from 'lucide-react';
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
 import FinanceDataTab from './FinanceDataTab';
+import ContentDistTab from './ContentDistTab';
 import ColumnHeader from '../../components/Table/ColumnHeader';
 import ActionPlanNotes from '../../components/Ecomm/ActionPlanNotes';
 
@@ -158,10 +159,11 @@ const ChangeIndicator = ({ current, previous }) => {
 // --- Main Component ---
 const Ecomm = () => {
   const { globalSettings, getSettingsForMonth, updateMonthlySettings } = useSettings();
-  const { mainData, detailData, financeData, loading, error } = useEcommerceData(
+  const { mainData, detailData, financeData, contentDistData, loading, error } = useEcommerceData(
     globalSettings?.ecommLink, 
     globalSettings?.adsLink,
-    globalSettings?.financeLink
+    globalSettings?.financeLink,
+    globalSettings?.contentDistLink
   );
 
   const [isDataHidden, setIsDataHidden] = useState(false);
@@ -803,6 +805,16 @@ const Ecomm = () => {
           }}>
           Finance Data
           {activeTab === 'Finance Data' && <div style={{ position: 'absolute', bottom: '-1px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--primary-color)' }}></div>}
+        </div>
+        <div 
+          onClick={() => setActiveTab('Content Distribution')}
+          style={{ 
+            fontSize: '1.125rem', fontWeight: activeTab === 'Content Distribution' ? '600' : '500', 
+            color: activeTab === 'Content Distribution' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            cursor: 'pointer', paddingBottom: '12px', position: 'relative'
+          }}>
+          Content Distribution
+          {activeTab === 'Content Distribution' && <div style={{ position: 'absolute', bottom: '-1px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--primary-color)' }}></div>}
         </div>
       </div>
 
@@ -1785,6 +1797,8 @@ const Ecomm = () => {
       {activeTab === 'Finance Data' && (
         <FinanceDataTab financeData={financeData} mainData={mainData} isDataHidden={isDataHidden} />
       )}
+
+      <ContentDistTab contentDistData={contentDistData} activeTab={activeTab} />
 
       {/* Custom Tooltip Portal */}
       {tooltipState && (() => {

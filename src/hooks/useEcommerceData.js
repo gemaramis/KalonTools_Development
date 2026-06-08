@@ -33,7 +33,7 @@ const parseDate = (dateStr) => {
   return isValid(fallback) ? fallback : null;
 };
 
-export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
+export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) => {
   const [mainData, setMainData] = useState([]);
   const [detailData, setDetailData] = useState({
     live: [],
@@ -41,6 +41,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
     productCard: []
   });
   const [financeData, setFinanceData] = useState([]);
+  const [contentDistData, setContentDistData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -346,6 +347,72 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
           }
         }
 
+        // --- Fetch Content Distribution Data ---
+        if (contentDistUrl) {
+          try {
+            const distRes = await fetch(`/api/read-sheet?targetUrl=${encodeURIComponent(contentDistUrl)}`);
+            if (distRes.ok) {
+              const distCsv = await distRes.text();
+              if (!distCsv.trim().toLowerCase().startsWith('<!doctype') && !distCsv.trim().toLowerCase().startsWith('<html')) {
+                const results = await parseCSV(distCsv, { header: false, skipEmptyLines: true });
+                const rows = results.data;
+                const parsedDistData = [];
+                
+                for (let i = 0; i < rows.length; i++) {
+                  const row = rows[i];
+                  if (!row || !row[0]) continue;
+                  
+                  if (row[0].toLowerCase().includes('week 1')) {
+                    const productName = row[0].replace(/week 1/i, '').trim();
+                    const weeksData = [];
+                    
+                    for (let w = 0; w < 4; w++) {
+                      const colStart = w * 4;
+                      const weekInfo = {
+                        week: `Week ${w+1}`,
+                        totalVideo: 0,
+                        ready: 0,
+                        notActive: 0,
+                        inQueue: 0,
+                        learning: 0,
+                        rejected: 0,
+                        delivering: 0
+                      };
+                      
+                      for (let j = i + 1; j < Math.min(i + 15, rows.length); j++) {
+                        const subRow = rows[j];
+                        if (!subRow || !subRow[0] || subRow[0].trim() === '') break;
+                        
+                        const label = subRow[colStart]?.toLowerCase().trim();
+                        const valStr = subRow[colStart + 1]?.toString().replace(/[^0-9]/g, '');
+                        const val = parseInt(valStr, 10) || 0;
+                        
+                        if (label === 'total video') weekInfo.totalVideo = val;
+                        else if (label === 'ready') weekInfo.ready = val;
+                        else if (label === 'not active') weekInfo.notActive = val;
+                        else if (label === 'in queue') weekInfo.inQueue = val;
+                        else if (label === 'learning') weekInfo.learning = val;
+                        else if (label === 'rejected') weekInfo.rejected = val;
+                        else if (label === 'delivering') weekInfo.delivering = val;
+                      }
+                      
+                      weeksData.push(weekInfo);
+                    }
+                    
+                    parsedDistData.push({
+                      product: productName,
+                      weeks: weeksData
+                    });
+                  }
+                }
+                setContentDistData(parsedDistData);
+              }
+            }
+          } catch (e) {
+            console.error("Error parsing content distribution data:", e);
+          }
+        }
+
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -354,7 +421,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl) => {
     };
 
     fetchData();
-  }, [ecommUrl, adsUrl, financeUrl]);
+  }, [ecommUrl, adsUrl, financeUrl, contentDistUrl]);
 
-  return { mainData, detailData, financeData, loading, error };
+  return { mainData, detailData, financeData, contentDistData, loading, error };
 };

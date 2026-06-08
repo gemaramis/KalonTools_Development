@@ -75,6 +75,7 @@ const DEFAULT_SCHEDULING_LINK = 'https://docs.google.com/spreadsheets/d/1ZeGXZt0
 const DEFAULT_ECOMM_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1551198310#gid=1551198310';
 const DEFAULT_ADS_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=372012532#gid=372012532';
 const DEFAULT_FINANCE_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=251030538#gid=251030538';
+const DEFAULT_CONTENT_DIST_LINK = 'https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1450102889#gid=1450102889';
 const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bnB7QhSSoyJ9N2qLxUua2HBbpjD6FcbWNDpZta79bFZ_BmWdRUvvOQihFX6o/exec';
 
   const [globalSettings, setGlobalSettings] = useState(() => {
@@ -86,6 +87,7 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
           ...parsed,
           adsLink: parsed.adsLink || DEFAULT_ADS_LINK,
           financeLink: parsed.financeLink || DEFAULT_FINANCE_LINK,
+          contentDistLink: parsed.contentDistLink || DEFAULT_CONTENT_DIST_LINK,
           appsScriptUrl: parsed.appsScriptUrl || DEFAULT_APPS_SCRIPT_URL
         };
       }
@@ -96,7 +98,8 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbSZL2bn
       appsScriptUrl: DEFAULT_APPS_SCRIPT_URL,
       ecommLink: DEFAULT_ECOMM_LINK,
       financeLink: DEFAULT_FINANCE_LINK,
-      adsLink: DEFAULT_ADS_LINK
+      adsLink: DEFAULT_ADS_LINK,
+      contentDistLink: DEFAULT_CONTENT_DIST_LINK
     };
   });
 

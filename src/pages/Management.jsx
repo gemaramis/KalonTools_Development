@@ -21,6 +21,7 @@ const Management = () => {
   const [ecommLink, setEcommLink] = useState('');
   const [financeLink, setFinanceLink] = useState('');
   const [adsLink, setAdsLink] = useState('');
+  const [contentDistLink, setContentDistLink] = useState('');
   const [appsScriptUrl, setAppsScriptUrl] = useState('');
 
   const isSuperAdmin = currentUser?.id === 'superadmin';
@@ -53,6 +54,7 @@ const Management = () => {
     setEcommLink(globalSettings?.ecommLink || '');
     setFinanceLink(globalSettings?.financeLink || '');
     setAdsLink(globalSettings?.adsLink || '');
+    setContentDistLink(globalSettings?.contentDistLink || '');
     setAppsScriptUrl(globalSettings?.appsScriptUrl || '');
   }, [selectedMonth, getSettingsForMonth, globalSettings]);
 
@@ -76,7 +78,8 @@ const Management = () => {
       appsScriptUrl,
       ecommLink,
       financeLink,
-      adsLink
+      adsLink,
+      contentDistLink
     }));
     setLinksSaved(true);
     setTimeout(() => setLinksSaved(false), 3000);
@@ -368,6 +371,18 @@ const Management = () => {
                 value={adsLink} 
                 onChange={(e) => setAdsLink(e.target.value)} 
                 placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=..."
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Content Distribution Spreadsheet Link</label>
+              <input 
+                type="url" 
+                className="input-field" 
+                value={contentDistLink} 
+                onChange={(e) => setContentDistLink(e.target.value)} 
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=1450102889"
                 style={{ width: '100%' }}
               />
             </div>
