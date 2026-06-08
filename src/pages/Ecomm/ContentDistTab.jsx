@@ -2,11 +2,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, LabelList } from 'recharts';
 import { AlertCircle, CheckCircle, Clock, BookOpen, AlertTriangle } from 'lucide-react';
 
-const renderBarLabel = (props, pctKey) => {
-  const { x, y, width, height, value, payload } = props;
-  if (height < 18 || !value) return null; // Don't render label if bar is too small
+const renderBarLabel = (props, pctKey, data) => {
+  const { x, y, width, height, value, index } = props;
+  if (height < 18 || !value || !data || !data[index]) return null;
   
-  const pct = payload[pctKey];
+  const pct = data[index][pctKey];
   if (pct === undefined || pct === 0) return null;
 
   // For very light colors we might want dark text, but since we use distinct colors, white is usually good.
@@ -159,19 +159,19 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                   />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
                   <Bar dataKey="notActive" name="Not Active" stackId="a" fill="#9ca3af" radius={[0, 0, 4, 4]} maxBarSize={80}>
-                    <LabelList content={(props) => renderBarLabel(props, 'notActivePctOfTotal')} />
+                    <LabelList dataKey="notActive" content={(props) => renderBarLabel(props, 'notActivePctOfTotal', productData.weeks)} />
                   </Bar>
                   <Bar dataKey="delivering" name="Delivering (Tayang)" stackId="a" fill="var(--success-color)" radius={0} maxBarSize={80}>
-                    <LabelList content={(props) => renderBarLabel(props, 'deliveringPct')} />
+                    <LabelList dataKey="delivering" content={(props) => renderBarLabel(props, 'deliveringPct', productData.weeks)} />
                   </Bar>
                   <Bar dataKey="learning" name="Learning" stackId="a" fill="#3b82f6" maxBarSize={80}>
-                    <LabelList content={(props) => renderBarLabel(props, 'learningPct')} />
+                    <LabelList dataKey="learning" content={(props) => renderBarLabel(props, 'learningPct', productData.weeks)} />
                   </Bar>
                   <Bar dataKey="inQueue" name="In Queue" stackId="a" fill="var(--warning-color)" maxBarSize={80}>
-                    <LabelList content={(props) => renderBarLabel(props, 'inQueuePct')} />
+                    <LabelList dataKey="inQueue" content={(props) => renderBarLabel(props, 'inQueuePct', productData.weeks)} />
                   </Bar>
                   <Bar dataKey="rejected" name="Rejected (Ban)" stackId="a" fill="var(--danger-color)" radius={[4, 4, 0, 0]} maxBarSize={80}>
-                    <LabelList content={(props) => renderBarLabel(props, 'rejectedPct')} />
+                    <LabelList dataKey="rejected" content={(props) => renderBarLabel(props, 'rejectedPct', productData.weeks)} />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
