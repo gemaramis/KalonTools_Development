@@ -1,6 +1,23 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, LabelList } from 'recharts';
 import { AlertCircle, CheckCircle, Clock, BookOpen, AlertTriangle } from 'lucide-react';
+
+const renderBarLabel = (props, pctKey) => {
+  const { x, y, width, height, value, payload } = props;
+  if (height < 18 || !value) return null; // Don't render label if bar is too small
+  
+  const pct = payload[pctKey];
+  if (pct === undefined || pct === 0) return null;
+
+  // For very light colors we might want dark text, but since we use distinct colors, white is usually good.
+  // Not Active is gray, Delivering is green, Learning is blue, In Queue is yellow/orange, Rejected is red.
+  // White looks good on all except maybe yellow, but it's acceptable.
+  return (
+    <text x={x + width / 2} y={y + height / 2} fill="#fff" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight="600" style={{ pointerEvents: 'none' }}>
+      {pct.toFixed(1)}%
+    </text>
+  );
+};
 
 const ContentDistTab = ({ contentDistData, activeTab }) => {
   const [selectedMonth, setSelectedMonth] = useState(null);
@@ -113,7 +130,7 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
               Funnel Distribusi Konten - {productData.product}
             </h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginBottom: '24px' }}>
-              Grafik ini menunjukkan persebaran status video dari total video yang "Ready" pada setiap minggunya.
+              Grafik ini menunjukkan persebaran status video dari total keseluruhan video pada setiap minggunya beserta persentasenya.
             </p>
             <div style={{ width: '100%', height: 400 }}>
               <ResponsiveContainer>
@@ -126,10 +143,13 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                     formatter={(value, name, props) => {
                       const totalReady = props.payload.ready;
                       const totalInQueue = props.payload.inQueue;
+                      const totalVideo = props.payload.totalVideo;
                       
                       let pct = 0;
                       if (name === 'Learning') {
                         pct = totalInQueue > 0 ? ((value / totalInQueue) * 100).toFixed(1) : 0;
+                      } else if (name === 'Not Active') {
+                        pct = totalVideo > 0 ? ((value / totalVideo) * 100).toFixed(1) : 0;
                       } else {
                         pct = totalReady > 0 ? ((value / totalReady) * 100).toFixed(1) : 0;
                       }
@@ -138,10 +158,21 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                     }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  <Bar dataKey="delivering" name="Delivering (Tayang)" stackId="a" fill="var(--success-color)" radius={[0, 0, 4, 4]} maxBarSize={60} />
-                  <Bar dataKey="learning" name="Learning" stackId="a" fill="#3b82f6" maxBarSize={60} />
-                  <Bar dataKey="inQueue" name="In Queue" stackId="a" fill="var(--warning-color)" maxBarSize={60} />
-                  <Bar dataKey="rejected" name="Rejected (Ban)" stackId="a" fill="var(--danger-color)" radius={[4, 4, 0, 0]} maxBarSize={60} />
+                  <Bar dataKey="notActive" name="Not Active" stackId="a" fill="#9ca3af" radius={[0, 0, 4, 4]} maxBarSize={80}>
+                    <LabelList content={(props) => renderBarLabel(props, 'notActivePctOfTotal')} />
+                  </Bar>
+                  <Bar dataKey="delivering" name="Delivering (Tayang)" stackId="a" fill="var(--success-color)" radius={0} maxBarSize={80}>
+                    <LabelList content={(props) => renderBarLabel(props, 'deliveringPct')} />
+                  </Bar>
+                  <Bar dataKey="learning" name="Learning" stackId="a" fill="#3b82f6" maxBarSize={80}>
+                    <LabelList content={(props) => renderBarLabel(props, 'learningPct')} />
+                  </Bar>
+                  <Bar dataKey="inQueue" name="In Queue" stackId="a" fill="var(--warning-color)" maxBarSize={80}>
+                    <LabelList content={(props) => renderBarLabel(props, 'inQueuePct')} />
+                  </Bar>
+                  <Bar dataKey="rejected" name="Rejected (Ban)" stackId="a" fill="var(--danger-color)" radius={[4, 4, 0, 0]} maxBarSize={80}>
+                    <LabelList content={(props) => renderBarLabel(props, 'rejectedPct')} />
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
