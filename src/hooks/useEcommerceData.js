@@ -357,10 +357,16 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
                 const results = await parseCSV(distCsv, { header: false, skipEmptyLines: true });
                 const rows = results.data;
                 const parsedDistData = [];
+                let currentMonth = 'Mei 2026';
                 
                 for (let i = 0; i < rows.length; i++) {
                   const row = rows[i];
                   if (!row || !row[0]) continue;
+                  
+                  if (!row[0].toLowerCase().includes('week') && (!row[1] || row[1].trim() === '')) {
+                     currentMonth = row[0].trim();
+                     continue;
+                  }
                   
                   if (row[0].toLowerCase().includes('week 1')) {
                     const productName = row[0].replace(/week 1/i, '').trim();
@@ -400,6 +406,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
                     }
                     
                     parsedDistData.push({
+                      month: currentMonth,
                       product: productName,
                       weeks: weeksData
                     });

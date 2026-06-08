@@ -1,21 +1,39 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from 'recharts';
 import { AlertCircle, CheckCircle, Clock, BookOpen, AlertTriangle } from 'lucide-react';
 
 const ContentDistTab = ({ contentDistData, activeTab }) => {
+  const [selectedMonth, setSelectedMonth] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const productData = useMemo(() => {
-    if (!contentDistData || contentDistData.length === 0) return null;
-    
-    // Set default selected product to the first one if not set
-    const defaultProduct = contentDistData[0].product;
-    const currentProdName = selectedProduct || defaultProduct;
-    if (!selectedProduct) {
-      setSelectedProduct(defaultProduct);
+  const availableMonths = useMemo(() => {
+    if (!contentDistData) return [];
+    const months = new Set(contentDistData.map(d => d.month).filter(Boolean));
+    return Array.from(months);
+  }, [contentDistData]);
+
+  useEffect(() => {
+    if (availableMonths.length > 0 && !selectedMonth) {
+      setSelectedMonth(availableMonths[0]);
     }
+  }, [availableMonths, selectedMonth]);
+
+  const availableProducts = useMemo(() => {
+    if (!contentDistData || !selectedMonth) return [];
+    return contentDistData.filter(d => d.month === selectedMonth).map(d => d.product);
+  }, [contentDistData, selectedMonth]);
+
+  useEffect(() => {
+    if (availableProducts.length > 0 && (!selectedProduct || !availableProducts.includes(selectedProduct))) {
+      setSelectedProduct(availableProducts[0]);
+    }
+  }, [availableProducts, selectedProduct]);
+
+  const productData = useMemo(() => {
+    if (!contentDistData || contentDistData.length === 0 || !selectedMonth || !selectedProduct) return null;
     
-    const prod = contentDistData.find(p => p.product === currentProdName) || contentDistData[0];
+    const prod = contentDistData.find(p => p.month === selectedMonth && p.product === selectedProduct);
+    if (!prod) return null;
     
     // Transform data for charting and table
     const transformedWeeks = prod.weeks.map((w, index) => {
@@ -63,15 +81,25 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
     <div className="animation-fade-in" style={{ padding: '24px 0' }}>
       <div className="flex-between" style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--text-primary)' }}>Content Distribution Database (TikTok)</h2>
-        <div>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <select 
+            className="input-field" 
+            value={selectedMonth || ''} 
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            style={{ width: '200px', backgroundColor: 'var(--surface-color)' }}
+          >
+            {availableMonths.map((m, i) => (
+              <option key={i} value={m}>{m}</option>
+            ))}
+          </select>
           <select 
             className="input-field" 
             value={selectedProduct || ''} 
             onChange={(e) => setSelectedProduct(e.target.value)}
             style={{ width: '250px', backgroundColor: 'var(--surface-color)' }}
           >
-            {contentDistData.map((p, i) => (
-              <option key={i} value={p.product}>{p.product}</option>
+            {availableProducts.map((p, i) => (
+              <option key={i} value={p}>{p}</option>
             ))}
           </select>
         </div>
