@@ -636,7 +636,10 @@ const Ecomm = () => {
       if (currDay) dataPoint.date = format(currDay, 'MMM d');
       
       productsToPlot.forEach(prodName => {
-        if (currDay) dataPoint[prodName] = 0.01;
+        if (currDay) {
+          dataPoint[prodName] = 0.01;
+          if (skuSelectedMetric === 'productsSold') dataPoint[`${prodName}_target`] = 0.01;
+        }
         if (isCompareEnabled) dataPoint[`${prodName}Compare`] = 0.01;
       });
       return dataPoint;
@@ -648,6 +651,10 @@ const Ecomm = () => {
         const dataPoint = result.find(d => d.date === dateStr);
         if (dataPoint) {
           dataPoint[item.product] += item[skuSelectedMetric] || 0;
+          if (skuSelectedMetric === 'productsSold') {
+             if (dataPoint[`${item.product}_target`] === undefined) dataPoint[`${item.product}_target`] = 0;
+             dataPoint[`${item.product}_target`] += (item.impressionsTotal || 0) / 1000;
+          }
         }
       }
     });
@@ -670,6 +677,10 @@ const Ecomm = () => {
         if (dataPoint[prodName] !== undefined) {
           dataPoint[`${prodName}_original`] = dataPoint[prodName];
           dataPoint[prodName] = Math.sqrt(Math.max(0, dataPoint[prodName]));
+        }
+        if (skuSelectedMetric === 'productsSold' && dataPoint[`${prodName}_target`] !== undefined) {
+          dataPoint[`${prodName}_target_original`] = dataPoint[`${prodName}_target`];
+          dataPoint[`${prodName}_target`] = Math.sqrt(Math.max(0, dataPoint[`${prodName}_target`]));
         }
         if (isCompareEnabled && dataPoint[`${prodName}Compare`] !== undefined) {
           dataPoint[`${prodName}Compare_original`] = dataPoint[`${prodName}Compare`];
@@ -1579,9 +1590,20 @@ const Ecomm = () => {
                     itemSorter={(item) => -item.value}
                     contentStyle={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
                     formatter={(value, name, props) => {
-                      const originalValue = props.payload[`${name}_original`] !== undefined ? props.payload[`${name}_original`] : (value * value);
+                      const dataKey = props.dataKey;
+                      const originalValue = props.payload[`${dataKey}_original`] !== undefined ? props.payload[`${dataKey}_original`] : (value * value);
                       const metricInfo = metricsInfo.find(m => m.id === skuSelectedMetric);
-                      return [metricInfo ? metricInfo.fullFormat(originalValue) : formatNumberFull(originalValue), name];
+                      let formatted = metricInfo ? metricInfo.fullFormat(originalValue) : formatNumberFull(originalValue);
+                      
+                      if (skuSelectedMetric === 'productsSold' && !dataKey.endsWith('_target') && !dataKey.endsWith('Compare')) {
+                        const targetValue = props.payload[`${dataKey}_target_original`];
+                        if (targetValue > 0) {
+                           const pct = ((originalValue / targetValue) * 100).toFixed(1);
+                           formatted = `${formatted} (${pct}% dari Target)`;
+                        }
+                      }
+                      
+                      return [formatted, name];
                     }}
                   />
                   <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }}/>
@@ -1604,6 +1626,18 @@ const Ecomm = () => {
                           stroke={index === 0 ? CHART_COLORS[0] : CHART_COLORS[1]} 
                           strokeWidth={2} 
                           strokeDasharray="5 5"
+                          dot={false}
+                          activeDot={{ r: 4 }}
+                        />
+                      )}
+                      {skuSelectedMetric === 'productsSold' && (
+                        <Line 
+                          type="monotone" 
+                          dataKey={`${prodName}_target`} 
+                          name={`${prodName} (Target)`}
+                          stroke={SKU_PIE_COLORS[index % SKU_PIE_COLORS.length]} 
+                          strokeWidth={2} 
+                          strokeDasharray="3 3"
                           dot={false}
                           activeDot={{ r: 4 }}
                         />
