@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, AlertCircle } from 'lucide-react';
 
@@ -8,6 +8,8 @@ const baseFormatRp = (value) => {
 };
 
 const FinanceDataTab = ({ financeData, mainData, isDataHidden }) => {
+  const [selectedMonth, setSelectedMonth] = useState('');
+  
   const formatRp = (value) => isDataHidden ? 'Rp ***.***' : baseFormatRp(value);
 
   const shopGmvByMonth = useMemo(() => {
@@ -56,13 +58,22 @@ const FinanceDataTab = ({ financeData, mainData, isDataHidden }) => {
     );
   }
 
+  useEffect(() => {
+    if (enhancedData && enhancedData.length > 0 && (!selectedMonth || !enhancedData.find(d => d.month === selectedMonth))) {
+      setSelectedMonth(enhancedData[enhancedData.length - 1].month);
+    }
+  }, [enhancedData, selectedMonth]);
+
   // Key Insights Generator
   const generateInsights = () => {
     const insights = [];
-    if (enhancedData.length < 2) return insights;
+    if (!enhancedData || enhancedData.length < 1 || !selectedMonth) return insights;
     
-    const last = enhancedData[enhancedData.length - 1];
-    const prev = enhancedData[enhancedData.length - 2];
+    const currentIndex = enhancedData.findIndex(d => d.month === selectedMonth);
+    if (currentIndex <= 0) return insights;
+    
+    const last = enhancedData[currentIndex];
+    const prev = enhancedData[currentIndex - 1];
 
     // Shipping cost insight
     if (last.shippingCost && prev.shippingCost) {
@@ -157,12 +168,26 @@ const FinanceDataTab = ({ financeData, mainData, isDataHidden }) => {
         </div>
       </div>
 
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: '600', margin: 0, color: 'var(--text-primary)' }}>Rincian & Insight Bulanan</h3>
+        <select 
+          className="input-field" 
+          value={selectedMonth} 
+          onChange={(e) => setSelectedMonth(e.target.value)}
+          style={{ width: '200px', backgroundColor: 'var(--surface-color)' }}
+        >
+          {enhancedData.map(d => (
+            <option key={d.month} value={d.month}>{d.month}</option>
+          ))}
+        </select>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '24px', marginBottom: '32px' }}>
         {/* 1. RINCIAN PENGELUARAN MARKETING */}
         <div className="glass-panel" style={{ padding: '24px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '20px', color: 'var(--text-primary)' }}>Rincian Pengeluaran Marketing (Bulan Terakhir)</h3>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '20px', color: 'var(--text-primary)' }}>Rincian Pengeluaran Marketing</h3>
           {(() => {
-            const last = enhancedData[enhancedData.length - 1];
+            const last = enhancedData.find(d => d.month === selectedMonth) || enhancedData[enhancedData.length - 1];
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div className="flex-between">
@@ -204,7 +229,11 @@ const FinanceDataTab = ({ financeData, mainData, isDataHidden }) => {
               </div>
             ))}
             {insights.length === 0 && (
-              <div style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>Tidak ada insight khusus bulan ini.</div>
+              <div style={{ color: 'var(--text-secondary)', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                {enhancedData.findIndex(d => d.month === selectedMonth) === 0 
+                  ? 'Pilih bulan setelahnya untuk melihat komparasi lonjakan biaya.' 
+                  : 'Tidak ada insight khusus bulan ini.'}
+              </div>
             )}
           </div>
         </div>
