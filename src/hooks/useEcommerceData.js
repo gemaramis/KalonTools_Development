@@ -146,52 +146,37 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
             
             const reversedAdsRows = [...adsRows].reverse();
             
-            const spendingRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && ['ad cost', 'spending', 'ads cost'].includes(c.trim().toLowerCase())));
-            if (spendingRow) {
-              const labelIndices = [];
-              spendingRow.forEach((c, i) => { 
-                if (typeof c === 'string' && ['ad cost', 'spending', 'ads cost'].includes(c.trim().toLowerCase())) {
-                  labelIndices.push(i);
+            const extractVals = (row) => {
+              const vals = [];
+              row.forEach(c => {
+                if (typeof c === 'string') {
+                  const clean = c.trim();
+                  if (clean.toUpperCase().startsWith('RP')) {
+                    vals.push(parseInt(clean.replace(/[^0-9,-]/g, '')) || 0);
+                  } else if (/^[0-9.,]+$/.test(clean) && !clean.includes('%')) {
+                    const num = parseInt(clean.replace(/[^0-9,-]/g, ''));
+                    if (!isNaN(num)) vals.push(num);
+                  }
+                } else if (typeof c === 'number') {
+                  vals.push(c);
                 }
               });
-              
-              if (labelIndices.length > 1) {
-                aVals = labelIndices.map(i => parseInt(spendingRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-              } else if (labelIndices.length === 1 && valueIndices.length > 0) {
-                aVals = valueIndices.map(i => parseInt(spendingRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-              }
+              return vals;
+            };
+
+            const spendingRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && ['ad cost', 'spending', 'ads cost'].includes(c.trim().toLowerCase())));
+            if (spendingRow) {
+              aVals = extractVals(spendingRow);
             }
             
             const kolRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toLowerCase().includes('kol')));
             if (kolRow) {
-              const labelIndices = [];
-              kolRow.forEach((c, i) => { 
-                if (typeof c === 'string' && c.trim().toLowerCase().includes('kol')) {
-                  labelIndices.push(i);
-                }
-              });
-              
-              if (labelIndices.length > 1) {
-                kVals = labelIndices.map(i => parseInt(kolRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-              } else if (labelIndices.length === 1 && valueIndices.length > 0) {
-                kVals = valueIndices.map(i => parseInt(kolRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-              }
+              kVals = extractVals(kolRow);
             }
             
-            const gmvRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && c.trim().toUpperCase() === 'GMV'));
+            const gmvRow = reversedAdsRows.find(r => r.some(c => typeof c === 'string' && ['GMV', 'ACTUAL', 'EARNING'].includes(c.trim().toUpperCase())));
             if (gmvRow) {
-              const labelIndices = [];
-              gmvRow.forEach((c, i) => {
-                if (typeof c === 'string' && c.trim().toUpperCase() === 'GMV') labelIndices.push(i);
-              });
-              
-              if (labelIndices.length > 1) {
-                gVals = labelIndices.map(i => parseInt(gmvRow[i+1]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-              } else if (labelIndices.length === 1 && valueIndices.length > 0) {
-                gVals = valueIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-              } else if (totalIndices.length > 0) {
-                gVals = totalIndices.map(i => parseInt(gmvRow[i]?.toString().replace(/[^0-9,-]/g, '')) || 0);
-              }
+              gVals = extractVals(gmvRow);
             }
             
             return { aVals, kVals, gVals, ok: true };
