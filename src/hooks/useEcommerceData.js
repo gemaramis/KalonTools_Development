@@ -89,7 +89,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
               dateStr: row['Tanggal'],
               dateObj: parseDate(row['Tanggal']),
               month: row['Bulan'] || '',
-              product: row['Produk'] || '',
+              product: (row['Produk'] || '').trim(),
               gmv: parseRp(row['GMV']),
               productsSold: parseRp(row['Produk Terjual']),
               impressionsShopTab: parseRp(row['Impresi Shop Tab']),
@@ -210,7 +210,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
                   dateStr: row['Date'],
                   dateObj: parseDate(row['Date']),
                   month: row['Bulan'] || '',
-                  product: row['Produk'] || '', // Assume it might have a product breakdown
+                  product: (row['Produk'] || '').trim(), // Assume it might have a product breakdown
                   gmv: 0, productsSold: 0, impressionsShopTab: 0, impressionsLive: 0, impressionsVideo: 0, impressionsProductCard: 0, impressionsTotal: 0, // Ecomm fields
 
                   // Ads fields
@@ -223,7 +223,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
               
               // Let's quickly fix ROI parsing to handle floats since it's a percentage or ratio
               adsParsed.forEach(item => {
-                const originalRow = results.data.find(r => r['Date'] === item.dateStr && (r['Produk'] || '') === item.product);
+                const originalRow = results.data.find(r => r['Date'] === item.dateStr && (r['Produk'] || '').trim() === item.product);
                 if (originalRow && originalRow['ROI']) {
                   const cleaned = originalRow['ROI'].toString().replace(/[^0-9.,-]/g, '').replace(/,/, '.');
                   item.roi = parseFloat(cleaned) || 0;
