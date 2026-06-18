@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, LabelList } from 'recharts';
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, LabelList } from 'recharts';
 import { AlertCircle, CheckCircle, Clock, BookOpen, AlertTriangle } from 'lucide-react';
 
 const renderBarLabel = (props, pctKey, data) => {
@@ -134,10 +134,11 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
             </p>
             <div style={{ width: '100%', height: 400 }}>
               <ResponsiveContainer>
-                <BarChart data={productData.weeks} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <ComposedChart data={productData.weeks} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                   <XAxis dataKey="week" tick={{ fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} tickFormatter={formatNumber} />
+                  <YAxis yAxisId="left" tick={{ fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} tickFormatter={formatNumber} />
+                  <YAxis yAxisId="right" orientation="right" tick={{ fill: 'var(--text-secondary)' }} axisLine={false} tickLine={false} tickFormatter={formatNumber} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: 'var(--surface-color)', borderRadius: '8px', border: '1px solid var(--border-color)' }}
                     formatter={(value, name, props) => {
@@ -158,22 +159,20 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                     }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
-                  <Bar dataKey="notActive" name="Not Active" stackId="a" fill="#9ca3af" radius={[0, 0, 4, 4]} maxBarSize={80}>
-                    <LabelList dataKey="notActive" content={(props) => renderBarLabel(props, 'notActivePctOfTotal', productData.weeks)} />
-                  </Bar>
-                  <Bar dataKey="delivering" name="Delivering (Tayang)" stackId="a" fill="var(--success-color)" radius={0} maxBarSize={80}>
+                  <Bar yAxisId="left" dataKey="delivering" name="Delivering (Tayang)" stackId="a" fill="var(--success-color)" radius={[0, 0, 4, 4]} maxBarSize={80}>
                     <LabelList dataKey="delivering" content={(props) => renderBarLabel(props, 'deliveringPct', productData.weeks)} />
                   </Bar>
-                  <Bar dataKey="learning" name="Learning" stackId="a" fill="#3b82f6" maxBarSize={80}>
+                  <Bar yAxisId="left" dataKey="learning" name="Learning" stackId="a" fill="#3b82f6" maxBarSize={80}>
                     <LabelList dataKey="learning" content={(props) => renderBarLabel(props, 'learningPct', productData.weeks)} />
                   </Bar>
-                  <Bar dataKey="inQueue" name="In Queue" stackId="a" fill="var(--warning-color)" maxBarSize={80}>
+                  <Bar yAxisId="left" dataKey="inQueue" name="In Queue" stackId="a" fill="var(--warning-color)" maxBarSize={80}>
                     <LabelList dataKey="inQueue" content={(props) => renderBarLabel(props, 'inQueuePct', productData.weeks)} />
                   </Bar>
-                  <Bar dataKey="rejected" name="Rejected (Ban)" stackId="a" fill="var(--danger-color)" radius={[4, 4, 0, 0]} maxBarSize={80}>
+                  <Bar yAxisId="left" dataKey="rejected" name="Rejected (Ban)" stackId="a" fill="var(--danger-color)" radius={[4, 4, 0, 0]} maxBarSize={80}>
                     <LabelList dataKey="rejected" content={(props) => renderBarLabel(props, 'rejectedPct', productData.weeks)} />
                   </Bar>
-                </BarChart>
+                  <Line yAxisId="right" type="monotone" dataKey="notActive" name="Not Active" stroke="#9ca3af" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                </ComposedChart>
               </ResponsiveContainer>
             </div>
           </div>
