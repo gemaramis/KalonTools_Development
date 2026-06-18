@@ -118,6 +118,16 @@ const TargetPlanningTab = ({ targetPlanningData, isDataHidden }) => {
               color="#ec4899" 
               isDataHidden={isDataHidden}
             />
+
+            <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--border-color)', margin: '8px 0' }}></div>
+
+            <HealthBar 
+              label="Total Cost vs Target" 
+              current={data.spending + data.ttamCost + data.kolCost} 
+              max={isDataHidden ? 0 : (data.targetAdsCost + 20000000 + 500000000)} 
+              color="var(--warning-color)" 
+              isDataHidden={isDataHidden}
+            />
           </div>
         ))}
       </div>
