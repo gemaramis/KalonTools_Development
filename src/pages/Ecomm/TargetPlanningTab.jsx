@@ -95,7 +95,7 @@ const TargetPlanningTab = ({ targetPlanningData, isDataHidden }) => {
               label="GMV vs Target" 
               current={data.gmv} 
               max={data.targetGmv} 
-              color="#3b82f6" 
+              color="#0ea5e9" 
               isDataHidden={isDataHidden}
             />
 
@@ -103,16 +103,25 @@ const TargetPlanningTab = ({ targetPlanningData, isDataHidden }) => {
               label="Ads Cost vs Target Max" 
               current={data.spending} 
               max={data.targetAdsCost} 
-              color="var(--success-color)" 
+              color="#10b981" 
               isDataHidden={isDataHidden}
             />
 
             <HealthBar 
-              label="TTAM Cost" 
+              label="Consideration Cost" 
               current={data.ttamCost} 
               max={isDataHidden ? 0 : 80000000} 
+              color="#6366f1" 
+              isDataHidden={isDataHidden}
+            />
+
+            <HealthBar 
+              label="New Consideration" 
+              current={data.newConsideration || 0} 
+              max={isDataHidden ? 0 : 228571} 
               color="#8b5cf6" 
               isDataHidden={isDataHidden}
+              formatter={formatNumber}
             />
 
             <HealthBar 
@@ -123,22 +132,13 @@ const TargetPlanningTab = ({ targetPlanningData, isDataHidden }) => {
               isDataHidden={isDataHidden}
             />
 
-            <HealthBar 
-              label="New Consideration" 
-              current={data.newConsideration || 0} 
-              max={isDataHidden ? 0 : 228571} 
-              color="#f59e0b" 
-              isDataHidden={isDataHidden}
-              formatter={formatNumber}
-            />
-
-            <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--border-color)', margin: '8px 0' }}></div>
+            <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--border-color)', margin: '12px 0' }}></div>
 
             <HealthBar 
               label="Total Cost vs Target" 
               current={data.spending + data.ttamCost + data.kolCost} 
               max={isDataHidden ? 0 : (data.targetAdsCost + 80000000 + 500000000)} 
-              color="var(--warning-color)" 
+              color="#f59e0b" 
               isDataHidden={isDataHidden}
             />
           </div>
