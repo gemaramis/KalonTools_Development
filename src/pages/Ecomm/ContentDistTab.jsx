@@ -151,6 +151,8 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                         pct = totalInQueue > 0 ? ((value / totalInQueue) * 100).toFixed(1) : 0;
                       } else if (name === 'Not Active') {
                         pct = totalVideo > 0 ? ((value / totalVideo) * 100).toFixed(1) : 0;
+                      } else if (name === 'Total Video') {
+                        return [formatNumber(value), name];
                       } else {
                         pct = totalReady > 0 ? ((value / totalReady) * 100).toFixed(1) : 0;
                       }
@@ -172,6 +174,7 @@ const ContentDistTab = ({ contentDistData, activeTab }) => {
                     <LabelList dataKey="rejected" content={(props) => renderBarLabel(props, 'rejectedPct', productData.weeks)} />
                   </Bar>
                   <Line yAxisId="right" type="monotone" dataKey="notActive" name="Not Active" stroke="#9ca3af" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                  <Line yAxisId="right" type="monotone" dataKey="totalVideo" name="Total Video" stroke="var(--text-primary)" strokeDasharray="5 5" strokeWidth={2} dot={{ r: 3, strokeWidth: 2 }} activeDot={{ r: 5 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
