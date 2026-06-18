@@ -106,7 +106,7 @@ const TargetPlanningTab = ({ targetPlanningData, isDataHidden }) => {
             <HealthBar 
               label="TTAM Cost" 
               current={data.ttamCost} 
-              max={data.targetAdsCost} 
+              max={isDataHidden ? 0 : 20000000} 
               color="#8b5cf6" 
               isDataHidden={isDataHidden}
             />
@@ -114,7 +114,7 @@ const TargetPlanningTab = ({ targetPlanningData, isDataHidden }) => {
             <HealthBar 
               label="KOL Cost" 
               current={data.kolCost} 
-              max={data.targetAdsCost} 
+              max={isDataHidden ? 0 : 500000000} 
               color="#ec4899" 
               isDataHidden={isDataHidden}
             />
