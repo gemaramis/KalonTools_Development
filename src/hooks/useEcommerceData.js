@@ -266,6 +266,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
                 const targetGmvRow = findRow('target gmv');
                 const gmvRow = findRow('gmv');
                 const ttamRow = findRow('cost ttam');
+                const newConsiderationRow = findRow('new consideration');
                 const kolRow = tpRows.find(r => r[0] && typeof r[0] === 'string' && r[0].trim().toLowerCase().includes('kol cost'));
 
                 const parseRpValue = (val) => {
@@ -283,6 +284,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
                     gmv: gmvRow ? parseRpValue(gmvRow[m.colIdx]) : 0,
                     // ttamCost is in the lower section where 'Total' is at the end (idx + 5 instead of idx + 1)
                     ttamCost: ttamRow ? parseRpValue(ttamRow[m.colIdx + 4]) : 0,
+                    newConsideration: newConsiderationRow ? parseRpValue(newConsiderationRow[m.colIdx + 4]) : 0,
                     kolCost: 0
                   };
                   return data;
