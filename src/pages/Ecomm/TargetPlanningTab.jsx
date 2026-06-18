@@ -66,13 +66,31 @@ const TargetPlanningTab = ({ targetPlanningData, isDataHidden }) => {
     d.targetAdsCost > 0 || d.spending > 0 || d.targetGmv > 0 || d.gmv > 0 || d.ttamCost > 0 || d.kolCost > 0
   );
 
+  const totalSisaBudget = validMonths.reduce((acc, data) => {
+    const totalTarget = data.targetAdsCost + 80000000 + 500000000;
+    const totalCost = data.spending + data.ttamCost + data.kolCost;
+    // Only calculate if there's a target
+    if (data.targetAdsCost > 0) {
+      return acc + (totalTarget - totalCost);
+    }
+    return acc;
+  }, 0);
+
   return (
     <div className="glass-panel" style={{ padding: '24px', marginBottom: '32px' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>Target & Planning (Timeline)</h2>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-          Pantau progres pencapaian GMV dan serapan anggaran marketing bulanan.
-        </p>
+      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h2 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '8px' }}>Target & Planning (Timeline)</h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+            Pantau progres pencapaian GMV dan serapan anggaran marketing bulanan.
+          </p>
+        </div>
+        {!isDataHidden && (
+          <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', padding: '12px 20px', borderRadius: '8px', textAlign: 'right' }}>
+            <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: '600', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Akumulasi Sisa Budget</div>
+            <div style={{ fontSize: '1.25rem', fontWeight: '700', color: '#047857' }}>{formatRp(totalSisaBudget)}</div>
+          </div>
+        )}
       </div>
 
       <div style={{ display: 'flex', overflowX: 'auto', gap: '24px', paddingBottom: '16px' }} className="hide-scrollbar">
@@ -141,6 +159,23 @@ const TargetPlanningTab = ({ targetPlanningData, isDataHidden }) => {
               color="#f59e0b" 
               isDataHidden={isDataHidden}
             />
+
+            {!isDataHidden && data.targetAdsCost > 0 && (
+              <div style={{ 
+                marginTop: '4px', 
+                padding: '12px', 
+                backgroundColor: 'var(--bg-color)', 
+                borderRadius: '6px', 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                border: '1px dashed var(--border-color)'
+              }}>
+                <span style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-secondary)' }}>Sisa Budget:</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '700', color: (data.targetAdsCost + 80000000 + 500000000) - (data.spending + data.ttamCost + data.kolCost) >= 0 ? '#10b981' : 'var(--danger-color)' }}>
+                  {formatRp((data.targetAdsCost + 80000000 + 500000000) - (data.spending + data.ttamCost + data.kolCost))}
+                </span>
+              </div>
+            )}
           </div>
         ))}
       </div>
