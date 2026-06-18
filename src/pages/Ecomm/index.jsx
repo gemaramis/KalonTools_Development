@@ -15,6 +15,7 @@ import { Calendar, TrendingUp, TrendingDown, ChevronDown, ChevronUp, ChevronRigh
 import EcommDateRangePicker from '../../components/DatePicker/EcommDateRangePicker';
 import FinanceDataTab from './FinanceDataTab';
 import ContentDistTab from './ContentDistTab';
+import TargetPlanningTab from './TargetPlanningTab';
 import ColumnHeader from '../../components/Table/ColumnHeader';
 import ActionPlanNotes from '../../components/Ecomm/ActionPlanNotes';
 
@@ -159,7 +160,7 @@ const ChangeIndicator = ({ current, previous }) => {
 // --- Main Component ---
 const Ecomm = () => {
   const { globalSettings, getSettingsForMonth, updateMonthlySettings } = useSettings();
-  const { mainData, detailData, financeData, contentDistData, loading, error } = useEcommerceData(
+  const { mainData, detailData, financeData, contentDistData, targetPlanningData, loading, error } = useEcommerceData(
     globalSettings?.ecommLink, 
     globalSettings?.adsLink,
     globalSettings?.financeLink,
@@ -826,6 +827,16 @@ const Ecomm = () => {
           }}>
           Content Distribution
           {activeTab === 'Content Distribution' && <div style={{ position: 'absolute', bottom: '-1px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--primary-color)' }}></div>}
+        </div>
+        <div 
+          onClick={() => setActiveTab('Target & Planning')}
+          style={{ 
+            fontSize: '1.125rem', fontWeight: activeTab === 'Target & Planning' ? '600' : '500', 
+            color: activeTab === 'Target & Planning' ? 'var(--text-primary)' : 'var(--text-secondary)',
+            cursor: 'pointer', paddingBottom: '12px', position: 'relative'
+          }}>
+          Target & Planning
+          {activeTab === 'Target & Planning' && <div style={{ position: 'absolute', bottom: '-1px', left: 0, width: '100%', height: '2px', backgroundColor: 'var(--primary-color)' }}></div>}
         </div>
       </div>
 
@@ -1832,7 +1843,13 @@ const Ecomm = () => {
         <FinanceDataTab financeData={financeData} mainData={mainData} isDataHidden={isDataHidden} />
       )}
 
-      <ContentDistTab contentDistData={contentDistData} activeTab={activeTab} />
+      {activeTab === 'Target & Planning' && (
+        <TargetPlanningTab targetPlanningData={targetPlanningData} isDataHidden={isDataHidden} />
+      )}
+
+      {activeTab === 'Content Distribution' && (
+        <ContentDistTab contentDistData={contentDistData} activeTab={activeTab} />
+      )}
 
       {/* Custom Tooltip Portal */}
       {tooltipState && (() => {

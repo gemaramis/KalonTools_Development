@@ -41,6 +41,7 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
     productCard: []
   });
   const [financeData, setFinanceData] = useState([]);
+  const [targetPlanningData, setTargetPlanningData] = useState([]);
   const [contentDistData, setContentDistData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -237,6 +238,72 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
 
         setMainData(combinedMainData);
 
+        // --- Fetch Target Planning Data ---
+        let targetPlanningData = [];
+        try {
+          const tpUrl = `/api/read-sheet?targetUrl=${encodeURIComponent('https://docs.google.com/spreadsheets/d/1CjEAcExQFuQtCrqqXOezRe8icXeVcePIEr0fALNQIMI/edit?gid=1151289301#gid=1151289301')}`;
+          const tpRes = await fetch(tpUrl);
+          if (tpRes.ok) {
+            const tpCsv = await tpRes.text();
+            if (!tpCsv.trim().toLowerCase().startsWith('<!doctype') && !tpCsv.trim().toLowerCase().startsWith('<html')) {
+              const tpResults = await parseCSV(tpCsv, { header: false, skipEmptyLines: true });
+              const tpRows = tpResults.data;
+              
+              const monthRowIndex = tpRows.findIndex(r => r.some(c => typeof c === 'string' && c.toLowerCase().includes('januari')));
+              if (monthRowIndex !== -1) {
+                const monthRow = tpRows[monthRowIndex];
+                const monthTotals = [];
+                monthRow.forEach((c, idx) => {
+                  if (typeof c === 'string' && c.trim() !== '') {
+                    monthTotals.push({ month: c.trim().replace(/ 202[0-9]/, ''), colIdx: idx + 1 });
+                  }
+                });
+
+                const findRow = (keyword) => tpRows.find(r => r[0] && typeof r[0] === 'string' && r[0].trim().toLowerCase() === keyword.toLowerCase());
+                
+                const targetGmvMaxRow = findRow('target gmv max');
+                const spendingRow = findRow('spending');
+                const targetGmvRow = findRow('target gmv');
+                const gmvRow = findRow('gmv');
+                const ttamRow = findRow('cost ttam');
+                const kolRow = tpRows.find(r => r[0] && typeof r[0] === 'string' && r[0].trim().toLowerCase().includes('kol cost'));
+
+                const parseRpValue = (val) => {
+                  if (!val || typeof val !== 'string') return 0;
+                  const cleaned = val.replace(/[^0-9,-]/g, '');
+                  return parseInt(cleaned) || 0;
+                };
+
+                targetPlanningData = monthTotals.map((m, idx) => {
+                  const data = {
+                    month: m.month,
+                    targetAdsCost: targetGmvMaxRow ? parseRpValue(targetGmvMaxRow[m.colIdx]) : 0,
+                    spending: spendingRow ? parseRpValue(spendingRow[m.colIdx]) : 0,
+                    targetGmv: targetGmvRow ? parseRpValue(targetGmvRow[m.colIdx]) : 0,
+                    gmv: gmvRow ? parseRpValue(gmvRow[m.colIdx]) : 0,
+                    ttamCost: ttamRow ? parseRpValue(ttamRow[m.colIdx]) : 0,
+                    kolCost: 0
+                  };
+                  return data;
+                });
+                
+                if (kolRow) {
+                  let monthIdx = 0;
+                  for (let i = 1; i < kolRow.length; i += 3) {
+                    if (targetPlanningData[monthIdx]) {
+                      targetPlanningData[monthIdx].kolCost = parseRpValue(kolRow[i]);
+                    }
+                    monthIdx++;
+                  }
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch target planning data", e);
+        }
+        setTargetPlanningData(targetPlanningData);
+
         // --- Fetch Detail GMV Data ---
         if (detailUrl) {
           const detailFetchUrl = `/api/read-sheet?targetUrl=${encodeURIComponent(detailUrl)}`;
@@ -415,5 +482,5 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
     fetchData();
   }, [ecommUrl, adsUrl, financeUrl, contentDistUrl]);
 
-  return { mainData, detailData, financeData, contentDistData, loading, error };
+  return { mainData, detailData, financeData, targetPlanningData, contentDistData, loading, error };
 };
