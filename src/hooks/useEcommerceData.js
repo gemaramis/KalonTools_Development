@@ -281,7 +281,8 @@ export const useEcommerceData = (ecommUrl, adsUrl, financeUrl, contentDistUrl) =
                     spending: spendingRow ? parseRpValue(spendingRow[m.colIdx]) : 0,
                     targetGmv: targetGmvRow ? parseRpValue(targetGmvRow[m.colIdx]) : 0,
                     gmv: gmvRow ? parseRpValue(gmvRow[m.colIdx]) : 0,
-                    ttamCost: ttamRow ? parseRpValue(ttamRow[m.colIdx]) : 0,
+                    // ttamCost is in the lower section where 'Total' is at the end (idx + 5 instead of idx + 1)
+                    ttamCost: ttamRow ? parseRpValue(ttamRow[m.colIdx + 4]) : 0,
                     kolCost: 0
                   };
                   return data;
