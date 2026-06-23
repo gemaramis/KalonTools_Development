@@ -133,8 +133,17 @@ const Landing = () => {
             
             <h3 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '16px' }}>Advertising</h3>
             
-            <div style={{ height: '8px', width: '100%', background: 'var(--bg-color)', borderRadius: '4px', marginBottom: '8px', position: 'relative' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '8px' }}>
+              <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>Total Budget</span>
+              <span style={{ color: 'var(--text-secondary)' }}>Target Active</span>
+            </div>
+            <div style={{ height: '8px', width: '100%', background: 'var(--bg-color)', borderRadius: '4px', marginBottom: '12px', position: 'relative' }}>
                <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '45%', background: 'var(--text-primary)', borderRadius: '4px' }} />
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '8px' }}>
+              <span style={{ color: 'var(--primary-color)', fontWeight: '600' }}>Budget Spent</span>
+              <span style={{ color: 'var(--text-secondary)' }}>85% utilization</span>
             </div>
             <div style={{ height: '8px', width: '80%', background: 'var(--bg-color)', borderRadius: '4px', marginBottom: '24px', position: 'relative' }}>
                <div style={{ position: 'absolute', top: 0, left: 0, height: '100%', width: '85%', background: 'var(--primary-color)', borderRadius: '4px' }} />
@@ -168,7 +177,11 @@ const Landing = () => {
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Settings</p>
             <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: 'auto' }}>System Config</h3>
             
-            <div style={{ height: '4px', width: '100%', background: 'rgba(0,0,0,0.1)', borderRadius: '2px', marginTop: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.7rem', marginTop: '24px', marginBottom: '8px' }}>
+              <span style={{ color: 'var(--primary-color)', fontWeight: '600' }}>System Health</span>
+              <span style={{ color: 'var(--text-secondary)' }}>100% Good</span>
+            </div>
+            <div style={{ height: '4px', width: '100%', background: 'rgba(0,0,0,0.1)', borderRadius: '2px' }}>
               <div style={{ height: '100%', width: '100%', background: 'var(--primary-color)', borderRadius: '2px' }} />
             </div>
           </button>
@@ -193,7 +206,11 @@ const Landing = () => {
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '8px' }}>Integrations</p>
             <h3 style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: 'auto' }}>Data Sync</h3>
             
-            <div style={{ height: '4px', width: '100%', background: 'rgba(0,0,0,0.1)', borderRadius: '2px', marginTop: '24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.7rem', marginTop: '24px', marginBottom: '8px' }}>
+              <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>Sync Status</span>
+              <span style={{ color: 'var(--text-secondary)' }}>82% Synced</span>
+            </div>
+            <div style={{ height: '4px', width: '100%', background: 'rgba(0,0,0,0.1)', borderRadius: '2px' }}>
               <div style={{ height: '100%', width: '82%', background: 'var(--text-primary)', borderRadius: '2px' }} />
             </div>
           </button>

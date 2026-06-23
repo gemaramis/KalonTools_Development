@@ -267,6 +267,17 @@ button {
   grid-column: 1 / -1;
 }
 
+@media (max-width: 900px) {
+  .complex-bento-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .bento-span-2-col, .bento-span-2-row {
+    grid-column: span 1;
+    grid-row: span 1;
+  }
+}
+
 .pill-nav {
   display: flex;
   gap: 12px;
