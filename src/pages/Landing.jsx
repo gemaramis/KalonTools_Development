@@ -25,9 +25,13 @@ const Landing = () => {
       
       {/* Pill Navigation Header */}
       <div className="pill-nav">
-        <button className="pill-nav-item active">Home page <ArrowUpRight size={14} style={{ display: 'inline', marginLeft: '4px' }}/></button>
-        <button className="pill-nav-item">Modules <span style={{ background: 'var(--text-primary)', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '0.7rem', marginLeft: '6px' }}>5 Active</span></button>
-        <button className="pill-nav-item">Kalon Superapp</button>
+        <button className="pill-nav-item active">Hub Overview</button>
+        {permissions.canViewManagement && (
+          <button className="pill-nav-item" onClick={() => navigate('/management')}>System Settings</button>
+        )}
+        <button className="pill-nav-item" onClick={() => navigate('/changelog')}>
+          Release Notes <ArrowUpRight size={14} style={{ display: 'inline', marginLeft: '4px' }}/>
+        </button>
       </div>
 
       <div className="complex-bento-grid">
