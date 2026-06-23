@@ -6,9 +6,17 @@ import { Shield, ChevronRight } from 'lucide-react';
 const Login = () => {
   const { login } = useAuth();
   const [selectedRole, setSelectedRole] = useState(roles[0].id);
+  const [pin, setPin] = useState('');
+  const [error, setError] = useState('');
+
   const handleLogin = (e) => {
     e.preventDefault();
-    login(selectedRole);
+    if (pin === '1234') {
+      setError('');
+      login(selectedRole);
+    } else {
+      setError('Incorrect PIN. Please try again.');
+    }
   };
 
   return (
@@ -35,6 +43,25 @@ const Login = () => {
               ))}
             </select>
           </div>
+          
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Enter PIN</label>
+            <input 
+              type="password" 
+              className="input-field" 
+              placeholder="4-digit PIN"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              required
+            />
+          </div>
+
+          {error && (
+            <div style={{ color: 'var(--danger-color)', fontSize: '0.875rem', textAlign: 'center' }}>
+              {error}
+            </div>
+          )}
+
           <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '10px' }}>
             Continue <ChevronRight size={18} />
           </button>
