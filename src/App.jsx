@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import MainLayout from './components/Layout/MainLayout';
+import PortalLayout from './components/Layout/PortalLayout';
 import Login from './pages/Login';
 import Landing from './pages/Landing';
 import Ads from './pages/Ads';
@@ -29,9 +30,11 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/login" element={currentUser ? <Navigate to="/" replace /> : <Login />} />
       
-      <Route path="/" element={<MainLayout />}>
+      <Route path="/" element={<PortalLayout />}>
         <Route index element={<Landing />} />
-        
+      </Route>
+      
+      <Route path="/" element={<MainLayout />}>
         {/* KOL Routes */}
         <Route path="kol/overview" element={
           <ProtectedRoute checkPermission={(p) => p.canViewKOL}>

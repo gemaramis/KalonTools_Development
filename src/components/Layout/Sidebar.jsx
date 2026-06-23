@@ -31,8 +31,8 @@ const Sidebar = () => {
       </div>
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
-        <NavLink to="/" end className={({isActive}) => `sidebar-link ${isActive ? 'active' : ''}`}>
-          <LayoutDashboard size={20} /> Landing Page
+        <NavLink to="/" end className="sidebar-link" style={{ backgroundColor: 'var(--primary-color)', color: 'white', marginBottom: '16px' }}>
+          <LayoutDashboard size={20} /> Back to Hub
         </NavLink>
 
         {permissions.canViewKOL && (
@@ -118,8 +118,9 @@ const Sidebar = () => {
           color: var(--text-primary);
         }
         .sidebar-link.active {
-          background-color: rgba(59, 130, 246, 0.1);
-          color: var(--primary-color);
+          background-color: rgba(192, 210, 154, 0.3);
+          color: var(--text-primary);
+          font-weight: 700;
         }
         .sidebar-sublink {
           display: block;

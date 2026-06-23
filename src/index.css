@@ -3,13 +3,14 @@
 :root {
   /* Color Palette - Premium Modern */
   --bg-color: #f8fafc;
-  --surface-color: #ffffff;
+  --surface-color: rgba(255, 255, 255, 0.85);
+  --surface-solid: #ffffff;
   --text-primary: #0f172a;
   --text-secondary: #64748b;
   
-  --primary-color: #3b82f6;
-  --primary-hover: #2563eb;
-  --accent-color: #8b5cf6;
+  --primary-color: #c0d29a;
+  --primary-hover: #a8be7a;
+  --accent-color: #c0d29a;
   
   --success-color: #10b981;
   --success-bg: #d1fae5;
@@ -36,24 +37,7 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-color: #0f172a;
-    --surface-color: #1e293b;
-    --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
-    --border-color: #334155;
-    
-    --success-bg: #064e3b;
-    --success-text: #34d399;
-    
-    --warning-bg: #78350f;
-    --warning-text: #fbbf24;
-    
-    --danger-bg: #7f1d1d;
-    --danger-text: #f87171;
-  }
-}
+
 
 * {
   margin: 0;
@@ -84,9 +68,36 @@ button {
 /* Utilities */
 .glass-panel {
   background: var(--surface-color);
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.bento-card {
+  background: var(--surface-color);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(192, 210, 154, 0.25);
+  border-color: #ffffff;
 }
 
 .flex-center {

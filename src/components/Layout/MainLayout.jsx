@@ -11,13 +11,13 @@ const MainLayout = () => {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-color)' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #e4edce 0%, #ffffff 100%)' }}>
       <Sidebar />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <header style={{ 
           height: '64px', 
-          backgroundColor: 'var(--surface-color)', 
-          borderBottom: '1px solid var(--border-color)',
+          background: 'transparent', 
+          borderBottom: '1px solid rgba(255,255,255,0.6)',
           display: 'flex',
           alignItems: 'center',
           padding: '0 32px',

@@ -1,13 +1,74 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { Users, Megaphone, ShoppingCart, LayoutDashboard } from 'lucide-react';
 
 const Landing = () => {
+  const { permissions } = useAuth();
+  const navigate = useNavigate();
+
   return (
-    <div className="animate-fade-in">
-      <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '16px' }}>Welcome to KLN Superapp</h1>
-      <p style={{ color: 'var(--text-secondary)' }}>
-        This is the centralized internal application for integrating report management across KOL, Ads, and E-commerce.
-        Please use the sidebar to navigate to your authorized modules.
-      </p>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+        <h2 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '16px', color: 'var(--text-primary)' }}>Select Module</h2>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
+          Choose a module below to access your dashboard. Your available modules are based on your role permissions.
+        </p>
+      </div>
+
+      <div className="bento-grid">
+        {permissions.canViewKOL && (
+          <button className="bento-card" onClick={() => navigate('/kol/overview')} style={{ textAlign: 'left', cursor: 'pointer' }}>
+            <div style={{ background: 'rgba(192, 210, 154, 0.3)', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', color: 'var(--text-primary)' }}>
+              <Users size={32} />
+            </div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '12px' }}>KOL Module</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', flex: 1 }}>Manage Key Opinion Leaders, overview metrics, deal structuring, and schedule tracking.</p>
+            <div style={{ marginTop: '24px', fontWeight: '600', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Open Module &rarr;
+            </div>
+          </button>
+        )}
+
+        {permissions.canViewAds && (
+          <button className="bento-card" onClick={() => navigate('/ads')} style={{ textAlign: 'left', cursor: 'pointer' }}>
+            <div style={{ background: 'rgba(192, 210, 154, 0.3)', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', color: 'var(--text-primary)' }}>
+              <Megaphone size={32} />
+            </div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '12px' }}>Ads Management</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', flex: 1 }}>Track advertising campaigns, monitor spend, and optimize performance across platforms.</p>
+            <div style={{ marginTop: '24px', fontWeight: '600', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Open Module &rarr;
+            </div>
+          </button>
+        )}
+
+        {permissions.canViewEcomm && (
+          <button className="bento-card" onClick={() => navigate('/ecomm')} style={{ textAlign: 'left', cursor: 'pointer' }}>
+            <div style={{ background: 'rgba(192, 210, 154, 0.3)', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', color: 'var(--text-primary)' }}>
+              <ShoppingCart size={32} />
+            </div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '12px' }}>Seller Center</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', flex: 1 }}>Manage e-commerce operations, TikTok shop integration, and sales data.</p>
+            <div style={{ marginTop: '24px', fontWeight: '600', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Open Module &rarr;
+            </div>
+          </button>
+        )}
+
+        {permissions.canViewManagement && (
+          <button className="bento-card" onClick={() => navigate('/management')} style={{ textAlign: 'left', cursor: 'pointer' }}>
+            <div style={{ background: 'rgba(192, 210, 154, 0.3)', width: '64px', height: '64px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px', color: 'var(--text-primary)' }}>
+              <LayoutDashboard size={32} />
+            </div>
+            <h3 style={{ fontSize: '1.5rem', fontWeight: '700', marginBottom: '12px' }}>Admin Management</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', flex: 1 }}>System configuration, user role management, and global application settings.</p>
+            <div style={{ marginTop: '24px', fontWeight: '600', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Open Module &rarr;
+            </div>
+          </button>
+        )}
+      </div>
     </div>
   );
 };
