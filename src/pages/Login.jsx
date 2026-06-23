@@ -6,16 +6,9 @@ import { Shield, ChevronRight } from 'lucide-react';
 const Login = () => {
   const { login } = useAuth();
   const [selectedRole, setSelectedRole] = useState(roles[0].id);
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
   const handleLogin = (e) => {
     e.preventDefault();
-    if (password === 'kln333315') {
-      login(selectedRole);
-    } else {
-      setError('Incorrect password');
-    }
+    login(selectedRole);
   };
 
   return (
@@ -42,20 +35,8 @@ const Login = () => {
               ))}
             </select>
           </div>
-          <div>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.875rem', fontWeight: '500' }}>Password</label>
-            <input 
-              type="password"
-              className="input-field" 
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setError(''); }}
-              placeholder="Enter password"
-              required
-            />
-          </div>
-          {error && <p style={{ color: 'var(--danger-color)', fontSize: '0.875rem', marginTop: '-10px' }}>{error}</p>}
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-            Access Portal <ChevronRight size={18} />
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', marginTop: '10px' }}>
+            Continue <ChevronRight size={18} />
           </button>
         </form>
       </div>
