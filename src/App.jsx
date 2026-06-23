@@ -10,7 +10,12 @@ import Ecomm from './pages/Ecomm';
 import KOLOverview from './pages/KOL/Overview';
 import KOLDealing from './pages/KOL/Dealing';
 import KOLScheduling from './pages/KOL/Scheduling';
-import Management from './pages/Management';
+import ManagementHub from './pages/Management/Index';
+import KOLTargets from './pages/Management/KOLTargets';
+import PersonalReport from './pages/Management/PersonalReport';
+import KOLSync from './pages/Management/KOLSync';
+import EcommSync from './pages/Management/EcommSync';
+import Reporting from './pages/Reporting/index';
 import Changelog from './pages/Changelog';
 import { SettingsProvider } from './context/SettingsContext';
 
@@ -52,10 +57,37 @@ const AppRoutes = () => {
           </ProtectedRoute>
         } />
 
-        {/* Management Route */}
+        {/* Management Routes */}
         <Route path="management" element={
           <ProtectedRoute checkPermission={(p) => p.canViewManagement}>
-            <Management />
+            <ManagementHub />
+          </ProtectedRoute>
+        } />
+        <Route path="management/kol-targets" element={
+          <ProtectedRoute checkPermission={(p) => p.canViewManagement}>
+            <KOLTargets />
+          </ProtectedRoute>
+        } />
+        <Route path="management/personal-report" element={
+          <ProtectedRoute checkPermission={(p) => p.canViewKOL}>
+            <PersonalReport />
+          </ProtectedRoute>
+        } />
+        <Route path="management/kol-sync" element={
+          <ProtectedRoute checkPermission={(p) => p.canViewManagement || p.canViewKOL}>
+            <KOLSync />
+          </ProtectedRoute>
+        } />
+        <Route path="management/ecomm-sync" element={
+          <ProtectedRoute checkPermission={(p) => p.canViewManagement || p.canViewEcomm}>
+            <EcommSync />
+          </ProtectedRoute>
+        } />
+        
+        {/* Reporting Route */}
+        <Route path="reporting" element={
+          <ProtectedRoute>
+            <Reporting />
           </ProtectedRoute>
         } />
         

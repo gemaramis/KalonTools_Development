@@ -1156,6 +1156,7 @@ const Ecomm = () => {
                     strokeWidth={2}
                     dot={false}
                     activeDot={{ r: 6 }}
+                    className="moving-chart-line"
                   />
                   {isCompareEnabled && (
                     <Line 
@@ -1628,6 +1629,7 @@ const Ecomm = () => {
                         strokeWidth={2} 
                         dot={false}
                         activeDot={{ r: 6, fill: index === 0 ? CHART_COLORS[0] : CHART_COLORS[1], stroke: '#fff', strokeWidth: 2 }}
+                        className="moving-chart-line"
                       />
                       {isCompareEnabled && (
                         <Line 

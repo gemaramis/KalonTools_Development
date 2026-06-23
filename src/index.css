@@ -122,6 +122,27 @@ button {
   animation: fadeIn 0.4s ease-out forwards;
 }
 
+@keyframes gradientMotion {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.moving-gradient-bg {
+  background: linear-gradient(-45deg, #e4edce, #ffffff, #c0d29a, #f8fafc);
+  background-size: 400% 400%;
+  animation: gradientMotion 15s ease infinite;
+}
+
+@keyframes move-stroke {
+  to { stroke-dashoffset: -20; }
+}
+
+.moving-chart-line {
+  stroke-dasharray: 8 8;
+  animation: move-stroke 1.5s linear infinite;
+}
+
 /* Status Badges */
 .badge {
   padding: 4px 10px;

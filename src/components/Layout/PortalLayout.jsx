@@ -10,9 +10,8 @@ const PortalLayout = () => {
   }
 
   return (
-    <div style={{ 
+    <div className="moving-gradient-bg" style={{ 
       minHeight: '100vh', 
-      background: 'linear-gradient(135deg, #e4edce 0%, #ffffff 100%)',
       display: 'flex',
       flexDirection: 'column'
     }}>
