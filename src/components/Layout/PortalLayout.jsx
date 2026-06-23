@@ -15,9 +15,7 @@ const PortalLayout = () => {
       display: 'flex',
       flexDirection: 'column'
     }}>
-      <header style={{ 
-        height: '80px', 
-        padding: '0 40px',
+      <header className="portal-header" style={{ 
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -40,7 +38,7 @@ const PortalLayout = () => {
         </div>
       </header>
       
-      <main style={{ flex: 1, padding: '40px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      <main className="portal-main" style={{ flex: 1, maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
         <Outlet />
       </main>
     </div>

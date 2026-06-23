@@ -44,7 +44,7 @@ const Landing = () => {
         >
           <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(192, 210, 154, 0.15) 0%, transparent 70%)', borderRadius: '50%' }} />
           <div>
-            <h1 style={{ fontSize: '3rem', fontWeight: '700', lineHeight: 1.1, marginBottom: '24px' }}>
+            <h1 className="hero-title" style={{ fontWeight: '700', lineHeight: 1.1, marginBottom: '24px' }}>
               Comprehensive<br/>Report —
             </h1>
             <div className="pill-nav-item" style={{ border: '1px solid #334155', color: '#cbd5e1', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>

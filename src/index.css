@@ -267,7 +267,32 @@ button {
   grid-column: 1 / -1;
 }
 
+.portal-header {
+  height: 80px;
+  padding: 0 40px;
+}
+
+.portal-main {
+  padding: 40px;
+}
+
+.hero-title {
+  font-size: 3rem;
+}
+
 @media (max-width: 900px) {
+  .portal-header {
+    height: auto;
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .portal-main {
+    padding: 16px;
+  }
+  .hero-title {
+    font-size: 2.2rem;
+  }
   .complex-bento-grid {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -275,6 +300,10 @@ button {
   .bento-span-2-col, .bento-span-2-row {
     grid-column: span 1;
     grid-row: span 1;
+  }
+  .pill-nav {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 }
 
